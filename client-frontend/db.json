@@ -1,0 +1,41 @@
+{
+  "posts": [
+    {
+      "name": "RECETA",
+      "kindOfPost": "Receta",
+      "description": "NADA",
+      "image": "",
+      "id": "bfe6"
+    },
+    {
+      "name": "INTERVIEWWWW",
+      "kindOfPost": "Receta",
+      "description": "MUCHO",
+      "image": "",
+      "id": "3d7f"
+    },
+    {
+      "id": "0250",
+      "name": "6666",
+      "kindOfPost": "Receta",
+      "description": "nada",
+      "image": {}
+    },
+    {
+      "name": "JUEGOS ECOLÓGICOS 222",
+      "email": "Vada@mailfalso.com",
+      "password": "1234abcd",
+      "id": "c440",
+      "kindOfPost": "JUEGOS",
+      "description": "NADA",
+      "image": ""
+    },
+    {
+      "id": "27ad",
+      "name": "NOVOOO 3500",
+      "kindOfPost": "Receta",
+      "description": "nada",
+      "image": ""
+    }
+  ]
+}
