@@ -13,14 +13,14 @@ router.get('/:id', PostController.getById);
 
 router.post('/',
   AuthMiddleware.authenticate,
-  UploadMiddleware.single('image'),
+  UploadMiddleware.array('images', 10), 
   ValidationMiddleware.validate(PostValidation.create),
   PostController.create
 );
 
 router.put('/:id',
   AuthMiddleware.authenticate,
-  UploadMiddleware.single('image'),
+  UploadMiddleware.array('images', 10),
   ValidationMiddleware.validate(PostValidation.update),
   PostController.update
 );

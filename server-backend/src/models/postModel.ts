@@ -8,11 +8,11 @@ export class Post extends BaseSequelizeModel<IPost> {
   public name!: string;
   public kindOfPost!: PostType;
   public description!: string;
-  public image?: string;
+  public images?: string[];
   public userId!: UUID;
 
   public static associate(models: any): void {
-    const { User, Comment, Like } = models; 
+    const { User, Comment, Like } = models;
     Post.belongsTo(User, {
       foreignKey: 'userId',
       as: 'user'
@@ -44,7 +44,7 @@ Post.init({
       len: [2, 255]
     }
   },
-  kindOfPost: { 
+  kindOfPost: {
     type: DataTypes.ENUM(...Object.values(PostType)),
     allowNull: false,
     validate: {
@@ -62,7 +62,23 @@ Post.init({
     type: DataTypes.STRING,
     allowNull: true
   },
-  userId: { 
+  images: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    defaultValue: [],
+    get() {
+      const imagesValue = this.getDataValue('images');
+      const singleImage = this.getDataValue('image');
+
+      if (imagesValue) {
+        return Array.isArray(imagesValue) ? imagesValue : [];
+      } else if (singleImage) {
+        return [singleImage];
+      }
+      return [];
+    }
+  },
+  userId: {
     type: DataTypes.UUID,
     allowNull: false,
     references: {
@@ -75,7 +91,22 @@ Post.init({
   sequelize,
   modelName: 'Post',
   tableName: 'posts',
-  underscored: false 
+  underscored: false
+});
+
+// Añadir hook para asegurar que images siempre sea un array
+Post.addHook('afterFind', (findResult: any) => {
+  if (!Array.isArray(findResult)) findResult = [findResult];
+  for (const instance of findResult) {
+    if (instance) {
+      const imagesValue = instance.getDataValue('images');
+      const singleImage = instance.getDataValue('image');
+      
+      if (!imagesValue || !Array.isArray(imagesValue)) {
+        instance.setDataValue('images', singleImage ? [singleImage] : []);
+      }
+    }
+  }
 });
 
 export default Post;

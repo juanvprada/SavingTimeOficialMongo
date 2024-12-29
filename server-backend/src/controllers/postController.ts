@@ -1,3 +1,4 @@
+// postController.ts
 import { Response } from 'express';
 import { Post, User } from '../models';
 import { v4 as uuidv4 } from 'uuid';
@@ -18,9 +19,12 @@ export class PostController {
     }
 
     try {
-      let image = '';
-      if (req.file) {
-        image = `/${CONFIG.UPLOAD.PATH}/${req.file.filename}`;
+      // Handle multiple images
+      const images: string[] = [];
+      if (req.files && Array.isArray(req.files)) {
+        (req.files as Express.Multer.File[]).forEach(file => {
+          images.push(`/${CONFIG.UPLOAD.PATH}/${file.filename}`);
+        });
       }
 
       const newPost = await Post.create({
@@ -28,13 +32,19 @@ export class PostController {
         name,
         kindOfPost,
         description,
-        image,
+        images, // Store array of image paths
         userId
       });
 
+      // Format the response
+      const formattedPost = {
+        ...newPost.get({ plain: true }),
+        images: images.map(image => `http://localhost:5000${image}`)
+      };
+
       return res.status(201).json({
         message: 'Post creado con éxito',
-        data: newPost
+        data: formattedPost
       });
     } catch (error) {
       console.error('Error detallado al crear post:', error);
@@ -61,7 +71,7 @@ export class PostController {
         include: [{
           model: User,
           as: 'user',
-          attributes: ['id', 'name'] // Make sure we're including the name
+          attributes: ['id', 'name']
         }]
       });
 
@@ -71,7 +81,7 @@ export class PostController {
         });
       }
 
-      // Get the plain object and format dates
+      // Get the plain object and format dates and images
       const formattedPost = {
         ...post.get({ plain: true }),
         created_at: post.created_at
@@ -80,9 +90,9 @@ export class PostController {
         updated_at: post.updated_at
           ? new Date(post.updated_at as Date | string).toISOString()
           : null,
-        image: post.image
-          ? `http://localhost:5000${post.image}`
-          : 'http://localhost:5000/uploads/default.jpg'
+        images: post.images && Array.isArray(post.images) && post.images.length > 0
+          ? post.images.map(image => `http://localhost:5000${image}`)
+          : ['http://localhost:5000/uploads/default.jpg']
       };
 
       return res.json({
@@ -102,7 +112,6 @@ export class PostController {
   static async update(req: AuthRequest, res: Response<ApiResponse<IPost>>) {
     const { id } = req.params;
     const { name, kindOfPost, description } = req.body;
-    const image = req.file ? `/${CONFIG.UPLOAD.PATH}/${req.file.filename}` : undefined;
 
     try {
       const post = await Post.findByPk(id);
@@ -113,22 +122,37 @@ export class PostController {
         });
       }
 
+      // Handle new images while keeping existing ones
+      let updatedImages = post.images || [];
+      if (req.files && Array.isArray(req.files)) {
+        const newImages = (req.files as Express.Multer.File[]).map(file =>
+          `/${CONFIG.UPLOAD.PATH}/${file.filename}`
+        );
+        updatedImages = [...updatedImages, ...newImages];
+      }
+
       const updatedPost = await post.update({
         name,
         kindOfPost,
         description,
-        image: image || post.image
+        images: updatedImages
       });
+
+      // Format the response
+      const formattedPost = {
+        ...updatedPost.get({ plain: true }),
+        images: updatedImages.map(image => `http://localhost:5000${image}`)
+      };
 
       return res.json({
         message: 'Post actualizado con éxito',
-        data: updatedPost
+        data: formattedPost
       });
     } catch (error) {
       console.error('Error al actualizar post:', error);
       return res.status(500).json({
         message: 'Error al actualizar el post',
-        error
+        error: error instanceof Error ? error.message : 'Error desconocido'
       });
     }
   }
@@ -146,6 +170,12 @@ export class PostController {
         });
       }
 
+      // Optional: Delete image files from the server
+      if (post.images && Array.isArray(post.images)) {
+        // You might want to add file deletion logic here
+        // Remember to handle errors appropriately
+      }
+
       await post.destroy();
 
       return res.json({
@@ -155,12 +185,12 @@ export class PostController {
       console.error('Error al eliminar post:', error);
       return res.status(500).json({
         message: 'Error al eliminar el post',
-        error
+        error: error instanceof Error ? error.message : 'Error desconocido'
       });
     }
   }
 
-  // Obtener todos los posts (modificado para devolver fechas ISO)
+  // Obtener todos los posts
   static async getAll(req: AuthRequest, res: Response<ApiResponse<IPost[]>>) {
     try {
       const posts = await Post.findAll({
@@ -180,11 +210,10 @@ export class PostController {
         updated_at: post.updated_at
           ? new Date(post.updated_at as Date | string).toISOString()
           : null,
-        image: post.image
-          ? `http://localhost:5000${post.image}`
-          : 'http://localhost:5000/uploads/default.jpg'
+        images: post.images && Array.isArray(post.images) && post.images.length > 0
+          ? post.images.map(image => `http://localhost:5000${image}`)
+          : ['http://localhost:5000/uploads/default.jpg']
       }));
-
 
       return res.json({
         message: 'Posts obtenidos con éxito',
@@ -194,7 +223,52 @@ export class PostController {
       console.error('Error al obtener posts:', error);
       return res.status(500).json({
         message: 'Error al obtener posts',
-        error
+        error: error instanceof Error ? error.message : 'Error desconocido'
+      });
+    }
+  }
+
+  // Opcional: Método para eliminar una imagen específica de un post
+  static async removeImage(req: AuthRequest, res: Response<ApiResponse<IPost>>) {
+    const { id } = req.params;
+    const { imageIndex } = req.body;
+
+    try {
+      const post = await Post.findByPk(id);
+
+      if (!post) {
+        return res.status(404).json({
+          message: 'Post no encontrado'
+        });
+      }
+
+      if (!Array.isArray(post.images) || imageIndex >= post.images.length) {
+        return res.status(400).json({
+          message: 'Índice de imagen inválido'
+        });
+      }
+
+      const updatedImages = post.images.filter((_, index) => index !== imageIndex);
+
+      const updatedPost = await post.update({
+        images: updatedImages
+      });
+
+      // Format the response
+      const formattedPost = {
+        ...updatedPost.get({ plain: true }),
+        images: updatedImages.map(image => `http://localhost:5000${image}`)
+      };
+
+      return res.json({
+        message: 'Imagen eliminada con éxito',
+        data: formattedPost
+      });
+    } catch (error) {
+      console.error('Error al eliminar imagen:', error);
+      return res.status(500).json({
+        message: 'Error al eliminar la imagen',
+        error: error instanceof Error ? error.message : 'Error desconocido'
       });
     }
   }

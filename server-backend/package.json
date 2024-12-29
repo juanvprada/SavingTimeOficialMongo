@@ -4,7 +4,10 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "dev": "ts-node-dev --respawn ./src/app.ts"
+    "dev": "ts-node-dev --respawn ./src/app.ts",
+    "migrate": "ts-node ./migrations/index.ts migrate",
+    "migrate:down": "ts-node ./migrations/index.ts down",
+    "migrate:create": "ts-node ./migrations/create-migration.ts"
   },
   "keywords": [],
   "author": "",
@@ -25,6 +28,7 @@
     "mysql2": "^3.11.4",
     "sequelize": "^6.37.5",
     "ts-node": "^10.9.2",
+    "umzug": "^3.8.2",
     "uuid": "^10.0.0"
   },
   "devDependencies": {

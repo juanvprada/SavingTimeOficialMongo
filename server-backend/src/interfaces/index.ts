@@ -11,7 +11,7 @@ export interface IPost extends BaseModel {
   name: string;
   kindOfPost: PostType;
   description: string;
-  image?: string;
+  images: string[] | null;
   userId: UUID;
 }
 
