@@ -1,55 +1,63 @@
-import { DataTypes, Model } from 'sequelize';
+import { DataTypes } from 'sequelize';
 import { sequelize } from '../database/sequelize';
-import User from './userModel';
-import Post from './postModel';
+import { BaseSequelizeModel, baseModelConfig } from './BaseModel';
+import { ILike } from '../interfaces';
+import { UUID } from '../types';
 
-class Like extends Model {
-  public id!: number;
-  public postId!: string;
-  public userId!: number;
+export class Like extends BaseSequelizeModel<ILike> {
+  public postId!: UUID;
+  public userId!: UUID;
 
-  // Método de clase para obtener la cantidad de likes de un post
-  public static async getLikesByPost(postId: string): Promise<number> {
-    const likes = await Like.count({ where: { postId } });
-    return likes;
+  public static async getLikesByPost(postId: UUID): Promise<number> {
+    return await Like.count({ where: { postId } });
   }
 
-  // Método para definir las asociaciones
-  static associate() {
-    Like.belongsTo(User, { foreignKey: 'userId' });
-    Like.belongsTo(Post, { foreignKey: 'postId' });
-    User.hasMany(Like, { foreignKey: 'userId' });
-    Post.hasMany(Like, { foreignKey: 'postId' });
+  public static associate(): void {
+    const { User, Post } = require('./index');
+    Like.belongsTo(User, { 
+      foreignKey: 'userId',
+      as: 'user'
+    });
+    Like.belongsTo(Post, { 
+      foreignKey: 'postId',
+      as: 'post'
+    });
   }
 }
 
 Like.init({
   id: {
-    type: DataTypes.INTEGER.UNSIGNED,
-    autoIncrement: true,
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
   },
   postId: {
     type: DataTypes.UUID,
     allowNull: false,
     references: {
-      model: Post,
-      key: 'id',
-    },
+      model: 'posts',
+      key: 'id'
+    }
   },
   userId: {
-    type: DataTypes.INTEGER.UNSIGNED,
+    type: DataTypes.UUID,
     allowNull: false,
     references: {
-      model: User,
-      key: 'id',
-    },
-  },
+      model: 'users',
+      key: 'id'
+    }
+  }
 }, {
+  ...baseModelConfig,
   sequelize,
   modelName: 'Like',
   tableName: 'likes',
-  timestamps: false,
+  indexes: [
+    {
+      unique: true,
+      fields: ['postId', 'userId']
+    }
+  ]
 });
 
 export default Like;

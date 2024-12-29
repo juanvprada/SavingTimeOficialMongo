@@ -26,7 +26,7 @@ export const toggleLike = async (postId) => {
 //===================================================
 export const getLikesCount = async (postId) => {
   try {
-    const response = await axios.get(`${API_URL}/${postId}/likes`);
+    const response = await axios.get(`${API_URL}/${postId}/count`);
     return response.data;
   } catch (error) {
     console.error('Error al obtener el conteo de likes:', error);

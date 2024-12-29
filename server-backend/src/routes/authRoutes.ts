@@ -1,57 +1,34 @@
-import express, { Request, Response } from 'express';
-import { authMiddleware } from '../middleware/authMiddleware';
-import { loginUser, registerUser } from '../controllers/userController';
-import { loginValidation, validationHandler, registerValidation } from '../validations/blogValidation';
-import { likePostValidation, createPostValidation } from '../validations/blogValidation';
-import { toggleLike } from '../controllers/likeController';
-import { createPost } from '../controllers/postController';
-import { roleValidation } from '../middleware/authMiddleware';
+import { Router } from 'express';
+import { UserController } from '../controllers/userController';
+import { AuthMiddleware } from '../middleware/authMiddleware';
+import { ValidationMiddleware } from '../middleware/validation.middleware';
+import { AuthValidation } from '../validations/auth.validation';
 
-const router = express.Router();
+const router = Router();
 
-/* ====================
-   Registro de Usuario
-   ==================== */
-router.post('/registro', registerValidation, validationHandler, registerUser);
+router.post('/register', 
+  ValidationMiddleware.validate(AuthValidation.register),
+  UserController.register
+);
 
-/* ====================
-   Inicio de Sesión de Usuario
-   ==================== */
-router.post('/acceso', loginValidation, validationHandler, loginUser);
+router.post('/login',
+  ValidationMiddleware.validate(AuthValidation.login),
+  UserController.login
+);
 
-/* ====================
-   Perfil de Usuario (requiere autenticación)
-   ==================== */
-router.get('/perfil', authMiddleware, (req: Request & { user?: { userId: number; role: string } }, res: Response) => {
-    const userId = req.user?.userId;
-    const role = req.user?.role;
+router.post('/recuperar-password',
+  ValidationMiddleware.validate(AuthValidation.recoverPassword),
+  UserController.recoverPassword
+);
 
-    res.json({
-        message: 'Perfil de usuario',
-        userId,
-        role,
-    });
-});
+router.post('/reset-password',
+  ValidationMiddleware.validate(AuthValidation.resetPassword),
+  UserController.resetPassword
+);
 
-/* ====================
-   Dar "Like" a una Publicación (Usuarios pueden hacer esto)
-   ==================== */
-router.post('/like', likePostValidation, validationHandler, toggleLike);
-
-/* ====================
-   Crear un Nuevo Post (Solo Admin puede hacerlo)
-   ==================== */
-router.post('/posts', authMiddleware, roleValidation(['admin']), createPostValidation, validationHandler, createPost);
-
-/* ====================
-   Ruta Protegida para Actualizar Roles de Usuario (Solo Admin puede hacerlo)
-   ==================== */
-router.put('/actualizar-rol/:id', authMiddleware, roleValidation(['admin']), (req: Request, res: Response) => {
-    const { id } = req.params;
-    const { role } = req.body;
-
-    // Lógica para actualizar el rol
-    res.json({ message: `Rol de usuario con ID ${id} actualizado a ${role}` });
-});
+router.get('/profile',
+  AuthMiddleware.authenticate,
+  UserController.getProfile
+);
 
 export default router;

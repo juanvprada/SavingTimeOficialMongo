@@ -7,8 +7,8 @@ const Footer = () => (
     <div className="container mx-auto flex flex-col md:flex-row justify-between items-start px-4">
       {/* Logo o Nombre del Sitio */}
       <div className="mb-6 md:mb-0 flex-1">
-        <h2 className="text-2xl font-bold mb-4">Bio Blog</h2>
-        <p className="text-gray-400">Tu fuente de información para un estilo de vida sostenible y ecológico.</p>
+        <h2 className="text-2xl font-bold mb-4">Saving Time</h2>
+        <p className="text-gray-400">El arte de saber a dónde volver</p>
       </div>
       {/* Enlaces útiles */}
       <div className="mb-6 md:mb-0 flex-1">
@@ -42,7 +42,7 @@ const Footer = () => (
       </div>
     </div>
     <div className="border-t border-gray-700 mt-6 pt-4 text-center">
-      <p className="text-gray-400">&copy; 2024 Bio Blog. Todos los derechos reservados.</p>
+      <p className="text-gray-400">&copy; 2024 Saving Time. Todos los derechos reservados.</p>
     </div>
   </footer>
 );

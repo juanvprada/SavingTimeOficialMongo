@@ -1,56 +1,76 @@
-import { DataTypes, Model } from 'sequelize';
+import { DataTypes } from 'sequelize';
 import { sequelize } from '../database/sequelize';
-import User from './userModel';
-import Post from './postModel';
+import { BaseSequelizeModel, baseModelConfig } from './BaseModel';
+import { IComment } from '../interfaces';
+import { UUID } from '../types';
 
-class Comment extends Model {
-  public id!: number;
-  public postId!: string;
-  public userId!: string;
+export class Comment extends BaseSequelizeModel<IComment> {
+  public postId!: UUID;
+  public userId!: UUID;
   public content!: string;
   public created_at!: Date;
+  public updated_at!: Date;
 
-  static associate() {
-    Comment.belongsTo(User, { foreignKey: 'userId', as: 'user' });
-    Comment.belongsTo(Post, { foreignKey: 'postId' });
+  public static associate(): void {
+    const { User, Post } = require('./index');
+    Comment.belongsTo(User, { 
+      foreignKey: 'userId',
+      as: 'user'
+    });
+    Comment.belongsTo(Post, { 
+      foreignKey: 'postId',
+      as: 'post'
+    });
   }
 }
 
 Comment.init({
   id: {
-    type: DataTypes.INTEGER.UNSIGNED,
-    autoIncrement: true,
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
   },
   postId: {
     type: DataTypes.UUID,
     allowNull: false,
     references: {
-      model: Post,
-      key: 'id',
+      model: 'posts',
+      key: 'id'
     },
+    field: 'postId'
   },
   userId: {
     type: DataTypes.UUID,
     allowNull: false,
     references: {
-      model: User,
-      key: 'id',
+      model: 'users',
+      key: 'id'
     },
+    field: 'userId'
   },
   content: {
     type: DataTypes.TEXT,
     allowNull: false,
+    validate: {
+      notEmpty: true,
+      len: [1, 1000]
+    }
   },
   created_at: {
     type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
+    allowNull: false,
   },
+  updated_at: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  }
 }, {
+  ...baseModelConfig,
   sequelize,
   modelName: 'Comment',
   tableName: 'comments',
-  timestamps: false,
+  timestamps: true,
+  underscored: true,
 });
 
 export default Comment;

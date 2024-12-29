@@ -9,9 +9,12 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
+  // Obtener las funciones del store al inicio del componente
   const setToken = useStore((state) => state.setToken);
   const setRole = useStore((state) => state.setRole);
   const setUsername = useStore((state) => state.setUsername);
+  const setUserId = useStore((state) => state.setUserId);
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -21,20 +24,30 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
       return;
     }
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/acceso', { email, password });
-      const { token, role, name } = response.data;
+      const response = await axios.post('http://localhost:5000/api/auth/login', {
+        email,
+        password
+      });
 
-      if (token) {
-        setToken(token);
-        setRole(role);
-        setUsername(name);
+      const { data } = response.data;
+      console.log('Respuesta del servidor:', data);
+
+      if (data && data.token) {
+        setToken(data.token);
+        setRole(data.role);
+        setUsername(data.name);
+        setUserId(data.userId);
+
+        // Para verificar
+        console.log('userId guardado:', localStorage.getItem('userId'));
+
         navigate('/blog');
       } else {
-        setError('Correo electrónico o contraseña incorrectos.');
+        setError('Respuesta del servidor inválida');
       }
     } catch (error) {
-      console.error('Error:', error);
-      setError('No se recibió respuesta del servidor.');
+      console.error('Error completo:', error);
+      setError(error.response?.data?.message || 'Error al iniciar sesión');
     }
   };
 
@@ -42,9 +55,9 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
     <section className={`max-w-md mx-auto p-8 rounded-lg shadow-lg ${formBackground}`}>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="relative">
-          <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8A8B6C]" />
           <input
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 transition"
+            className="w-full pl-10 pr-4 py-2 border border-[#8A8B6C] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#C68B59] transition bg-transparent text-[#E3D5C7]"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -53,9 +66,9 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
           />
         </div>
         <div className="relative">
-          <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8A8B6C]" />
           <input
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 transition"
+            className="w-full pl-10 pr-4 py-2 border border-[#8A8B6C] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#C68B59] transition bg-transparent text-[#E3D5C7]"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -63,21 +76,21 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
             required
           />
         </div>
-        {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+        {error && <p className="text-[#C68B59] text-sm text-center">{error}</p>}
         <button
-          className="w-full bg-green-600 text-white font-medium py-3 rounded-lg hover:bg-green-700 shadow-md transition"
+          className="w-full bg-[#1B3A4B] text-white font-medium py-3 rounded-lg hover:bg-[#8A8B6C] shadow-md transition"
           type="submit"
         >
           Iniciar Sesión
         </button>
       </form>
       <p className="mt-6 text-center text-sm">
-        <span className={`hover:text-green-500 transition ${inputTextColor}`}>
+        <span className={`hover:text-[#C68B59] transition ${inputTextColor}`}>
           ¿Has olvidado tu contraseña?
         </span>{' '}
         <button
           onClick={() => navigate('/recuperar-password')}
-          className="text-green-600 hover:underline focus:outline-none"
+          className="text-[#C68B59] hover:text-[#8A8B6C] hover:underline focus:outline-none transition"
         >
           Recuperar contraseña
         </button>

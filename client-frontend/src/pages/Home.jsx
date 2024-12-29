@@ -1,36 +1,37 @@
 import React from "react";
-import { homeVid, handsImg, breadImg, marketImg } from "../utils";
+import { homeVid, handsImg, breadImg, marketImg, savingTimeImg } from "../utils";
 import Carousel from "../components/Carousel";
-// import hands from "../assets/news/hands.jpg";
-// import bread from "../assets/news/bread.jpg";
-// import market from "../assets/news/market.jpg";
-import AuthForm from '../components/AuthForm'; 
+import AuthForm from '../components/AuthForm';
 import useStore from '../store/store';
 import CookieConsent from '../components/CookieConsent';
 
 const Home = () => {
-  const isLoggedIn = useStore((state) => !!state.token); 
+  const isLoggedIn = useStore((state) => !!state.token);
   return (
     <div className="bg-gray-100 min-h-screen">
-      {/* Video de fondo */}
+      {/* Background image section */}
       <div className="relative">
-        <video autoPlay loop muted playsInline className="w-full h-screen object-cover">
-          <source src={homeVid} type="video/mp4" />
-          Tu navegador no soporta el elemento de video.
-        </video>
+        <div className="w-full h-screen relative">
+          <img
+            src={savingTimeImg}
+            alt="Background"
+            className="w-full h-full object-cover absolute inset-0"
+          />
 
-        {/* Título y AuthForm */}
-        <div className="absolute inset-0 flex flex-col sm:flex-row items-center justify-center bg-black bg-opacity-70 px-4">
-          <h1 className="text-white text-opacity-30 font-bold text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-10xl 2xl:text-11xl mb-4 mt-4 sm:mt-0 sm:mb-2">
-            Bio Blog
-          </h1>
-          {!isLoggedIn && (
-          <div className="w-full max-w-md mt-0 sm:ml-16 sm:mt-0 md:max-w-md">
-            <AuthForm textColor="text-white" inputTextColor="text-white" formBackground="bg-transparent" />
+          {/* Título y AuthForm */}
+          <div className="absolute inset-0 flex flex-col items-center bg-black bg-opacity-70 px-4">
+            <h1 className="hidden sm:block text-white text-opacity-30 font-bold text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-10xl 2xl:text-11xl mt-4 sm:mt-6 md:mt-8">
+              Saving Time
+            </h1>
+            {!isLoggedIn && (
+              <div className="w-full max-w-md -mt-8 sm:mt-16"> {/* Changed margin top values */}
+                <AuthForm textColor="text-white" inputTextColor="text-white" formBackground="bg-transparent" />
+              </div>
+            )}
           </div>
-          )}
-          </div>
+        </div>
       </div>
+
 
       {/* Sección adicional */}
       <section className="container mx-auto py-12 px-4">
@@ -61,7 +62,7 @@ const Home = () => {
             {/* Imagen */}
             <div className="w-1/2">
               <img
-                src={ handsImg }
+                src={handsImg}
                 alt="Reciclaje"
                 className="rounded-lg object-cover w-full h-full"
               />
@@ -86,7 +87,7 @@ const Home = () => {
             </div>
             <div className="w-1/2">
               <img
-                src={ breadImg }
+                src={breadImg}
                 alt="Reducir desperdicio de alimentos"
                 className="rounded-lg object-cover w-full h-full"
               />
@@ -113,7 +114,7 @@ const Home = () => {
             </div>
             <div className="w-1/2">
               <img
-                src={ marketImg}
+                src={marketImg}
                 alt="Iniciativas de sostenibilidad"
                 className="rounded-lg object-cover w-full h-full"
               />

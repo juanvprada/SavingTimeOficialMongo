@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { getPosts, deletePost } from '../services/services';
 import ButtonIcon from '../components/ButtonIcon';
 import { useNavigate, Link } from 'react-router-dom';
-import { Create } from './Createpost';
+import { Create } from '../components/PostForm';
 import IconCreate from '../components/IconCreate';
 import { getLikesCount, toggleLike } from '../services/likeServices';
+import { toast } from 'react-toastify';
 
 const Blog = () => {
   const [search, setSearch] = useState('');
@@ -14,41 +15,32 @@ const Blog = () => {
   const navigate = useNavigate();
   const role = localStorage.getItem('role');
   const token = localStorage.getItem('token');
+
   const fetchPosts = async () => {
     try {
-      const posts = await getPosts();
-      setArticles(posts);
-      const likesCountPromises = posts.map(post => getLikesCount(post.id));
-      const likesCounts = await Promise.all(likesCountPromises);
-      const initialLikes = {};
-      likesCounts.forEach((count, index) => {
-        initialLikes[posts[index].id] = count.count;
-      });
-      setLikes(initialLikes);
+      const postsData = await getPosts();
+      if (Array.isArray(postsData)) {
+        setArticles(postsData);
+        const likesCountPromises = postsData.map(post => getLikesCount(post.id));
+        const likesCounts = await Promise.all(likesCountPromises);
+        const initialLikes = {};
+        likesCounts.forEach((count, index) => {
+          initialLikes[postsData[index].id] = count.count;
+        });
+        setLikes(initialLikes);
+      } else {
+        console.error('La respuesta no es un array:', postsData);
+        setArticles([]);
+      }
     } catch (error) {
       console.error('Error al obtener los artículos:', error);
+      setArticles([]);
     }
   };
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const posts = await getPosts();
-        setArticles(posts);
-        const likesCountPromises = posts.map(post => getLikesCount(post.id));
-        const likesCounts = await Promise.all(likesCountPromises);
-        const initialLikes = {};
-        likesCounts.forEach((count, index) => {
-          initialLikes[posts[index].id] = count.count;
-        });
-        setLikes(initialLikes);
-      } catch (error) {
-        console.error('Error al obtener los artículos:', error);
-      }
-    };
-
     fetchPosts();
-  }, []);  
+  }, [])
 
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm("¿Estás seguro de que deseas eliminar este post?");
@@ -63,7 +55,7 @@ const Blog = () => {
   };
 
   const handleNewPost = async (newPost) => {
-    
+
     setArticles(prevArticles => [newPost, ...prevArticles]);
     await fetchPosts();
   };
@@ -84,25 +76,25 @@ const Blog = () => {
     }
   };
   // Filtramos los artículos según el término de búsqueda
-  const filteredArticles = articles.filter(article =>
+  const filteredArticles = Array.isArray(articles) ? articles.filter(article =>
     (article.name && article.name.toLowerCase().includes(search.toLowerCase())) ||
     (article.description && article.description.toLowerCase().includes(search.toLowerCase()))
-  );
+  ) : [];
 
   return (
-    <div className=" min-h-screen ">
-      <header className="bg-green-600 text-white py-8">
+    <div className="min-h-screen bg-[#F5F2ED]"> {/* Changed from default to off-white */}
+      <header className="bg-[#1B3A4B] text-[#F5F2ED] py-8"> {/* Changed from green to navy */}
         <div className="container mx-auto text-center">
-          <h1 className="text-4xl font-bold">Bienvenidos a Bio Blog</h1>
-          <p className="mt-4 text-xl">Tu fuente de información para un estilo de vida sostenible y ecológico.</p>
+          <h1 className="text-4xl font-bold">Bienvenidos a Saving Time</h1>
+          <p className="mt-4 text-xl text-[#E3D5C7]">Saber a dónde volver </p>
         </div>
       </header>
-      <h2 className="text-3xl font-semibold text-center text-gray-800 mt-4">Todas las publicaciones</h2>
+      <h2 className="text-3xl font-semibold text-center text-[#1B3A4B] mt-4">Todas las publicaciones</h2>
       <section className="container mx-auto py-12 px-4">
         <div className="mb-8 text-center">
           <input
             type="text"
-            className="px-4 py-2 w-full md:w-1/2 border border-green-600 rounded-md"
+            className="px-4 py-2 w-full md:w-1/2 border border-[#8A8B6C] rounded-md focus:border-[#C68B59] focus:ring-[#C68B59]"
             placeholder="Buscar..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -110,51 +102,53 @@ const Blog = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {filteredArticles.map((article) => (
-            <div key={article.id} className="bg-white shadow-md rounded-lg overflow-hidden">
+            <div
+              key={article.id}
+              className="bg-white shadow-lg rounded-xl overflow-hidden hover:shadow-2xl transition-transform transform hover:-translate-y-1"
+            >
               <img
                 src={article.image}
                 alt={article.name}
-                className="w-full h-48 object-cover"
+                className="w-full h-52 object-cover"
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src = 'ruta_a_imagen_por_defecto';
+                  e.target.src = 'http://localhost:5000/uploads/default.jpg';
                 }}
               />
               <div className="p-6">
-                <h3 className="text-xl font-bold text-green-600 mb-2">{article.name}</h3>
-                <p className="text-gray-700 mb-4 line-clamp-4">{article.description}</p>
+                <h3 className="text-2xl font-semibold text-[#1B3A4B] mb-3">{article.name}</h3>
+                <p className="text-[#8A8B6C] mb-4 line-clamp-4 leading-relaxed">{article.description}</p>
                 <div className="flex justify-between items-center">
-                  {/* Icono de Editar visible solo para admin logueado */}
                   {role === 'admin' && token && (
                     <ButtonIcon
                       icon="fas fa-edit"
                       onClick={() => navigate(`/editar/${article.id}`)}
                       title="Editar"
+                      className="text-[#8A8B6C] hover:text-[#1B3A4B]"
                     />
                   )}
-                  {/* Icono de Eliminar visible solo para admin logueado */}
                   {role === 'admin' && token && (
                     <ButtonIcon
                       icon="fas fa-trash"
                       onClick={() => handleDelete(article.id)}
                       title="Eliminar"
+                      className="text-[#C68B59] hover:text-[#1B3A4B]"
                     />
                   )}
-                  {/* Icono de corazón visible para usuarios logueados */}
                   {token && (
                     <div className="flex items-center">
                       <ButtonIcon
-                        icon={likes[article.id] ? "fas fa-heart text-red-500" : "far fa-heart"}
-                        onClick={() => handleLike(article.id)} 
+                        icon={likes[article.id] ? "fas fa-heart text-[#C68B59]" : "far fa-heart"}
+                        onClick={() => handleLike(article.id)}
                         title="Dar like"
                       />
-                      <span className="ml-2">{likes[article.id] || 0}</span>
+                      <span className="ml-2 text-[#8A8B6C]">{likes[article.id] || 0}</span>
                     </div>
                   )}
                 </div>
                 <Link
                   to={`/post/${article.id}`}
-                  className="text-green-600 font-semibold hover:underline"
+                  className="text-[#1B3A4B] font-medium hover:text-[#C68B59] transition-colors mt-6 inline-block"
                 >
                   Leer más...
                 </Link>
@@ -163,7 +157,7 @@ const Blog = () => {
           ))}
         </div>
 
-        {/* Componente de creación de nuevo post, visible solo para admin logueado */}
+
         {showCreate && role === 'admin' && token && (
           <Create
             onCancel={() => setShowCreate(false)}
@@ -171,9 +165,8 @@ const Blog = () => {
           />
         )}
 
-        {/* Ícono de crear nuevo post visible solo para admin logueado */}
         {role === 'admin' && token && (
-          <IconCreate onClick={() => setShowCreate(true)} />
+          <IconCreate onClick={() => setShowCreate(true)} className="text-[#1B3A4B] hover:text-[#C68B59]" />
         )}
       </section>
     </div>

@@ -13,9 +13,13 @@ const handleError = (error, action) => {
 //==================
 export const createPost = async (formData) => {
   try {
-    const response = await axios.post(API_URL, formData);
+    const response = await axios.post(API_URL, formData, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
     response.data.image = `${BASE_IMAGE_URL}${response.data.image}`;
-    return response.data; 
+    return response.data;
   } catch (error) {
     handleError(error, "crear Post");
   }
@@ -27,7 +31,8 @@ export const createPost = async (formData) => {
 export const getPosts = async () => {
   try {
     const response = await axios.get(API_URL);
-    return response.data;
+    console.log('Posts obtenidos:', response.data);
+    return response.data.data;
   } catch (error) {
     handleError(error, "obtener Posts");
   }
@@ -50,7 +55,12 @@ export const getOnePost = async (id) => {
 //================
 export const updatePost = async (id, postData) => {
   try {
-    const response = await axios.put(`${API_URL}/${id}`, postData);
+    const response = await axios.put(`${API_URL}/${id}`, postData, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': postData instanceof FormData ? 'multipart/form-data' : 'application/json',
+      },
+    });
     return response.data;
   } catch (error) {
     handleError(error, "actualizar Post");
@@ -62,7 +72,11 @@ export const updatePost = async (id, postData) => {
 //================
 export const deletePost = async (id) => {
   try {
-    const response = await axios.delete(`${API_URL}/${id}`);
+    const response = await axios.delete(`${API_URL}/${id}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
     return response;
   } catch (error) {
     handleError(error, "eliminar Post");

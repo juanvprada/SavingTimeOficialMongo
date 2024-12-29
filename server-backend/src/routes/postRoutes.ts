@@ -1,16 +1,34 @@
-import express from 'express';
-import { getPosts, createPost, deletePost, getPostById, updatePost } from '../controllers/postController';
-import { upload } from '../middleware/multer';
+import { Router } from 'express';
+import { PostController } from '../controllers/postController';
+import { AuthMiddleware } from '../middleware/authMiddleware';
+import { UploadMiddleware } from '../middleware/upload.middleware';
+import { ValidationMiddleware } from '../middleware/validation.middleware';
+import { PostValidation } from '../validations/post.validation';
 
-const router = express.Router();
+const router = Router();
 
-// Rutas
-router.get('/', getPosts); 
-router.get('/:id', getPostById); 
-router.post('/', upload.single('image'), createPost);
-router.put('/:id', upload.single('image'), updatePost); 
-router.delete('/:id', deletePost); 
+router.get('/', PostController.getAll);
 
+router.get('/:id', PostController.getById);
+
+router.post('/',
+  AuthMiddleware.authenticate,
+  UploadMiddleware.single('image'),
+  ValidationMiddleware.validate(PostValidation.create),
+  PostController.create
+);
+
+router.put('/:id',
+  AuthMiddleware.authenticate,
+  UploadMiddleware.single('image'),
+  ValidationMiddleware.validate(PostValidation.update),
+  PostController.update
+);
+
+router.delete('/:id',
+  AuthMiddleware.authenticate,
+  PostController.delete
+);
 
 export default router;
 

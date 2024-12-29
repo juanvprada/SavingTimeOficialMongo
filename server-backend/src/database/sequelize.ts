@@ -1,20 +1,32 @@
 import { Sequelize } from 'sequelize';
-import dotenv from 'dotenv';
+import mysql from 'mysql2/promise';
+import { CONFIG } from '../config/constants';
 
-dotenv.config();
-
+// Conexión Sequelize
 export const sequelize = new Sequelize(
-  process.env.DB_NAME as string,
-  process.env.DB_USER as string,
-  process.env.DB_PASSWORD as string,
+  CONFIG.DB.NAME,
+  CONFIG.DB.USER,
+  CONFIG.DB.PASSWORD,
   {
-    host: process.env.DB_HOST,
+    host: CONFIG.DB.HOST,
     dialect: 'mysql',
-    logging: false,
+    logging: CONFIG.DB.LOGGING ? (msg) => console.log(msg) : false,
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000,
+      idle: 10000
+    }
   }
 );
 
-// Probar la conexión
-sequelize.authenticate()
-  .then(() => console.log('Conexión a la base de datos con Sequelize exitosa'))
-  .catch(err => console.error('Error de conexión a la base de datos:', err));
+// Pool de conexiones MySQL
+export const mysqlPool = mysql.createPool({
+  host: CONFIG.DB.HOST,
+  user: CONFIG.DB.USER,
+  password: CONFIG.DB.PASSWORD,
+  database: CONFIG.DB.NAME,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
+});

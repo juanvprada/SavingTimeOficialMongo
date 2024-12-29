@@ -1,11 +1,16 @@
-import express from 'express';
-import { updateUserRole } from '../controllers/roleController';
-import { authMiddleware } from '../middleware/authMiddleware';
+import { Router } from 'express';
+import { RoleController } from '../controllers/roleController';
+import { AuthMiddleware } from '../middleware/authMiddleware';
+import { ValidationMiddleware } from '../middleware/validation.middleware';
+import { RoleValidation } from '../validations/role.validation';
 
-const router = express.Router();
+const router = Router();
 
-// Ruta para actualizar el rol de un usuario
-router.patch('/:id/role', authMiddleware, updateUserRole);
-
+router.put('/:id',
+  AuthMiddleware.authenticate,
+  AuthMiddleware.authorize(['admin']),
+  ValidationMiddleware.validate(RoleValidation.update),
+  RoleController.updateUserRole
+);
 
 export default router;

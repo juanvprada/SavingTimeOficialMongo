@@ -1,21 +1,32 @@
-import { DataTypes, Model } from 'sequelize';
+import { DataTypes } from 'sequelize';
 import { sequelize } from '../database/sequelize';
+import { BaseSequelizeModel, baseModelConfig } from './BaseModel';
+import { IPost, PostType } from '../interfaces';
+import { UUID } from '../types';
 
-class Post extends Model {
-  public id!: string;
+export class Post extends BaseSequelizeModel<IPost> {
   public name!: string;
-  public kindOfPost!: string;
+  public kindOfPost!: PostType;
   public description!: string;
   public image?: string;
+  public userId!: UUID;
 
-  // Método para definir las asociaciones
-  static associate() {
-    const Comment = require('./commentModel').default;
-    const Like = require('./likeModel').default;
-    Post.hasMany(Comment, { foreignKey: 'postId' });
-    Post.hasMany(Like, { foreignKey: 'postId' });
-    Comment.belongsTo(Post, { foreignKey: 'postId' });
-    Like.belongsTo(Post, { foreignKey: 'postId' });
+  public static associate(models: any): void {
+    const { User, Comment, Like } = models; 
+    Post.belongsTo(User, {
+      foreignKey: 'userId',
+      as: 'user'
+    });
+    Post.hasMany(Comment, {
+      foreignKey: 'postId',
+      as: 'comments',
+      onDelete: 'CASCADE'
+    });
+    Post.hasMany(Like, {
+      foreignKey: 'postId',
+      as: 'likes',
+      onDelete: 'CASCADE'
+    });
   }
 }
 
@@ -28,23 +39,43 @@ Post.init({
   name: {
     type: DataTypes.STRING,
     allowNull: false,
+    validate: {
+      notEmpty: true,
+      len: [2, 255]
+    }
   },
-  kindOfPost: {
-    type: DataTypes.STRING,
+  kindOfPost: { 
+    type: DataTypes.ENUM(...Object.values(PostType)),
     allowNull: false,
+    validate: {
+      isIn: [Object.values(PostType)]
+    }
   },
   description: {
     type: DataTypes.TEXT,
     allowNull: false,
+    validate: {
+      notEmpty: true
+    }
   },
   image: {
     type: DataTypes.STRING,
+    allowNull: true
   },
+  userId: { 
+    type: DataTypes.UUID,
+    allowNull: false,
+    references: {
+      model: 'users',
+      key: 'id'
+    }
+  }
 }, {
+  ...baseModelConfig,
   sequelize,
   modelName: 'Post',
   tableName: 'posts',
-  timestamps: false,
+  underscored: false 
 });
 
 export default Post;

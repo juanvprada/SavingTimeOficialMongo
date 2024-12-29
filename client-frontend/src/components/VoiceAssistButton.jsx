@@ -15,10 +15,11 @@ const VoiceAssistButton = ({ text }) => {
   return (
     <button
       onClick={speakText}
-      className="text-2xl cursor-pointer  bg-green-500 text-white rounded-full w-7 h-7 flex items-center justify-center transition-colors duration-300 hover:bg-green-600"
+      className="text-2xl cursor-pointer bg-[#1B3A4B] text-[#F5F2ED] rounded-full w-7 h-7 flex items-center justify-center transition-colors duration-300 hover:bg-[#C68B59] focus:outline-none focus:ring-2 focus:ring-[#8A8B6C] focus:ring-offset-2"
       title="Reproducir ayuda en voz"
+      aria-label="Reproducir texto en voz alta"
     >
-      <FaVolumeUp />
+      <FaVolumeUp className="w-4 h-4" />
     </button>
   );
 };
