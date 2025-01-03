@@ -16,7 +16,7 @@ const AuthForm = ({ textColor = 'text-gray-500', inputTextColor = 'text-gray-500
     };
 
     return (
-        <section className="max-w-full sm:max-w-md mx-auto p-4 bg-transparent rounded-lg mt-8 overflow-y-auto"> {/* Changed mt-0 to mt-8 */}
+        <section className="max-w-full sm:max-w-md mx-auto p-4 bg-transparent rounded-lg mt-4 sm:mt-0 overflow-y-auto">
             <div className="text-center mb-6"> {/* Increased from mb-4 */}
                 <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-[#F5F2ED] mb-3"> {/* Increased from mb-2 */}
                     {isLogin ? 'Iniciar Sesión' : 'Registro de Usuario'}

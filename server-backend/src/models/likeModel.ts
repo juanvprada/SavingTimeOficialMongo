@@ -14,11 +14,11 @@ export class Like extends BaseSequelizeModel<ILike> {
 
   public static associate(): void {
     const { User, Post } = require('./index');
-    Like.belongsTo(User, { 
+    Like.belongsTo(User, {
       foreignKey: 'userId',
       as: 'user'
     });
-    Like.belongsTo(Post, { 
+    Like.belongsTo(Post, {
       foreignKey: 'postId',
       as: 'post'
     });
@@ -48,16 +48,18 @@ Like.init({
     }
   }
 }, {
+  hooks: {
+    beforeCreate: (like) => {
+      console.log('Creating like:', like.toJSON());
+    },
+    beforeDestroy: (like) => {
+      console.log('Destroying like:', like.toJSON());
+    }
+  },
   ...baseModelConfig,
   sequelize,
   modelName: 'Like',
   tableName: 'likes',
-  indexes: [
-    {
-      unique: true,
-      fields: ['postId', 'userId']
-    }
-  ]
+  timestamps: false  // Add this line
 });
-
 export default Like;

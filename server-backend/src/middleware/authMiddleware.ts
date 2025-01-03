@@ -5,23 +5,22 @@ import { AuthRequest, AuthUser } from '../types/request.types';
 
 export class AuthMiddleware {
   static authenticate(req: AuthRequest, res: Response, next: NextFunction) {
+    console.log('Headers:', req.headers);
     const token = req.headers.authorization?.split(' ')[1];
-
+    console.log('Token:', token);
+  
     if (!token) {
-      return res.status(401).json({ 
-        message: 'Acceso denegado. Token no proporcionado.' 
-      });
+      return res.status(401).json({ message: 'No token provided' });
     }
-
+  
     try {
       const verified = jwt.verify(token, CONFIG.JWT.SECRET) as AuthUser;
+      console.log('Verified token:', verified);
       req.user = verified;
       next();
     } catch (error) {
-      console.error('Error de autenticación:', error);
-      return res.status(401).json({ 
-        message: 'Token no válido.' 
-      });
+      console.error('Auth error:', error);
+      return res.status(401).json({ message: 'Invalid token' });
     }
   }
 

@@ -6,17 +6,19 @@ const API_URL = 'http://localhost:5000/api/likes';
 // Función para alternar el like de un post
 //==========================================
 export const toggleLike = async (postId) => {
+  const token = localStorage.getItem('token');
+  console.log('Token:', token); // Debug token
+
   try {
-    const token = localStorage.getItem('token');
     const response = await axios.post(`${API_URL}/${postId}/toggle`, {}, {
       headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
+        Authorization: `Bearer ${token}`
+      }
     });
+    console.log('Response:', response); // Debug response
     return response.data;
   } catch (error) {
-    console.error('Error al manejar el like:', error.response ? error.response.data : error.message);
+    console.log('Error details:', error.response?.data); // Debug error
     throw error;
   }
 };

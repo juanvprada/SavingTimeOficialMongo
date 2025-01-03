@@ -24,7 +24,7 @@ const Home = () => {
               Saving Time
             </h1>
             {!isLoggedIn && (
-              <div className="w-full max-w-md -mt-8 sm:mt-16"> {/* Changed margin top values */}
+              <div className="w-full max-w-md -mt-8 sm:mt-0 md:-mt-2 lg:-mt-4">
                 <AuthForm textColor="text-white" inputTextColor="text-white" formBackground="bg-transparent" />
               </div>
             )}

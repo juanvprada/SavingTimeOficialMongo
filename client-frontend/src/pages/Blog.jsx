@@ -85,14 +85,15 @@ const Blog = () => {
       return;
     }
 
-    const trimmedPostId = postId.trim();
-
     try {
-      const response = await toggleLike(trimmedPostId);
-      setLikes(prev => ({
-        ...prev,
-        [trimmedPostId]: response.liked ? (prev[trimmedPostId] || 0) + 1 : prev[trimmedPostId] - 1,
-      }));
+      const response = await toggleLike(postId);
+      // Update local state based on the response
+      if (response.data?.liked !== undefined) {
+        setLikes(prev => ({
+          ...prev,
+          [postId]: response.data.liked ? (prev[postId] || 0) + 1 : Math.max((prev[postId] || 0) - 1, 0)
+        }));
+      }
     } catch (error) {
       console.error('Error al manejar el like:', error);
       toast.error('Error al procesar el like');
