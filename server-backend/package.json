@@ -7,7 +7,10 @@
     "dev": "ts-node-dev --respawn ./src/app.ts",
     "migrate": "ts-node ./migrations/index.ts migrate",
     "migrate:down": "ts-node ./migrations/index.ts down",
-    "migrate:create": "ts-node ./migrations/create-migration.ts"
+    "migrate:create": "ts-node ./migrations/create-migration.ts",
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "start": "node /app/dist/src/app.js"
   },
   "keywords": [],
   "author": "",
