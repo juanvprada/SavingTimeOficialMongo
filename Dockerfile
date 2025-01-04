@@ -1,27 +1,39 @@
-# Etapa 1: Construcción del frontend
+# Etapa 1: Construcción del Frontend
 FROM node:18 AS frontend
-WORKDIR /app/client-frontend
-COPY client-frontend/ ./
-RUN npm install && npm run build
 
-# Etapa 2: Construcción del backend
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN npm install
+
+COPY frontend/ ./
+RUN npm run build
+
+
+# Etapa 2: Construcción del Backend
 FROM node:18 AS backend
-WORKDIR /app/server-backend
-COPY server-backend/ ./
-RUN npm install && npm run build
 
-# Etapa final: Copiar y ejecutar
+WORKDIR /app
+COPY server/package*.json ./
+COPY server/tsconfig.json ./
+RUN npm install
+
+COPY server/src ./src
+RUN npm run build
+
+
+# Etapa 3: Servir con Node.js
 FROM node:18
+
 WORKDIR /app
 
-# Copiar backend y frontend (ajustado para `build` en lugar de `dist`)
-COPY --from=backend /app/server-backend/dist ./dist
-COPY --from=frontend /app/client-frontend/build ./frontend
+# Copiar el backend compilado
+COPY --from=backend /app/dist ./dist
+COPY server/package*.json ./
+RUN npm install --production
 
-EXPOSE 8080
+# Copiar el frontend compilado
+COPY --from=frontend /app/frontend/build ./frontend/build
 
-# Ejecutar backend
+# Servir el frontend y redireccionar APIs al backend
 CMD ["node", "dist/app.js"]
-
-
 

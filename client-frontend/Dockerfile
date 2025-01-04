@@ -1,25 +1,21 @@
-# Usa Node.js 18 como base
+# Usar Node.js como base
 FROM node:18
 
-# Establecer directorio de trabajo
+# Directorio de trabajo
 WORKDIR /app
 
 # Copiar package.json e instalar dependencias
-COPY package*.json ./
+COPY client-frontend/package*.json ./
 RUN npm install
 
-# Copiar el resto del código fuente
-COPY . .
+# Copiar el resto del código fuente (incluyendo public/ y src/)
+COPY client-frontend/ ./
 
-# Construir el frontend
+# Construcción del frontend
 RUN npm run build
 
-# Exponer puerto para servir frontend
 EXPOSE 3000
-
-# Servir el frontend usando 'serve' o modo preview
-CMD ["npx", "serve", "-s", "build"]
-
+CMD ["npm", "start"]
 
 
 

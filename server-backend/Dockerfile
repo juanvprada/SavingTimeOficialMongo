@@ -1,7 +1,7 @@
-# Usa Node.js 18 como base
+# Usar Node.js como base
 FROM node:18
 
-# Establecer directorio de trabajo
+# Directorio de trabajo
 WORKDIR /app
 
 # Copiar package.json e instalar dependencias
@@ -11,12 +11,12 @@ RUN npm install
 # Copiar el resto del código
 COPY . .
 
-# Compilar TypeScript (si aplica)
+# Compilar TypeScript
 RUN npm run build
 
-# Exponer puerto del backend
+# Exponer el puerto 5000 para el backend
 EXPOSE 5000
 
-# Ejecutar backend
+# Ejecutar el backend
 CMD ["node", "dist/app.js"]
 
