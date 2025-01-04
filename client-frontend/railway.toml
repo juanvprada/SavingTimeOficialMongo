@@ -1,0 +1,11 @@
+{
+  "name": "your-app",
+  "version": "1.0.0",
+  "scripts": {
+    "install:all": "cd server-backend && npm install && cd ../client-frontend && npm install",
+    "build:backend": "cd server-backend && npm run build",
+    "build:frontend": "cd client-frontend && npm run build",
+    "build": "npm run install:all && npm run build:backend && npm run build:frontend",
+    "start": "cd server-backend && node dist/app.js"
+  }
+}
