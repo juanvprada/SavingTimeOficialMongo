@@ -28,8 +28,6 @@ dist-ssr
 *.sln
 *.sw?
 
-*.mp4
-client-frontend/src/assets/home-video/
 
 # Environment variables
 client-frontend/.env
