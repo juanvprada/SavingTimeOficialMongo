@@ -4,7 +4,6 @@ server-backend/src/uploads
 client-frontend/src/blog-content
 *.jpeg
 *.jpg
-*.png
 *.webp
 .vite
 .vscode
