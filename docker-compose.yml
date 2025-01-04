@@ -15,10 +15,10 @@ services:
 
   frontend:
     build:
-      context: .
-      dockerfile: client-frontend/Dockerfile
+      context: ./client-frontend
+      dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "5173:3000"
     environment:
       - NODE_ENV=production
     volumes:
