@@ -17,8 +17,8 @@ RUN npm run build
 # Exponer puerto para servir frontend
 EXPOSE 3000
 
-# Servir frontend con 'serve' o modo preview
-CMD ["npx", "serve", "-s", "dist"]
+# Servir el frontend usando 'serve' o modo preview
+CMD ["npx", "serve", "-s", "build"]
 
 
 

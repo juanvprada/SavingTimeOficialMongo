@@ -14,9 +14,9 @@ RUN npm install && npm run build
 FROM node:18
 WORKDIR /app
 
-# Copiar backend y frontend
+# Copiar backend y frontend (ajustado para `build` en lugar de `dist`)
 COPY --from=backend /app/server-backend/dist ./dist
-COPY --from=frontend /app/client-frontend/dist ./frontend
+COPY --from=frontend /app/client-frontend/build ./frontend
 
 EXPOSE 8080
 
