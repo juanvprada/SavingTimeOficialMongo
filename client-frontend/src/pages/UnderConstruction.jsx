@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { construccionImg } from '../utils';
+import { construccionImg } from '../utils/index';
 import { Link } from 'react-router-dom';
 
 const UnderConstruction = () => {
