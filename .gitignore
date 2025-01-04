@@ -2,9 +2,7 @@ client-frontend/node_modules
 server-backend/node_modules
 server-backend/src/uploads
 client-frontend/src/blog-content
-*.jpeg
-*.jpg
-*.webp
+
 .vite
 .vscode
 
