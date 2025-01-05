@@ -22,9 +22,6 @@ RUN npm install --only=production
 COPY --from=builder /app/dist ./dist
 COPY --from=client /app/client/build ./public
 
-# Copiar el archivo .env si existe
-COPY server-backend/.env ./
-
 # Variables de entorno necesarias
 ENV NODE_ENV=production
 ENV PORT=3000
