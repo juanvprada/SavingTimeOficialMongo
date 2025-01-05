@@ -4,6 +4,8 @@ WORKDIR /app/client
 COPY client-frontend/package*.json ./
 RUN npm install
 COPY client-frontend/ .
+# Configurar la URL del backend para producción
+ENV VITE_API_URL=http://localhost:5000
 RUN npm run build
 
 # Etapa de construcción del servidor
@@ -23,9 +25,8 @@ COPY --from=builder /app/dist ./dist
 COPY --from=client /app/client/build ./public
 
 ENV NODE_ENV=production
-ENV PORT=3000
+ENV PORT=5000  # Cambiado a 5000 para coincidir con tu configuración
 
-EXPOSE 3000
+EXPOSE 5000  # Cambiado a 5000
 
-# Ajustar el comando para usar la ruta correcta
 CMD ["node", "dist/app.js"]
