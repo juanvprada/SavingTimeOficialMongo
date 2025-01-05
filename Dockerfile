@@ -12,17 +12,24 @@ WORKDIR /app
 COPY server-backend/package*.json ./
 RUN npm install
 COPY server-backend/ .
+# Construir el proyecto TypeScript
 RUN npm run build
 
 # Etapa de producción
 FROM node:18-alpine
 WORKDIR /app
-COPY --from=builder /app/package*.json ./
+# Copiar package.json y package-lock.json
+COPY server-backend/package*.json ./
+# Instalar SOLO dependencias de producción
+RUN npm install --only=production
+# Copiar los archivos compilados
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=client /app/client/build ./public
+# Copiar los archivos estáticos del cliente (corregimos la ruta para Vite)
+COPY --from=client /app/client/dist ./public
 
+ENV NODE_ENV=production
 ENV PORT=3000
 EXPOSE 3000
 
-CMD ["node", "dist/src/app.js"]
+# Especificar el comando de inicio
+CMD ["node", "./dist/src/app.js"]
