@@ -1,13 +1,14 @@
-FROM node:18
+# server/Dockerfile
+FROM node:18-alpine
 
 WORKDIR /app
 
 COPY package*.json ./
-COPY tsconfig.json ./
+
 RUN npm install
 
-COPY src ./src
-RUN npm run build
+COPY . .
 
-EXPOSE 5000
-CMD ["node", "dist/app.js"]
+EXPOSE 3000
+
+CMD ["npm", "start"]
