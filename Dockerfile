@@ -12,24 +12,29 @@ WORKDIR /app
 COPY server-backend/package*.json ./
 RUN npm install
 COPY server-backend/ .
-# Construir el proyecto TypeScript
 RUN npm run build
 
 # Etapa de producción
 FROM node:18-alpine
 WORKDIR /app
-# Copiar package.json y package-lock.json
 COPY server-backend/package*.json ./
-# Instalar SOLO dependencias de producción
 RUN npm install --only=production
-# Copiar los archivos compilados
 COPY --from=builder /app/dist ./dist
-# Copiar los archivos estáticos del cliente (corregido para CRA)
 COPY --from=client /app/client/build ./public
 
+# Copiar el archivo .env si existe
+COPY server-backend/.env ./
+
+# Variables de entorno necesarias
 ENV NODE_ENV=production
 ENV PORT=3000
+
+# Verificar la estructura de archivos
+RUN ls -la && \
+    ls -la dist/src && \
+    echo "Current working directory: $PWD"
+
 EXPOSE 3000
 
-# Especificar el comando de inicio
-CMD ["node", "./dist/src/app.js"]
+# Comando específico para iniciar la aplicación
+CMD ["node", "dist/src/app.js"]
