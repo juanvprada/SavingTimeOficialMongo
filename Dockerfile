@@ -4,6 +4,12 @@ WORKDIR /app/client
 COPY client/package*.json ./
 RUN npm install
 COPY client/ .
+# Etapa de construcción del cliente
+FROM node:18-alpine as client
+WORKDIR /app/client
+COPY client/package*.json ./
+RUN npm install
+COPY client/ .
 RUN npm run build
 
 # Etapa de construcción del servidor
