@@ -25,8 +25,8 @@ COPY --from=builder /app/dist ./dist
 COPY --from=client /app/client/build ./public
 
 ENV NODE_ENV=production
-ENV PORT=5000  # Cambiado a 5000 para coincidir con tu configuración
+ENV PORT=5000
 
-EXPOSE 5000  # Cambiado a 5000
+EXPOSE 5000
 
 CMD ["node", "dist/app.js"]
