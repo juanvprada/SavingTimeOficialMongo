@@ -13,6 +13,8 @@ COPY server-backend/package*.json ./
 RUN npm install
 COPY server-backend/ .
 RUN npm run build
+# Verificar la estructura después del build
+RUN ls -la dist && ls -la dist/src
 
 # Etapa de producción
 FROM node:18-alpine
@@ -22,16 +24,10 @@ RUN npm install --only=production
 COPY --from=builder /app/dist ./dist
 COPY --from=client /app/client/build ./public
 
-# Variables de entorno necesarias
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# Verificar la estructura de archivos
-RUN ls -la && \
-    ls -la dist/src && \
-    echo "Current working directory: $PWD"
-
 EXPOSE 3000
 
-# Comando específico para iniciar la aplicación
+# Ajustar el comando para usar la ruta correcta basada en tu tsconfig.json
 CMD ["node", "dist/src/app.js"]
