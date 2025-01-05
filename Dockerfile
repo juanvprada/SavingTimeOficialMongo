@@ -13,8 +13,6 @@ COPY server-backend/package*.json ./
 RUN npm install
 COPY server-backend/ .
 RUN npm run build
-# Verificar la estructura después del build
-RUN ls -la dist && ls -la dist/src
 
 # Etapa de producción
 FROM node:18-alpine
@@ -29,5 +27,5 @@ ENV PORT=3000
 
 EXPOSE 3000
 
-# Ajustar el comando para usar la ruta correcta basada en tu tsconfig.json
-CMD ["node", "dist/src/app.js"]
+# Ajustar el comando para usar la ruta correcta
+CMD ["node", "dist/app.js"]

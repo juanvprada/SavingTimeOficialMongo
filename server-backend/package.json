@@ -10,7 +10,7 @@
     "migrate:create": "ts-node ./migrations/create-migration.ts",
     "build": "tsc",
     "clean": "rm -rf dist",
-    "start": "node dist/src/app.js"
+    "start": "node dist/app.js"
   },
   "keywords": [],
   "author": "",
