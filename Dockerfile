@@ -24,8 +24,8 @@ COPY server-backend/package*.json ./
 RUN npm install --only=production
 # Copiar los archivos compilados
 COPY --from=builder /app/dist ./dist
-# Copiar los archivos estáticos del cliente (corregimos la ruta para Vite)
-COPY --from=client /app/client/dist ./public
+# Copiar los archivos estáticos del cliente (corregido para CRA)
+COPY --from=client /app/client/build ./public
 
 ENV NODE_ENV=production
 ENV PORT=3000
