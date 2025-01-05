@@ -7,15 +7,22 @@ COPY client-frontend/ .
 RUN npm run build
 
 # Etapa de construcción del servidor
-FROM node:18-alpine
+FROM node:18-alpine as builder
 WORKDIR /app
 COPY server-backend/package*.json ./
 RUN npm install
 COPY server-backend/ .
-# Cambiamos dist por build ya que create-react-app usa /build
+RUN npm run build
+
+# Etapa de producción
+FROM node:18-alpine
+WORKDIR /app
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=client /app/client/build ./public
 
 ENV PORT=3000
 EXPOSE 3000
 
-CMD ["npm", "start"]
+CMD ["node", "dist/src/app.js"]
