@@ -12,7 +12,8 @@ WORKDIR /app
 COPY server-backend/package*.json ./
 RUN npm install
 COPY server-backend/ .
-COPY --from=client /app/client/dist ./public
+# Cambiamos dist por build ya que create-react-app usa /build
+COPY --from=client /app/client/build ./public
 
 ENV PORT=3000
 EXPOSE 3000
