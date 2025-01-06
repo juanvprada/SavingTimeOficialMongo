@@ -20,7 +20,7 @@ RUN npm run build
 FROM node:18-alpine
 WORKDIR /app
 COPY server-backend/package*.json ./
-RUN npm install --only=production
+RUN npm install 
 COPY --from=builder /app/dist ./dist
 COPY --from=client /app/client/build ./public
 
