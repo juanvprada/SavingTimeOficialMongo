@@ -34,11 +34,11 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
       return;
     }
     try {
-      const response = await axios.post(`${API_URL}/login`, {
+      const response = await axios.post(`${getBaseUrl()}/api/auth/login`, {
         email,
         password
       }, {
-        withCredentials: true, // Añadido para manejar CORS
+        withCredentials: true,
         headers: {
           'Content-Type': 'application/json'
         }

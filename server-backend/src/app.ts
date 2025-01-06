@@ -13,29 +13,25 @@ import commentRoutes from './routes/commentRoutes';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8080; // Nota: Railway usa 8080 por defecto
 
-// Configuración de orígenes permitidos
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
-const ALLOWED_ORIGINS = [
-  FRONTEND_URL,
-  'https://tu-app.railway.app', // Reemplaza con tu URL de Railway
+// Configuración de CORS más específica
+const allowedOrigins = [
+  'https://savingtimeoficial-production.up.railway.app',
+  'http://localhost:3000',
   'http://localhost:5000',
-  'http://localhost:3000'
+  'http://localhost:8080'
 ];
 
-// Inicializar asociaciones
-initializeAssociations();
-
-// Configuración de CORS
 app.use(cors({
   origin: function(origin, callback) {
-    // Permitir peticiones sin origen (como las peticiones móviles o Postman)
+    // Permitir peticiones sin origen (como postman o aplicaciones móviles)
     if (!origin) return callback(null, true);
     
-    if (ALLOWED_ORIGINS.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+    if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
+      console.log('Origin not allowed:', origin); // Para debugging
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -44,10 +40,13 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+// Inicializar asociaciones
+initializeAssociations();
+
 // Middleware para procesar JSON
 app.use(express.json());
 
-// Configuración de archivos estáticos
+// Archivos estáticos
 const uploadPath = path.join(__dirname, '../uploads');
 console.log('Upload path:', uploadPath);
 app.use('/uploads', express.static(uploadPath));
@@ -69,7 +68,6 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(publicPath, 'index.html'));
 });
 
-// Iniciar el servidor
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
