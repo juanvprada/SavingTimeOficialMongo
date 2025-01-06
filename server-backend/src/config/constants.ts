@@ -9,11 +9,11 @@ export const CONFIG = {
     EXPIRES_IN: '1h'
   },
   DB: {
-    HOST: process.env.DB_HOST || 'localhost',
-    USER: process.env.DB_USER || 'root',
-    PASSWORD: process.env.DB_PASSWORD || '',
-    NAME: process.env.DB_NAME || 'savingtime',
-    PORT: parseInt(process.env.DB_PORT || '3306'),
+    HOST: process.env.MYSQLHOST || process.env.DB_HOST || 'localhost',
+    USER: process.env.MYSQLUSER || process.env.DB_USER || 'root',
+    PASSWORD: process.env.MYSQLPASSWORD || process.env.DB_PASSWORD || '',
+    NAME: process.env.MYSQLDATABASE || process.env.DB_NAME || 'savingtime',
+    PORT: parseInt(process.env.MYSQLPORT || process.env.DB_PORT || '3306'),
     LOGGING: process.env.NODE_ENV !== 'production'
   },
   UPLOAD: {

@@ -1,7 +1,9 @@
+// app.ts
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+import { sequelize } from './database/sequelize';
 import { initializeAssociations } from './models';
 import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
@@ -12,10 +14,15 @@ import commentRoutes from './routes/commentRoutes';
 
 dotenv.config();
 
-const app = express();
-const PORT = process.env.PORT || 8080; // Nota: Railway usa 8080 por defecto
+// Debugging de variables de entorno
+console.log('Environment variables:');
+console.log('MYSQL_URL:', process.env.MYSQL_URL);
+console.log('MYSQLHOST:', process.env.MYSQLHOST);
+console.log('MYSQLDATABASE:', process.env.MYSQLDATABASE);
 
-// Configuración de CORS más específica
+const app = express();
+const PORT = process.env.PORT || 8080;
+
 const allowedOrigins = [
   'https://savingtimeoficial-production.up.railway.app',
   'http://localhost:3000',
@@ -25,13 +32,12 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function(origin, callback) {
-    // Permitir peticiones sin origen (como postman o aplicaciones móviles)
     if (!origin) return callback(null, true);
     
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      console.log('Origin not allowed:', origin); // Para debugging
+      console.log('Origin not allowed:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -43,15 +49,12 @@ app.use(cors({
 // Inicializar asociaciones
 initializeAssociations();
 
-// Middleware para procesar JSON
 app.use(express.json());
 
-// Archivos estáticos
 const uploadPath = path.join(__dirname, '../uploads');
 console.log('Upload path:', uploadPath);
 app.use('/uploads', express.static(uploadPath));
 
-// Rutas de la API
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
@@ -59,17 +62,23 @@ app.use('/api/roles', roleRoutes);
 app.use('/api/likes', likeRoutes);
 app.use('/api/comments', commentRoutes);
 
-// Servir el frontend estático desde la carpeta public
 const publicPath = path.join(__dirname, '../public');
 app.use(express.static(publicPath));
 
-// Manejar rutas desconocidas y devolver el index.html
 app.get('*', (req, res) => {
     res.sendFile(path.join(publicPath, 'index.html'));
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});
+// Sincronizar base de datos antes de iniciar el servidor
+sequelize.sync({ alter: true })
+  .then(() => {
+    console.log('Base de datos sincronizada');
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error('Error al sincronizar la base de datos:', error);
+  });
 
 export default app;
