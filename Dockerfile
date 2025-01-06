@@ -14,20 +14,28 @@ RUN npm install
 COPY server-backend/ .
 RUN npm run build
 
-# Etapa final: producción
+# Etapa final: Producción
 FROM node:18-alpine
 WORKDIR /app
 
-# Copiar el backend y frontend desde las etapas anteriores
+# Copiar el backend compilado
 COPY --from=builder /app/dist ./dist
-COPY --from=client /app/client/build ./public
-# Instalar solo dependencias de producción
+
+# Copiar package.json del backend (asegurándonos de que esté en /app)
+COPY server-backend/package*.json ./
+
+# Instalar dependencias de producción
 RUN npm install --only=production
 
+# Copiar el frontend construido
+COPY --from=client /app/client/build ./public
+
+# Configuración del entorno
 ENV NODE_ENV=production
 ENV PORT=5000
 
 EXPOSE 5000
 
+# Iniciar la aplicación
 CMD ["node", "dist/app.js"]
 
