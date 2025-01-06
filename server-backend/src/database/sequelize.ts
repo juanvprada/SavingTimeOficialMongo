@@ -1,50 +1,64 @@
 import { Sequelize } from 'sequelize';
 import mysql from 'mysql2/promise';
 
-console.log('=== Environment Variables Check ===');
-const envVars = [
-  'MYSQL_URL',
-  'MYSQLHOST',
-  'MYSQLPORT',
-  'MYSQLUSER',
-  'MYSQLPASSWORD',
-  'MYSQLDATABASE'
-];
-
-envVars.forEach(varName => {
-  console.log(`${varName} is ${process.env[varName] ? 'set' : 'not set'}`);
+// Debugging
+console.log('=== Database Configuration ===');
+console.log('Current ENV:', {
+  host: process.env.MYSQLHOST,
+  port: process.env.MYSQLPORT,
+  database: process.env.MYSQLDATABASE,
+  user: process.env.MYSQLUSER
 });
 
-const sequelize = new Sequelize({
+// Configuración de la base de datos
+const dbConfig = {
   host: process.env.MYSQLHOST || 'localhost',
   port: parseInt(process.env.MYSQLPORT || '3306'),
   database: process.env.MYSQLDATABASE || 'railway',
   username: process.env.MYSQLUSER || 'root',
   password: process.env.MYSQLPASSWORD || '',
-  dialect: 'mysql',
+  dialect: 'mysql' as const,
   dialectOptions: {
     ssl: {
       require: true,
       rejectUnauthorized: false
     }
   },
-  logging: false
+  logging: console.log
+};
+
+console.log('Using configuration:', {
+  ...dbConfig,
+  password: '[HIDDEN]'
 });
 
-// Test de conexión
+export const sequelize = new Sequelize(
+  dbConfig.database,
+  dbConfig.username,
+  dbConfig.password,
+  {
+    host: dbConfig.host,
+    port: dbConfig.port,
+    dialect: dbConfig.dialect,
+    dialectOptions: dbConfig.dialectOptions,
+    logging: dbConfig.logging
+  }
+);
+
+// Test inicial de conexión
 sequelize
   .authenticate()
   .then(() => {
-    console.log('Conexión a la base de datos establecida con éxito.');
+    console.log('Conexión inicial establecida correctamente');
   })
   .catch((err) => {
-    console.error('Error detallado de conexión:', {
-      host: process.env.MYSQLHOST,
-      port: process.env.MYSQLPORT,
-      database: process.env.MYSQLDATABASE,
-      user: process.env.MYSQLUSER
-    });
-    console.error('Error de conexión:', err);
+    console.error('Error al conectar:', err);
   });
 
-export { sequelize };
+export const mysqlPool = mysql.createPool({
+  host: dbConfig.host,
+  port: dbConfig.port,
+  user: dbConfig.username,
+  password: dbConfig.password,
+  database: dbConfig.database
+});
