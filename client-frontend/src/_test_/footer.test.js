@@ -17,7 +17,7 @@ describe('Footer', () => {
       /* para verificar si los titulos estan en el DOM */
       expect(screen.getByText('Enlaces útiles')).toBeInTheDocument();
       expect(screen.getByText('Síguenos')).toBeInTheDocument();
-      expect(screen.getByText(/© 2024 Bio Blog/i)).toBeInTheDocument(); /* esto es para saber si cambia */
+      expect(screen.getByText(/© 2024 Saving Time/i)).toBeInTheDocument(); /* esto es para saber si cambia */
     });
 
     test('check if the links in the Footer work', async () => {

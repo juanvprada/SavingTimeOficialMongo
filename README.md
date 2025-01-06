@@ -288,9 +288,9 @@ npm start
 - Los administradores tienen acceso a la página "AdminPage" donde pueden gestionar publicaciones y roles de usuario.
 - 
 
-## Funcionamiento del Formulario de Contacto: ContactForm Component - Bio Blog
+## Funcionamiento del Formulario de Contacto: ContactForm Component - Saving Time
 
-Este documento explica los pasos necesarios para configurar e instalar el componente `ContactForm` en el proyecto Bio Blog. Asegúrate de seguir todas las instrucciones para habilitar el envío de correos electrónicos a través del formulario, utilizando EmailJS y el archivo `.env`.
+Este documento explica los pasos necesarios para configurar e instalar el componente `ContactForm` en el proyecto Saving Time. Asegúrate de seguir todas las instrucciones para habilitar el envío de correos electrónicos a través del formulario, utilizando EmailJS y el archivo `.env`.
 
 ### Requisitos
 - Una cuenta en [EmailJS](https://www.emailjs.com/)
@@ -320,7 +320,7 @@ Este documento explica los pasos necesarios para configurar e instalar el compon
 #### 5. Configurar el archivo `.env`
 Para mantener segura la información sensible, configura un archivo `.env` en la raíz de tu proyecto y agrega las siguientes variables de entorno:
 
-- Crea un archivo llamado `.env` en la raíz del proyecto Bio Blog.
+- Crea un archivo llamado `.env` en la raíz del proyecto Saving Time.
 - Agrega las siguientes variables, reemplazando `your_service_id`, `your_template_id`, y `your_public_key` con los valores obtenidos de EmailJS:
 
 ```plaintext

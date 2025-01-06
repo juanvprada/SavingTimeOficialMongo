@@ -25,7 +25,7 @@ const AboutUs = () => {
             <img 
               src={logoImg} 
               className="w-60 mb-8 transform transition duration-500 ease-in-out hover:scale-110" 
-              alt="Logo Bio Blog" 
+              alt="Logo Saving Time" 
             />
             <h2 className="text-3xl font-bold text-[#1B3A4B]"></h2>
             <p className="mt-6 text-lg text-[#8A8B6C]">

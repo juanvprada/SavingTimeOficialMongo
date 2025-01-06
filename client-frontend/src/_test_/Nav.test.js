@@ -39,7 +39,7 @@ describe('Navbar', () => {
         const user = userEvent.setup();
     
         /* Simulo el clic en el logo (que incluye el enlace a "/") */
-        const logoLink = screen.getByText('Bio Blog').closest('a');
+        const logoLink = screen.getByText('Saving Time').closest('a');
         expect(logoLink).toHaveAttribute('href', '/');
     
         await user.click(logoLink);
