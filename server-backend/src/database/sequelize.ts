@@ -1,58 +1,50 @@
-// database/sequelize.ts
 import { Sequelize } from 'sequelize';
 import mysql from 'mysql2/promise';
-import { CONFIG } from '../config/constants';
 
-const getSequelizeConfig = () => {
-  if (process.env.MYSQL_URL) {
-    return new Sequelize(process.env.MYSQL_URL, {
-      dialect: 'mysql',
-      dialectOptions: {
-        ssl: {
-          require: true,
-          rejectUnauthorized: false
-        }
-      },
-      logging: false,
-      pool: {
-        max: 5,
-        min: 0,
-        acquire: 30000,
-        idle: 10000
-      }
-    });
-  }
+console.log('=== Environment Variables Check ===');
+const envVars = [
+  'MYSQL_URL',
+  'MYSQLHOST',
+  'MYSQLPORT',
+  'MYSQLUSER',
+  'MYSQLPASSWORD',
+  'MYSQLDATABASE'
+];
 
-  return new Sequelize(
-    CONFIG.DB.NAME,
-    CONFIG.DB.USER,
-    CONFIG.DB.PASSWORD,
-    {
-      host: CONFIG.DB.HOST,
-      dialect: 'mysql',
-      logging: CONFIG.DB.LOGGING ? (msg: string) => console.log(msg) : false,
-      pool: {
-        max: 5,
-        min: 0,
-        acquire: 30000,
-        idle: 10000
-      }
+envVars.forEach(varName => {
+  console.log(`${varName} is ${process.env[varName] ? 'set' : 'not set'}`);
+});
+
+const sequelize = new Sequelize({
+  host: process.env.MYSQLHOST || 'localhost',
+  port: parseInt(process.env.MYSQLPORT || '3306'),
+  database: process.env.MYSQLDATABASE || 'railway',
+  username: process.env.MYSQLUSER || 'root',
+  password: process.env.MYSQLPASSWORD || '',
+  dialect: 'mysql',
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false
     }
-  );
-};
+  },
+  logging: false
+});
 
-export const sequelize = getSequelizeConfig();
+// Test de conexión
+sequelize
+  .authenticate()
+  .then(() => {
+    console.log('Conexión a la base de datos establecida con éxito.');
+  })
+  .catch((err) => {
+    console.error('Error detallado de conexión:', {
+      host: process.env.MYSQLHOST,
+      port: process.env.MYSQLPORT,
+      database: process.env.MYSQLDATABASE,
+      user: process.env.MYSQLUSER
+    });
+    console.error('Error de conexión:', err);
+  });
 
-export const mysqlPool = mysql.createPool(
-  process.env.MYSQL_URL 
-    ? { uri: process.env.MYSQL_URL }
-    : {
-        host: CONFIG.DB.HOST,
-        user: CONFIG.DB.USER,
-        password: CONFIG.DB.PASSWORD,
-        database: CONFIG.DB.NAME,
-        waitForConnections: true,
-        connectionLimit: 10,
-        queueLimit: 0
-      }
-);
+export { sequelize };

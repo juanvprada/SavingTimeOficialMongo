@@ -1,4 +1,8 @@
 // app.ts
+// Debugging de variables de entorno al inicio del archivo
+console.log('=== Process ENV ===');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('All ENV keys:', Object.keys(process.env));
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
