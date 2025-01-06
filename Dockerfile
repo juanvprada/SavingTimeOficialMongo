@@ -21,6 +21,8 @@ WORKDIR /app
 # Copiar el backend y frontend desde las etapas anteriores
 COPY --from=builder /app/dist ./dist
 COPY --from=client /app/client/build ./public
+# Instalar solo dependencias de producción
+RUN npm install --only=production
 
 ENV NODE_ENV=production
 ENV PORT=5000
