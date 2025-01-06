@@ -1,6 +1,6 @@
 import app from './app';
 import { CONFIG } from './config/constants';
-import { sequelize } from '../src/database/sequelize';
+import { sequelize } from './database/sequelize';
 
 async function startServer() {
   try {
