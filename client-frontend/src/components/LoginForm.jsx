@@ -4,6 +4,16 @@ import { FaEnvelope, FaLock } from 'react-icons/fa';
 import useStore from '../store/store';
 import axios from 'axios';
 
+// Función para obtener la URL base
+const getBaseUrl = () => {
+  if (window.location.hostname === 'localhost') {
+    return 'http://localhost:5000';
+  }
+  return window.location.origin;
+};
+
+const API_URL = `${getBaseUrl()}/api/auth`;
+
 const LoginForm = ({ inputTextColor, formBackground }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,9 +34,14 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
       return;
     }
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
+      const response = await axios.post(`${API_URL}/login`, {
         email,
         password
+      }, {
+        withCredentials: true, // Añadido para manejar CORS
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
 
       const { data } = response.data;
@@ -47,7 +62,16 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
       }
     } catch (error) {
       console.error('Error completo:', error);
-      setError(error.response?.data?.message || 'Error al iniciar sesión');
+      if (error.response) {
+        // El servidor respondió con un estado de error
+        setError(error.response.data?.message || 'Error al iniciar sesión');
+      } else if (error.request) {
+        // La petición fue hecha pero no se recibió respuesta
+        setError('No se pudo conectar con el servidor');
+      } else {
+        // Algo ocurrió al configurar la petición
+        setError('Error al procesar la solicitud');
+      }
     }
   };
 
