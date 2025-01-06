@@ -21,7 +21,7 @@ WORKDIR /app
 # Copiar el backend compilado
 COPY --from=builder /app/dist ./dist
 
-# Copiar package.json del backend
+# Copiar el package.json del backend
 COPY server-backend/package*.json ./
 
 # Instalar dependencias de producción
@@ -38,5 +38,6 @@ EXPOSE 5000
 
 # Iniciar la aplicación
 CMD ["node", "dist/app.js"]
+
 
 
