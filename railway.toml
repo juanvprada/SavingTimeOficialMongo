@@ -3,5 +3,3 @@ builder = "DOCKERFILE"
 
 [deploy]
 builder = "DOCKERFILE"
-buildCommand = "docker build -t app ."
-startCommand = "docker run app"
