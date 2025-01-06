@@ -35,6 +35,15 @@ app.use('/api/roles', roleRoutes);
 app.use('/api/likes', likeRoutes);
 app.use('/api/comments', commentRoutes);
 
+// Servir el frontend estático desde la carpeta public
+const publicPath = path.join(__dirname, '../public');
+app.use(express.static(publicPath));
+
+// Manejar rutas desconocidas y devolver el index.html
+app.get('*', (req, res) => {
+    res.sendFile(path.join(publicPath, 'index.html'));
+});
+
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });

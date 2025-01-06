@@ -21,13 +21,13 @@ WORKDIR /app
 # Copiar el backend compilado
 COPY --from=builder /app/dist ./dist
 
-# Copiar package.json del backend (asegurándonos de que esté en /app)
+# Copiar package.json del backend
 COPY server-backend/package*.json ./
 
 # Instalar dependencias de producción
 RUN npm install --only=production
 
-# Copiar el frontend construido
+# Copiar el frontend construido a la carpeta public
 COPY --from=client /app/client/build ./public
 
 # Configuración del entorno
@@ -37,5 +37,6 @@ ENV PORT=5000
 EXPOSE 5000
 
 # Iniciar la aplicación
-CMD ["node", "dist/app.js"]
+CMD ["node", "dist/server.js"]
+
 
