@@ -1,7 +1,16 @@
 import axios from 'axios';
 
-const API_URL = `${import.meta.env.VITE_API_URL}/api/posts`;
-const BASE_IMAGE_URL = import.meta.env.VITE_IMAGE_URL;
+// Determinar la URL base según el entorno
+const getBaseUrl = () => {
+  if (window.location.hostname === 'localhost') {
+    return 'http://localhost:5000';
+  }
+  return window.location.origin; // Esto devolverá la URL base en producción
+};
+
+const BASE_URL = getBaseUrl();
+const API_URL = `${BASE_URL}/api/posts`;
+const BASE_IMAGE_URL = `${BASE_URL}/uploads/`;
 
 // Configuración global de axios
 axios.defaults.withCredentials = true;
