@@ -1,8 +1,4 @@
 // app.ts
-// Debugging de variables de entorno al inicio del archivo
-console.log('=== Process ENV ===');
-console.log('NODE_ENV:', process.env.NODE_ENV);
-console.log('All ENV keys:', Object.keys(process.env));
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -18,15 +14,10 @@ import commentRoutes from './routes/commentRoutes';
 
 dotenv.config();
 
-// Debugging de variables de entorno
-console.log('Environment variables:');
-console.log('MYSQL_URL:', process.env.MYSQL_URL);
-console.log('MYSQLHOST:', process.env.MYSQLHOST);
-console.log('MYSQLDATABASE:', process.env.MYSQLDATABASE);
-
 const app = express();
 const PORT = process.env.PORT || 8080;
 
+// Configuración de CORS
 const allowedOrigins = [
   'https://savingtimeoficial-production.up.railway.app',
   'http://localhost:3000',
@@ -50,15 +41,18 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Inicializar asociaciones
-initializeAssociations();
-
+// Middleware
 app.use(express.json());
 
+// Archivos estáticos
 const uploadPath = path.join(__dirname, '../uploads');
 console.log('Upload path:', uploadPath);
 app.use('/uploads', express.static(uploadPath));
 
+// Inicializar asociaciones
+initializeAssociations();
+
+// Rutas
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
@@ -66,23 +60,33 @@ app.use('/api/roles', roleRoutes);
 app.use('/api/likes', likeRoutes);
 app.use('/api/comments', commentRoutes);
 
+// Servir el frontend
 const publicPath = path.join(__dirname, '../public');
 app.use(express.static(publicPath));
 
+// Ruta catch-all para SPA
 app.get('*', (req, res) => {
     res.sendFile(path.join(publicPath, 'index.html'));
 });
 
-// Sincronizar base de datos antes de iniciar el servidor
-sequelize.sync({ alter: true })
-  .then(() => {
-    console.log('Base de datos sincronizada');
+// Iniciar servidor con verificación de base de datos
+const startServer = async () => {
+  try {
+    await sequelize.authenticate();
+    console.log('✅ Base de datos conectada.');
+    
+    await sequelize.sync({ alter: true });
+    console.log('✅ Modelos sincronizados.');
+
     app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
+      console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
     });
-  })
-  .catch((error) => {
-    console.error('Error al sincronizar la base de datos:', error);
-  });
+  } catch (error) {
+    console.error('❌ Error al iniciar el servidor:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
 
 export default app;
