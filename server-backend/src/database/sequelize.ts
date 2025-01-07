@@ -1,77 +1,60 @@
 import { Sequelize } from 'sequelize';
 
-// Debugging detallado al inicio
+// Debugging al inicio
 console.log('=== Process ENV Keys ===');
 console.log('Available environment variables:', Object.keys(process.env));
 
-// Validación de variables requeridas
-const requiredVars = ['MYSQLHOST', 'MYSQLPORT', 'MYSQLUSER', 'MYSQLPASSWORD', 'MYSQLDATABASE'];
-const missingVars = requiredVars.filter(varName => !process.env[varName]);
+// Construir URL de conexión
+const MYSQL_URL = `mysql://${process.env.MYSQLUSER}:${process.env.MYSQLPASSWORD}@${process.env.MYSQLHOST}:${process.env.MYSQLPORT}/${process.env.MYSQLDATABASE}`;
 
-if (missingVars.length > 0) {
-  console.error('❌ Missing required environment variables:', missingVars);
-  process.exit(1); // Detener la aplicación si faltan variables
-}
+// Log seguro de la URL (ocultar contraseña)
+console.log('Connection URL (sanitized):', MYSQL_URL.replace(/:[^:@]+@/, ':****@'));
 
-// Configuración de la conexión
-const dbConfig = {
-  database: process.env.MYSQLDATABASE!,
-  username: process.env.MYSQLUSER!,
-  password: process.env.MYSQLPASSWORD!,
-  host: process.env.MYSQLHOST!,
-  port: parseInt(process.env.MYSQLPORT!),
-  dialect: 'mysql' as const,
-  dialectOptions: {
-    ssl: {
-      require: true,
-      rejectUnauthorized: false
+// Declarar sequelize fuera del try
+let sequelize: Sequelize;
+
+try {
+  // Crear la instancia de Sequelize con URL directa
+  sequelize = new Sequelize(MYSQL_URL, {
+    dialect: 'mysql',
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false
+      }
+    },
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000,
+      idle: 10000
+    },
+    logging: false,
+    retry: {
+      max: 3
     }
-  },
-  pool: {
-    max: 5,
-    min: 0,
-    acquire: 30000,
-    idle: 10000
-  },
-  logging: false
-};
-
-console.log('=== Database Configuration ===');
-console.log({
-  host: dbConfig.host,
-  port: dbConfig.port,
-  database: dbConfig.database,
-  username: dbConfig.username,
-  dialect: dbConfig.dialect
-});
-
-const sequelize = new Sequelize(
-  dbConfig.database,
-  dbConfig.username,
-  dbConfig.password,
-  {
-    host: dbConfig.host,
-    port: dbConfig.port,
-    dialect: dbConfig.dialect,
-    dialectOptions: dbConfig.dialectOptions,
-    pool: dbConfig.pool,
-    logging: dbConfig.logging
-  }
-);
-
-// Test de conexión
-sequelize
-  .authenticate()
-  .then(() => {
-    console.log('✅ Conexión a MySQL establecida correctamente');
-  })
-  .catch((err) => {
-    console.error('❌ Error de conexión:', {
-      message: err.message,
-      code: err.parent?.code,
-      errno: err.parent?.errno
-    });
-    process.exit(1); // Detener la aplicación si no se puede conectar
   });
 
+  // Test de conexión inmediato
+  sequelize
+    .authenticate()
+    .then(() => {
+      console.log('✅ Conexión a MySQL establecida correctamente');
+    })
+    .catch((err) => {
+      console.error('❌ Error de conexión:', {
+        message: err.message,
+        code: err.parent?.code,
+        errno: err.parent?.errno,
+        host: err.parent?.host,
+        port: err.parent?.port
+      });
+    });
+
+} catch (error) {
+  console.error('❌ Error al crear instancia de Sequelize:', error);
+  process.exit(1);
+}
+
+// Export al final del archivo
 export { sequelize };
