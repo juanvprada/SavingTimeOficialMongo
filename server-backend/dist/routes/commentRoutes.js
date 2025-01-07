@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const commentController_1 = require("../controllers/commentController");
+const authMiddleware_1 = require("../middleware/authMiddleware");
+const validation_middleware_1 = require("../middleware/validation.middleware");
+const comment_validation_1 = require("../validations/comment.validation");
+const router = (0, express_1.Router)();
+router.get('/:postId', commentController_1.CommentController.getByPostId);
+router.post('/:postId', authMiddleware_1.AuthMiddleware.authenticate, validation_middleware_1.ValidationMiddleware.validate(comment_validation_1.CommentValidation.create), commentController_1.CommentController.create);
+router.put('/:id', authMiddleware_1.AuthMiddleware.authenticate, validation_middleware_1.ValidationMiddleware.validate(comment_validation_1.CommentValidation.update), commentController_1.CommentController.update);
+router.delete('/:id', authMiddleware_1.AuthMiddleware.authenticate, commentController_1.CommentController.delete);
+exports.default = router;
