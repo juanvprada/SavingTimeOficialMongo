@@ -1,22 +1,33 @@
 import { Sequelize } from 'sequelize';
 
-// Debugging al inicio
-console.log('=== Process ENV Keys ===');
-console.log('Available environment variables:', Object.keys(process.env));
+// Verificación de variables de entorno requeridas
+const requiredEnvVars = ['MYSQLUSER', 'MYSQLPASSWORD', 'MYSQLHOST', 'MYSQLPORT', 'MYSQLDATABASE'];
+const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
 
-// Construir URL de conexión
-const MYSQL_URL = `mysql://${process.env.MYSQLUSER}:${process.env.MYSQLPASSWORD}@${process.env.MYSQLHOST}:${process.env.MYSQLPORT}/${process.env.MYSQLDATABASE}`;
+if (missingVars.length > 0) {
+  console.error('❌ Faltan variables de entorno requeridas:', missingVars);
+  process.exit(1);
+}
 
-// Log seguro de la URL (ocultar contraseña)
-console.log('Connection URL (sanitized):', MYSQL_URL.replace(/:[^:@]+@/, ':****@'));
+// Log de variables disponibles (seguro)
+console.log('=== Variables de entorno disponibles ===');
+console.log('Host:', process.env.MYSQLHOST);
+console.log('Port:', process.env.MYSQLPORT);
+console.log('Database:', process.env.MYSQLDATABASE);
+console.log('User:', process.env.MYSQLUSER);
+console.log('Password: ********');
 
-// Declarar sequelize fuera del try
 let sequelize: Sequelize;
 
 try {
-  // Crear la instancia de Sequelize con URL directa
-  sequelize = new Sequelize(MYSQL_URL, {
+  // Crear instancia de Sequelize
+  sequelize = new Sequelize({
     dialect: 'mysql',
+    host: process.env.MYSQLHOST,
+    port: parseInt(process.env.MYSQLPORT!),
+    username: process.env.MYSQLUSER,
+    password: process.env.MYSQLPASSWORD,
+    database: process.env.MYSQLDATABASE,
     dialectOptions: {
       ssl: {
         require: true,
@@ -56,5 +67,4 @@ try {
   process.exit(1);
 }
 
-// Export al final del archivo
 export { sequelize };

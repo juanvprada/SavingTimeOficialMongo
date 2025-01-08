@@ -18,21 +18,25 @@ RUN npm run build
 FROM node:18-alpine
 WORKDIR /app
 
-# Copiar el backend compilado
+# Copiar archivos necesarios
 COPY --from=builder /app/dist ./dist
-
-# Copiar el package.json del backend
-COPY server-backend/package*.json ./
-
-# Instalar dependencias de producción
-RUN npm install --only=production
-
-# Copiar el frontend construido a la carpeta public
+COPY --from=builder /app/package*.json ./
 COPY --from=client /app/client/build ./public
+
+# Instalar solo dependencias de producción
+RUN npm ci --only=production
 
 # Configuración del entorno
 ENV NODE_ENV=production
 ENV PORT=5000
+
+# Crear usuario no root para más seguridad
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:5000/health || exit 1
 
 EXPOSE 5000
 
