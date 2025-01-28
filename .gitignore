@@ -2,8 +2,10 @@
 client-frontend/node_modules
 server-backend/node_modules
 
-# Build outputs
+# Build outputs (except dist folders for frontend and backend)
 dist
+!server-backend/dist/
+!client-frontend/dist/
 dist-ssr
 build
 *.local
