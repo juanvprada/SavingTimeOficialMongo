@@ -105,12 +105,15 @@ app.get('/test-uploads', (req, res) => {
 });
 // MongoDB Connection
 mongoose_1.default
-    .connect(constants_1.CONFIG.DB.URI)
+    .connect(process.env.MONGO_URI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+    })
     .then(() => console.log('✅ MongoDB connection established.'))
     .catch((err) => {
-    console.error('❌ Error connecting to MongoDB:', err);
-    process.exit(1);
-});
+        console.error('❌ Error connecting to MongoDB:', err);
+        process.exit(1); // Detener el servidor si no hay conexión
+    });
 // Start server
 // app.listen(PORT, () => {
 //   console.log(`🚀 Server running at http://localhost:${PORT}`);
