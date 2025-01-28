@@ -30,7 +30,7 @@ describe('Footer', () => {
       const user = userEvent.setup(); /* inicia UserEvent */
 
       const githubLink = screen.getByText('GitHub').closest('a'); /* simulo el click en el enlace siguenos y encuentra el enlace mas cercano */
-      expect(githubLink).toHaveAttribute('href', 'https://github.com/Omarlsant/bio-blog/tree/dev'); /* verifico si el enlace existe y si cambia a la ruta correcta */
+      expect(githubLink).toHaveAttribute('href', 'https://github.com/juanvprada/SavingTimeOficialMongo.git'); /* verifico si el enlace existe y si cambia a la ruta correcta */
       await user.click(githubLink);/* simulo el click en el enlace */
     });
 });

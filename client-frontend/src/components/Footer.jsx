@@ -24,7 +24,7 @@ const Footer = () => (
         <h4 className="text-xl font-semibold mb-4">Síguenos</h4>
         <ul className="flex space-x-6">
           <li>
-            <a className="text-gray-400 hover:text-white" href="https://github.com/Omarlsant/bio-blog/tree/dev" target="_blank" rel="noopener noreferrer">
+            <a className="text-gray-400 hover:text-white" href="https://github.com/juanvprada/SavingTimeOficialMongo.git" target="_blank" rel="noopener noreferrer">
               <FaGithub size={24} />
             </a>
           </li>
