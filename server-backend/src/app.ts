@@ -116,9 +116,9 @@ mongoose
   });
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
-  console.log(`📁 Uploads directory: ${uploadPath}`);
-});
+// app.listen(PORT, () => {
+//   console.log(`🚀 Server running at http://localhost:${PORT}`);
+//   console.log(`📁 Uploads directory: ${uploadPath}`);
+// });
 
 export default app;

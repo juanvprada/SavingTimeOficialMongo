@@ -1,17 +1,18 @@
+// src/server.ts
 import app from './app';
 import { CONFIG } from './config/constants';
-import { sequelize } from './database/sequelize';
+import mongoose from 'mongoose';
 
 async function startServer() {
   try {
-    await sequelize.authenticate();
-    console.log('Conexión a la base de datos establecida correctamente.');
+    await mongoose.connect(CONFIG.DB.URI);
+    console.log('✅ MongoDB connection established.');
 
     app.listen(CONFIG.PORT, () => {
-      console.log(`Servidor corriendo en http://localhost:${CONFIG.PORT}`);
+      console.log(`🚀 Server running at http://localhost:${CONFIG.PORT}`);
     });
   } catch (error) {
-    console.error('Error al iniciar el servidor:', error);
+    console.error('❌ Error al iniciar el servidor:', error);
     process.exit(1);
   }
 }

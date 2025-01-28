@@ -1,18 +1,22 @@
-import { Model, InitOptions } from 'sequelize';
-import { BaseModel, UUID, Timestamp } from '../types/index';
+import { Document, Schema } from 'mongoose';
 
-export abstract class BaseSequelizeModel<T extends BaseModel> extends Model {
-  public id!: UUID;
-  public created_at?: Timestamp;
-  public updated_at?: Timestamp;
-
-  // Definimos el método associate como abstracto en la clase
-  public static associate(models?: any): void { }
-
+export interface BaseModel extends Document {
+  created_at: Date;
+  updated_at: Date;
 }
 
-export const baseModelConfig: Partial<InitOptions> = {
-  timestamps: true,
-  createdAt: 'created_at',
-  updatedAt: 'updated_at'
-};
+export const baseModelSchema = new Schema({
+  created_at: {
+    type: Date,
+    default: Date.now
+  },
+  updated_at: {
+    type: Date,
+    default: Date.now
+  }
+}, {
+  timestamps: {
+    createdAt: 'created_at',
+    updatedAt: 'updated_at'
+  }
+});
