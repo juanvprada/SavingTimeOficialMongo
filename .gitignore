@@ -20,6 +20,9 @@ client-frontend/src/blog-content
 *.mp4
 client-frontend/src/assets/home-video/
 
+# Allow default.jpg in server-backend/assets
+!server-backend/assets/default.jpg
+
 # Environment files
 client-frontend/.env
 server-backend/.env
