@@ -46,7 +46,7 @@ const Search = ({ onSearch, postTypes }) => {
   return (
     <div className="w-full max-w-5xl mx-auto mb-12 px-4">
       <div className="backdrop-blur-sm bg-white/80 rounded-xl shadow-md transition-all duration-300">
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-0">
           {/* Barra de búsqueda principal con diseño refinado */}
           <div className="relative flex items-center p-2">
             <div className="relative flex-1 group">
@@ -77,7 +77,7 @@ const Search = ({ onSearch, postTypes }) => {
 
           {/* Panel de filtros avanzados con animación */}
           <div className={`overflow-hidden transition-all duration-300 ${isAdvancedOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
-            <div className="p-3 space-y-4 bg-gray-50 rounded-b-xl">
+            <div className="p-3 pt-0 space-y-4 bg-gray-50 rounded-b-xl">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 {/* Tipo de Post */}
                 <div className="space-y-1.5">
