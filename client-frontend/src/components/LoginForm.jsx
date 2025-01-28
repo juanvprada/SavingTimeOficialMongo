@@ -51,11 +51,8 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
         setToken(data.token);
         setRole(data.role);
         setUsername(data.name);
-        setUserId(data.userId);
-
-        // Para verificar
-        console.log('userId guardado:', localStorage.getItem('userId'));
-
+        setUserId(data._id || data.userId); 
+      
         navigate('/blog');
       } else {
         setError('Respuesta del servidor inválida');

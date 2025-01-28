@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getOnePost } from '../services/services';
+import { getOnePost, updatePost } from '../services/services';
 import { Create } from '../components/PostForm';
 import { toast } from 'react-toastify';
 
@@ -13,9 +13,18 @@ const EditPost = () => {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const postData = await getOnePost(id);
-        console.log('Post data fetched:', postData);
-        setPost(postData);
+        const response = await getOnePost(id);
+        console.log('Post data fetched:', response);
+        // Asegurarnos de que pasamos la estructura correcta al formulario
+        setPost({
+          data: {
+            ...response.data,
+            id: response.data._id || response.data.id,
+            images: response.data.images?.map(img =>
+              img.startsWith('http') ? img : `http://localhost:5000/uploads/${img}`
+            ) || []
+          }
+        });
       } catch (error) {
         console.error("Error al obtener el post:", error);
         toast.error("Error al cargar el post");
@@ -29,12 +38,12 @@ const EditPost = () => {
 
   const handleUpdate = async (updatedPost) => {
     try {
-      console.log('Updated post:', updatedPost);
-      navigate('/blog');
+      await updatePost(id, updatedPost); // Envía el FormData directamente
       toast.success('Post actualizado exitosamente');
+      navigate('/blog');
     } catch (error) {
       console.error("Error al actualizar:", error);
-      toast.error("Error al actualizar el post");
+      toast.error(error.message || "Error al actualizar el post");
     }
   };
 
@@ -45,7 +54,7 @@ const EditPost = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#1B3A4B]"></div>
       </div>
     );
   }
@@ -56,6 +65,7 @@ const EditPost = () => {
         post={post}
         onSubmit={handleUpdate}
         onCancel={handleCancel}
+        isEditing={true}
       />
     </div>
   );

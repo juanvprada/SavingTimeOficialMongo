@@ -1,15 +1,14 @@
 import { Response } from 'express';
-import { User } from '../models';
+import { User } from '../models/userModel';
 import { AuthRequest, ApiResponse } from '../types/request.types';
-import { IUser } from '../interfaces';
 
 export class RoleController {
   static async updateUserRole(req: AuthRequest, res: Response<ApiResponse>) {
     const user = req.user;
 
     if (user?.role !== 'admin') {
-      return res.status(403).json({ 
-        message: 'Acceso denegado' 
+      return res.status(403).json({
+        message: 'Acceso denegado'
       });
     }
 
@@ -17,15 +16,17 @@ export class RoleController {
     const { role } = req.body;
 
     try {
-      const userToUpdate = await User.findByPk(id);
+      const userToUpdate = await User.findByIdAndUpdate(
+        id,
+        { role },
+        { new: true, runValidators: true }
+      );
 
       if (!userToUpdate) {
         return res.status(404).json({
           message: 'Usuario no encontrado'
         });
       }
-
-      await userToUpdate.update({ role });
 
       return res.json({
         message: 'Rol de usuario actualizado con éxito'

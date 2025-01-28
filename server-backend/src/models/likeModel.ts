@@ -1,65 +1,36 @@
-import { DataTypes } from 'sequelize';
-import { sequelize } from '../database/sequelize';
-import { BaseSequelizeModel, baseModelConfig } from './BaseModel';
+// models/likeModel.ts
+import mongoose, { Schema } from 'mongoose';
 import { ILike } from '../interfaces';
-import { UUID } from '../types';
 
-export class Like extends BaseSequelizeModel<ILike> {
-  public postId!: UUID;
-  public userId!: UUID;
-
-  public static async getLikesByPost(postId: UUID): Promise<number> {
-    return await Like.count({ where: { postId } });
-  }
-
-  public static associate(): void {
-    const { User, Post } = require('./index');
-    Like.belongsTo(User, {
-      foreignKey: 'userId',
-      as: 'user'
-    });
-    Like.belongsTo(Post, {
-      foreignKey: 'postId',
-      as: 'post'
-    });
-  }
-}
-
-Like.init({
-  id: {
-    type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
-    primaryKey: true,
-  },
+const likeSchema = new Schema<ILike>({
   postId: {
-    type: DataTypes.UUID,
-    allowNull: false,
-    references: {
-      model: 'posts',
-      key: 'id'
-    }
+    type: Schema.Types.ObjectId,
+    ref: 'Post',
+    required: true
   },
   userId: {
-    type: DataTypes.UUID,
-    allowNull: false,
-    references: {
-      model: 'users',
-      key: 'id'
-    }
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   }
 }, {
-  hooks: {
-    beforeCreate: (like) => {
-      console.log('Creating like:', like.toJSON());
-    },
-    beforeDestroy: (like) => {
-      console.log('Destroying like:', like.toJSON());
+  timestamps: true,
+  toJSON: {
+    transform: (_, ret) => {
+      ret.id = ret._id;
+      delete ret._id;
+      delete ret.__v;
+      return ret;
     }
-  },
-  ...baseModelConfig,
-  sequelize,
-  modelName: 'Like',
-  tableName: 'likes',
-  timestamps: false  // Add this line
+  }
 });
-export default Like;
+
+// Índice compuesto para evitar duplicados
+likeSchema.index({ postId: 1, userId: 1 }, { unique: true });
+
+// Método estático para contar likes
+likeSchema.statics.getLikesByPost = async function(postId: string) {
+  return this.countDocuments({ postId });
+};
+
+export const Like = mongoose.model<ILike>('Like', likeSchema);

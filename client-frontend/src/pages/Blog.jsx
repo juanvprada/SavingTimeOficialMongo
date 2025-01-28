@@ -7,55 +7,107 @@ import { Create } from '../components/PostForm';
 import IconCreate from '../components/IconCreate';
 import { getLikesCount, toggleLike } from '../services/likeServices';
 import { toast } from 'react-toastify';
+import Search from '../components/Search';
+import { PostType } from '../components/PostForm';
 
 const Blog = () => {
-  const [search, setSearch] = useState('');
+  const [filters, setFilters] = useState({});
   const [articles, setArticles] = useState([]);
   const [showCreate, setShowCreate] = useState(false);
   const [likes, setLikes] = useState({});
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const role = localStorage.getItem('role');
   const token = localStorage.getItem('token');
 
+  const filterArticles = (articles, filters) => {
+    if (!Array.isArray(articles)) return [];
+
+    return articles.filter(article => {
+      // Filtrar por nombre
+      if (filters.name && !article.name?.toLowerCase().includes(filters.name.toLowerCase())) {
+        return false;
+      }
+
+      // Filtrar por tipo
+      if (filters.kindOfPost && article.kindOfPost !== filters.kindOfPost) {
+        return false;
+      }
+
+      // Filtrar por ciudad
+      if (filters.city && !article.city?.toLowerCase().includes(filters.city.toLowerCase())) {
+        return false;
+      }
+
+      // Filtrar por precio
+      const price = Number(article.price);
+      if (filters.minPrice && price < Number(filters.minPrice)) {
+        return false;
+      }
+      if (filters.maxPrice && price > Number(filters.maxPrice)) {
+        return false;
+      }
+
+      // Filtrar por puntuación
+      const rating = Number(article.rating);
+      if (filters.minRating && rating < Number(filters.minRating)) {
+        return false;
+      }
+      if (filters.maxRating && rating > Number(filters.maxRating)) {
+        return false;
+      }
+
+      // Filtrar por descripción
+      if (filters.description && !article.description?.toLowerCase().includes(filters.description.toLowerCase())) {
+        return false;
+      }
+
+      return true;
+    });
+  };
+
   const getFirstImage = (article) => {
-    if (article.images && Array.isArray(article.images) && article.images.length > 0) {
-      const imageUrl = article.images[0];
-      if (imageUrl.startsWith('http')) {
-        return imageUrl;
+    try {
+      if (article.images && Array.isArray(article.images) && article.images.length > 0) {
+        const imageUrl = article.images[0];
+        if (imageUrl.startsWith('http')) {
+          return imageUrl;
+        }
+        const cleanImagePath = imageUrl.replace(/^\/uploads\//, '');
+        return `http://localhost:5000/uploads/${cleanImagePath}`;
       }
-      return `http://localhost:5000${imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`}`;
+      return 'http://localhost:5000/uploads/default.jpg';
+    } catch (error) {
+      console.error('Error getting image:', error);
+      return 'http://localhost:5000/uploads/default.jpg';
     }
-    if (article.image) {
-      if (article.image.startsWith('http')) {
-        return article.image;
-      }
-      return `http://localhost:5000${article.image.startsWith('/') ? article.image : `/${article.image}`}`;
-    }
-    return 'http://localhost:5000/uploads/default.jpg';
   };
 
   const fetchPosts = async () => {
     try {
+      setLoading(true);
       const postsData = await getPosts();
-      if (Array.isArray(postsData)) {
-        setArticles(postsData);
-        const likesCountPromises = postsData.map(post => getLikesCount(post.id));
+      const posts = Array.isArray(postsData) ? postsData : [];
+      setArticles(posts);
+
+      if (posts.length > 0) {
+        const likesCountPromises = posts.map(post => getLikesCount(post.id));
         const likesCounts = await Promise.all(likesCountPromises);
         const initialLikes = {};
         likesCounts.forEach((count, index) => {
-          initialLikes[postsData[index].id] = count.count;
+          initialLikes[posts[index].id] = count.count || 0;
         });
         setLikes(initialLikes);
-      } else {
-        console.error('La respuesta no es un array:', postsData);
-        setArticles([]);
       }
     } catch (error) {
       console.error('Error al obtener los artículos:', error);
+      toast.error('Error al cargar los posts');
       setArticles([]);
+      setLikes({});
+    } finally {
+      setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchPosts();
   }, []);
@@ -65,7 +117,7 @@ const Blog = () => {
     if (confirmDelete) {
       try {
         await deletePost(id);
-        setArticles(articles.filter(article => article.id !== id));
+        await fetchPosts(); // Recargar todos los posts
         toast.success('Post eliminado exitosamente');
       } catch (error) {
         console.error("Error al eliminar el post:", error);
@@ -75,8 +127,14 @@ const Blog = () => {
   };
 
   const handleNewPost = async (newPost) => {
-    setArticles(prevArticles => [newPost, ...prevArticles]);
-    await fetchPosts();
+    try {
+      await fetchPosts(); // Recargar la lista completa
+      setShowCreate(false); // Cerrar el formulario
+      toast.success('Post creado exitosamente');
+    } catch (error) {
+      console.error('Error al actualizar la lista:', error);
+      toast.error('Error al actualizar la lista de posts');
+    }
   };
 
   const handleLike = async (postId) => {
@@ -87,7 +145,6 @@ const Blog = () => {
 
     try {
       const response = await toggleLike(postId);
-      // Update local state based on the response
       if (response.data?.liked !== undefined) {
         setLikes(prev => ({
           ...prev,
@@ -100,11 +157,7 @@ const Blog = () => {
     }
   };
 
-  const filteredArticles = Array.isArray(articles) ? articles.filter(article =>
-    (article.name && article.name.toLowerCase().includes(search.toLowerCase())) ||
-    (article.description && article.description.toLowerCase().includes(search.toLowerCase()))
-  ) : [];
-
+  const filteredArticles = filterArticles(articles, filters);
   return (
     <div className="min-h-screen bg-[#F5F2ED]">
       <header className="bg-[#1B3A4B] text-[#F5F2ED] py-8">
@@ -119,87 +172,90 @@ const Blog = () => {
       </h2>
 
       <section className="container mx-auto py-12 px-4">
-        <div className="mb-8 text-center">
-          <input
-            type="text"
-            className="px-4 py-2 w-full md:w-1/2 border border-[#8A8B6C] rounded-md focus:border-[#C68B59] focus:ring-[#C68B59]"
-            placeholder="Buscar..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
+        <Search
+          onSearch={setFilters}
+          postTypes={Object.values(PostType)}
+        />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {filteredArticles.map((article) => (
-            <div
-              key={article.id}
-              className="bg-white shadow-lg rounded-xl overflow-hidden hover:shadow-2xl transition-transform transform hover:-translate-y-1"
-            >
-              <div className="relative h-52 group">
-                <img
-                  src={getFirstImage(article)}
-                  alt={article.name}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = 'http://localhost:5000/uploads/default.jpg';
-                  }}
-                />
-                {article.images && article.images.length > 1 && (
-                  <div className="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded-lg text-sm">
-                    <i className="fas fa-images mr-1"></i>
-                    {article.images.length}
-                  </div>
-                )}
-              </div>
-
-              <div className="p-6">
-                <h3 className="text-2xl font-semibold text-[#1B3A4B] mb-3">{article.name}</h3>
-                <p className="text-[#8A8B6C] mb-4 line-clamp-4 leading-relaxed">{article.description}</p>
-
-                <div className="flex justify-between items-center">
-                  <div className="flex space-x-2">
-                    {role === 'admin' && token && (
-                      <>
-                        <ButtonIcon
-                          icon="fas fa-edit"
-                          onClick={() => navigate(`/editar/${article.id}`)}
-                          title="Editar"
-                          className="text-[#8A8B6C] hover:text-[#1B3A4B]"
-                        />
-                        <ButtonIcon
-                          icon="fas fa-trash"
-                          onClick={() => handleDelete(article.id)}
-                          title="Eliminar"
-                          className="text-[#C68B59] hover:text-[#1B3A4B]"
-                        />
-                      </>
-                    )}
-                  </div>
-
-                  {token && (
-                    <div className="flex items-center">
-                      <ButtonIcon
-                        icon={likes[article.id] ? "fas fa-heart text-[#C68B59]" : "far fa-heart"}
-                        onClick={() => handleLike(article.id)}
-                        title="Me gusta"
-                        className={likes[article.id] ? "text-[#C68B59]" : "text-[#8A8B6C]"}
-                      />
-                      <span className="ml-2 text-[#8A8B6C]">{likes[article.id] || 0}</span>
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#1B3A4B]"></div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {filteredArticles.map((article) => (
+              <div
+                key={article.id}
+                className="bg-white shadow-lg rounded-xl overflow-hidden hover:shadow-2xl transition-transform transform hover:-translate-y-1"
+              >
+                <div className="relative h-52 group">
+                  <img
+                    src={getFirstImage(article)}
+                    alt={article.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'http://localhost:5000/uploads/default.jpg';
+                    }}
+                  />
+                  {article.images && article.images.length > 1 && (
+                    <div className="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded-lg text-sm">
+                      <i className="fas fa-images mr-1"></i>
+                      {article.images.length}
                     </div>
                   )}
                 </div>
 
-                <Link
-                  to={`/post/${article.id}`}
-                  className="text-[#1B3A4B] font-medium hover:text-[#C68B59] transition-colors mt-6 inline-block"
-                >
-                  Leer más...
-                </Link>
+                <div className="p-6">
+                  <h3 className="text-2xl font-semibold text-[#1B3A4B] mb-3">{article.name}</h3>
+                  <p className="text-[#8A8B6C] mb-4 line-clamp-4 leading-relaxed">
+                    {article.description}
+                  </p>
+
+                  <div className="flex justify-between items-center">
+                    <div className="flex space-x-2">
+                      {role === 'admin' && token && (
+                        <>
+                          <ButtonIcon
+                            icon="fas fa-edit"
+                            onClick={() => navigate(`/editar/${article.id}`)}
+                            title="Editar"
+                            className="text-[#8A8B6C] hover:text-[#1B3A4B]"
+                          />
+                          <ButtonIcon
+                            icon="fas fa-trash"
+                            onClick={() => handleDelete(article.id)}
+                            title="Eliminar"
+                            className="text-[#C68B59] hover:text-[#1B3A4B]"
+                          />
+                        </>
+                      )}
+                    </div>
+
+                    {token && (
+                      <div className="flex items-center">
+                        <ButtonIcon
+                          icon={likes[article.id] ? "fas fa-heart text-[#C68B59]" : "far fa-heart"}
+                          onClick={() => handleLike(article.id)}
+                          title="Me gusta"
+                          className={likes[article.id] ? "text-[#C68B59]" : "text-[#8A8B6C]"}
+                        />
+                        <span className="ml-2 text-[#8A8B6C]">{likes[article.id] || 0}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <Link
+                    to={`/post/${article.id}`}
+                    className="text-[#1B3A4B] font-medium hover:text-[#C68B59] transition-colors mt-6 inline-block"
+                  >
+                    Leer más...
+                  </Link>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {showCreate && role === 'admin' && token && (
           <Create
@@ -220,7 +276,6 @@ const Blog = () => {
 };
 
 export default Blog;
-
 
 
 

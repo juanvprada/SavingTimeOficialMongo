@@ -1,100 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getOnePost } from '../services/services';
+import { getOnePost, deletePost } from '../services/services';
 import { getComments } from '../services/commentServices';
 import ButtonIcon from '../components/ButtonIcon';
 import CommentForm from '../components/CommentForm';
+import ImageGallery from '../components/ImageGallery';
 import useStore from '../store/store';
-
-const ImageGallery = ({ images, postName }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [imageError, setImageError] = useState({});
-
-  const getImageUrl = (imageUrl) => {
-    if (!imageUrl || imageError[imageUrl]) {
-      return 'http://localhost:5000/uploads/default.jpg';
-    }
-
-    if (imageUrl.startsWith('http')) {
-      return imageUrl;
-    }
-    return `http://localhost:5000${imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`}`;
-  };
-
-  const handleImageError = (imageUrl) => {
-    setImageError(prev => ({ ...prev, [imageUrl]: true }));
-  };
-
-  const handlePrevious = () => {
-    setCurrentIndex(prev => (prev === 0 ? images.length - 1 : prev - 1));
-  };
-
-  const handleNext = () => {
-    setCurrentIndex(prev => (prev === images.length - 1 ? 0 : prev + 1));
-  };
-
-  if (!images || images.length === 0) {
-    return (
-      <div className="w-full h-96 flex items-center justify-center bg-gray-100 rounded-lg">
-        <div className="text-center">
-          <i className="fas fa-image text-gray-400 text-4xl mb-2"></i>
-          <p className="text-gray-500">No hay imágenes disponibles</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="relative w-full h-96">
-        <img
-          src={getImageUrl(images[currentIndex])}
-          alt={`${postName} - Imagen ${currentIndex + 1}`}
-          className="w-full h-full object-cover rounded-lg"
-          onError={() => handleImageError(images[currentIndex])}
-        />
-        {images.length > 1 && (
-          <>
-            <button
-              onClick={handlePrevious}
-              className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-opacity-75 transition-all"
-              aria-label="Imagen anterior"
-            >
-              <i className="fas fa-chevron-left"></i>
-            </button>
-            <button
-              onClick={handleNext}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-opacity-75 transition-all"
-              aria-label="Siguiente imagen"
-            >
-              <i className="fas fa-chevron-right"></i>
-            </button>
-          </>
-        )}
-      </div>
-      {images.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-2">
-          {images.map((image, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentIndex(index)}
-              className={`flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden border-2 transition-all ${
-                index === currentIndex ? 'border-[#1B3A4B]' : 'border-transparent'
-              }`}
-            >
-              <img
-                src={getImageUrl(image)}
-                alt={`Miniatura ${index + 1}`}
-                className="w-full h-full object-cover"
-                onError={() => handleImageError(image)}
-              />
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
+import { toast } from 'react-toastify';
 
 const PostDetail = () => {
   const { id } = useParams();
@@ -110,9 +22,17 @@ const PostDetail = () => {
     const fetchPost = async () => {
       try {
         setLoading(true);
-        const fetchedPost = await getOnePost(id);
-        console.log('Fetched post:', fetchedPost);
-        setPost(fetchedPost.data);
+        const response = await getOnePost(id);
+
+        if (response?.data) {
+          // Asegurarse de que images sea siempre un array
+          const postData = {
+            ...response.data,
+            images: response.data.images ||
+              (response.data.image ? [response.data.image] : [])
+          };
+          setPost(postData);
+        }
       } catch (error) {
         console.error("Error fetching post:", error);
         setError(error.message);
@@ -139,13 +59,27 @@ const PostDetail = () => {
 
     fetchComments();
   }, [id]);
-
   const handleCommentAdded = async () => {
     try {
       const commentsData = await getComments(id);
       setComments(commentsData?.data || []);
     } catch (error) {
       console.error('Error obteniendo comentarios:', error);
+    }
+  };
+
+  const handleDelete = async (postId) => {
+    if (!window.confirm('¿Estás seguro que deseas eliminar este post?')) {
+      return;
+    }
+
+    try {
+      await deletePost(postId);
+      toast.success('Post eliminado correctamente');
+      navigate('/blog');
+    } catch (error) {
+      console.error('Error al eliminar:', error);
+      toast.error('Error al eliminar el post');
     }
   };
 
@@ -178,26 +112,56 @@ const PostDetail = () => {
       <div className="bg-white shadow-lg rounded-lg overflow-hidden w-full max-w-4xl p-10 h-full" ref={postRef}>
         <h1 className="text-4xl font-bold text-[#1B3A4B] mb-6">{post.name}</h1>
 
-        <ImageGallery 
-          images={post.images || [post.image]} 
+        <ImageGallery
+          images={post.images}
           postName={post.name}
         />
 
-        <p className="text-lg text-gray-700 leading-relaxed my-6">{post.description}</p>
+        <div className="my-6 space-y-4">
+          <p className="text-lg text-gray-700 leading-relaxed">{post.description}</p>
+
+          <div className="flex flex-col sm:flex-row gap-4 py-3 border-t border-b border-gray-200">
+            <div className="flex items-center">
+              <i className="fas fa-map-marker-alt text-[#1B3A4B] mr-2"></i>
+              <span className="text-gray-700">
+                <strong className="text-[#1B3A4B]">Ciudad:</strong> {post.city || 'No especificada'}
+              </span>
+            </div>
+
+            <div className="flex items-center">
+              <i className="fas fa-tag text-[#1B3A4B] mr-2"></i>
+              <span className="text-gray-700">
+                <strong className="text-[#1B3A4B]">Precio persona:</strong> {
+                  post.price !== undefined && post.price !== null
+                    ? `${post.price.toLocaleString('es-ES', {
+                      style: 'currency',
+                      currency: 'EUR'
+                    })}`
+                    : 'No especificado'
+                }
+              </span>
+            </div>
+            <div className="flex items-center">
+              <i className="fas fa-star text-[#1B3A4B] mr-2"></i>
+              <span className="text-gray-700">
+                <strong className="text-[#1B3A4B]">Puntuación:</strong> {
+                  post.rating ? `${post.rating}/5` : 'No especificada'
+                }
+              </span>
+            </div>
+          </div>
+        </div>
 
         <p className="text-sm text-gray-500 mb-4">
-          Publicado por: {post.user?.name || 'Usuario desconocido'} el{' '}
-          {post.created_at
-            ? new Date(post.created_at).toLocaleString('es-ES', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            })
-            : 'Fecha no disponible'}
+          Publicado por: {post.userId?.name || 'Usuario desconocido'} el{' '}
+          {post.createdAt ? new Date(post.createdAt).toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          }) : 'Fecha no disponible'}
         </p>
-
         {role === 'admin' && token && (
           <div className="mt-6 flex justify-between items-center">
             <ButtonIcon
@@ -225,11 +189,11 @@ const PostDetail = () => {
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center text-gray-500">
                       <i className="fas fa-user mr-2"></i>
-                      <span>{comment.user?.name || 'Usuario desconocido'}</span>
+                      <span>{comment.userId?.name || 'Usuario desconocido'}</span>
                     </div>
-                    <time className="text-gray-400" dateTime={comment.created_at}>
-                      {comment.created_at
-                        ? new Date(comment.created_at).toLocaleString('es-ES', {
+                    <time className="text-gray-400" dateTime={comment.createdAt}>
+                      {comment.createdAt
+                        ? new Date(comment.createdAt).toLocaleString('es-ES', {
                           year: 'numeric',
                           month: 'long',
                           day: 'numeric',

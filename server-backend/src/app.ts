@@ -1,10 +1,10 @@
-// app.ts
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
-import { sequelize } from './database/sequelize';
-import { initializeAssociations } from './models';
+import fs from 'fs';
+import mongoose from 'mongoose';
+import { CONFIG } from './config/constants';
 import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
 import postRoutes from './routes/postRoutes';
@@ -15,75 +15,70 @@ import commentRoutes from './routes/commentRoutes';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 5000;
 
-// Endpoint de health check
-app.get('/health', (req, res) => {
-  try {
-    res.status(200).json({
-      status: 'OK',
-      uptime: process.uptime(),
-      timestamp: Date.now()
-    });
-  } catch (error) {
-    res.status(503).json({
-      status: 'ERROR',
-      message: error instanceof Error ? error.message : 'An unknown error occurred'
-    });
-  }
-});
-
-// Configuración de CORS mejorada
-const allowedOrigins = [
-  'https://savingtimeoficial-production.up.railway.app',
-  'http://localhost:3000',
-  'http://localhost:5000',
-  'http://localhost:8080',
-  process.env.FRONTEND_URL // Añadir URL de producción si existe
-].filter(Boolean); // Elimina valores undefined/null
-
+// CORS configuration
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.warn(`Origin not allowed: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:5000',
+    'http://localhost:5173',
+    'http://localhost:8080'
+  ],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token'],
+  exposedHeaders: ['*', 'Authorization']
 }));
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Middleware de logging básico
+// Debug logging middleware
 app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} ${req.method} ${req.path}`);
+  console.log(`${req.method} ${req.url}`);
   next();
 });
 
-// Middleware de manejo de errores
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Error:', err);
-  res.status(500).json({
-    message: 'Internal server error',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
-  });
+// Static files setup
+const uploadPath = path.join(__dirname, '../uploads');
+
+// Create uploads directory if it doesn't exist
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath, { recursive: true });
+}
+
+// Ensure default image exists
+const defaultImagePath = path.join(uploadPath, 'default.jpg');
+if (!fs.existsSync(defaultImagePath)) {
+  try {
+    // Create a simple default image or copy from assets
+    const defaultImageSource = path.join(__dirname, '../assets/default.jpg');
+    if (fs.existsSync(defaultImageSource)) {
+      fs.copyFileSync(defaultImageSource, defaultImagePath);
+    } else {
+      console.warn('Default image source not found at:', defaultImageSource);
+    }
+  } catch (error) {
+    console.error('Error setting up default image:', error);
+  }
+}
+
+// Serve static files with proper MIME types
+app.use('/uploads', (req, res, next) => {
+  express.static(uploadPath, {
+    setHeaders: (res, path) => {
+      if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
+        res.setHeader('Content-Type', 'image/jpeg');
+      } else if (path.endsWith('.png')) {
+        res.setHeader('Content-Type', 'image/png');
+      }
+    }
+  })(req, res, next);
 });
 
-// Archivos estáticos
-const uploadPath = path.join(__dirname, '../uploads');
-console.log('Upload path:', uploadPath);
-app.use('/uploads', express.static(uploadPath));
-
-// Inicializar asociaciones
-initializeAssociations();
-
-// Rutas API
+// API Routes
 const apiRouter = express.Router();
 apiRouter.use('/auth', authRoutes);
 apiRouter.use('/users', userRoutes);
@@ -93,55 +88,37 @@ apiRouter.use('/likes', likeRoutes);
 apiRouter.use('/comments', commentRoutes);
 app.use('/api', apiRouter);
 
-// Servir el frontend
-const publicPath = path.join(__dirname, '../public');
-app.use(express.static(publicPath));
-
-// Ruta catch-all para SPA
-app.get('*', (req, res) => {
-  res.sendFile(path.join(publicPath, 'index.html'));
-});
-
-// Iniciar servidor con verificación de base de datos
-const startServer = async () => {
+// Test endpoint for uploads directory
+app.get('/test-uploads', (req, res) => {
   try {
-    // Verificar variables de entorno críticas
-    const requiredEnvVars = ['MYSQLUSER', 'MYSQLPASSWORD', 'MYSQLHOST'];
-    const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
-    if (missingVars.length > 0) {
-      throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
-    }
-
-    // Conectar a la base de datos
-    await sequelize.authenticate();
-    console.log('✅ Base de datos conectada.');
-
-    // Sincronizar modelos (considera usar migrations en producción)
-    await sequelize.sync({ alter: true });
-    console.log('✅ Modelos sincronizados.');
-
-    // Iniciar servidor
-    app.listen(PORT, () => {
-      console.log(`
-🚀 Servidor iniciado exitosamente
-📡 Puerto: ${PORT}
-🌍 Ambiente: ${process.env.NODE_ENV || 'development'}
-🔗 URL: http://localhost:${PORT}
-      `);
+    const files = fs.readdirSync(uploadPath);
+    res.json({
+      message: 'Uploads directory content',
+      files,
+      uploadPath,
+      defaultImageExists: fs.existsSync(defaultImagePath)
     });
   } catch (error) {
-    console.error('❌ Error al iniciar el servidor:', error);
-    // Esperar un poco antes de salir para asegurar que los logs se escriban
-    setTimeout(() => process.exit(1), 1000);
+    res.status(500).json({
+      message: 'Error checking uploads directory',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
-};
-
-// Manejo de señales de terminación
-process.on('SIGTERM', () => {
-  console.log('SIGTERM recibido. Cerrando servidor...');
-  process.exit(0);
 });
 
-startServer();
+// MongoDB Connection
+mongoose
+  .connect(CONFIG.DB.URI)
+  .then(() => console.log('✅ MongoDB connection established.'))
+  .catch((err: Error) => {
+    console.error('❌ Error connecting to MongoDB:', err);
+    process.exit(1);
+  });
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
+  console.log(`📁 Uploads directory: ${uploadPath}`);
+});
 
 export default app;

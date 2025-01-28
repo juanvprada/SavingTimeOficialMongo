@@ -2,21 +2,19 @@ import { Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { CONFIG } from '../config/constants';
 import { AuthRequest, AuthUser } from '../types/request.types';
+import { TokenPayload } from '../types/token.types';
 
 export class AuthMiddleware {
   static authenticate(req: AuthRequest, res: Response, next: NextFunction) {
-    console.log('Headers:', req.headers);
     const token = req.headers.authorization?.split(' ')[1];
-    console.log('Token:', token);
   
     if (!token) {
       return res.status(401).json({ message: 'No token provided' });
     }
   
     try {
-      const verified = jwt.verify(token, CONFIG.JWT.SECRET) as AuthUser;
-      console.log('Verified token:', verified);
-      req.user = verified;
+      const verified = jwt.verify(token, CONFIG.JWT.SECRET) as TokenPayload;
+      req.user = verified; // Ahora `req.user` será del tipo `TokenPayload`
       next();
     } catch (error) {
       console.error('Auth error:', error);

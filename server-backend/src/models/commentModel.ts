@@ -1,76 +1,34 @@
-import { DataTypes } from 'sequelize';
-import { sequelize } from '../database/sequelize';
-import { BaseSequelizeModel, baseModelConfig } from './BaseModel';
+// models/commentModel.ts
+import mongoose, { Schema } from 'mongoose';
 import { IComment } from '../interfaces';
-import { UUID } from '../types';
 
-export class Comment extends BaseSequelizeModel<IComment> {
-  public postId!: UUID;
-  public userId!: UUID;
-  public content!: string;
-  public created_at!: Date;
-  public updated_at!: Date;
-
-  public static associate(): void {
-    const { User, Post } = require('./index');
-    Comment.belongsTo(User, { 
-      foreignKey: 'userId',
-      as: 'user'
-    });
-    Comment.belongsTo(Post, { 
-      foreignKey: 'postId',
-      as: 'post'
-    });
-  }
-}
-
-Comment.init({
-  id: {
-    type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
-    primaryKey: true,
-  },
+const commentSchema = new Schema<IComment>({
   postId: {
-    type: DataTypes.UUID,
-    allowNull: false,
-    references: {
-      model: 'posts',
-      key: 'id'
-    },
-    field: 'postId'
+    type: Schema.Types.ObjectId,
+    ref: 'Post',
+    required: true
   },
   userId: {
-    type: DataTypes.UUID,
-    allowNull: false,
-    references: {
-      model: 'users',
-      key: 'id'
-    },
-    field: 'userId'
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   },
   content: {
-    type: DataTypes.TEXT,
-    allowNull: false,
-    validate: {
-      notEmpty: true,
-      len: [1, 1000]
-    }
-  },
-  created_at: {
-    type: DataTypes.DATE,
-    allowNull: false,
-  },
-  updated_at: {
-    type: DataTypes.DATE,
-    allowNull: false,
+    type: String,
+    required: true,
+    minlength: 1,
+    maxlength: 1000
   }
 }, {
-  ...baseModelConfig,
-  sequelize,
-  modelName: 'Comment',
-  tableName: 'comments',
   timestamps: true,
-  underscored: true,
+  toJSON: {
+    transform: (_, ret) => {
+      ret.id = ret._id;
+      delete ret._id;
+      delete ret.__v;
+      return ret;
+    }
+  }
 });
 
-export default Comment;
+export const Comment = mongoose.model<IComment>('Comment', commentSchema);

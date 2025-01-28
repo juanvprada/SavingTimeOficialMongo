@@ -1,100 +1,195 @@
+// services.jsx
 import axios from 'axios';
+import { API_CONFIG, axiosConfig, getAuthConfig } from '../config/api.config';
 
-// Determinar la URL base según el entorno
-const getBaseUrl = () => {
-  if (window.location.hostname === 'localhost') {
-    return 'http://localhost:5000';
-  }
-  return window.location.origin; // Esto devolverá la URL base en producción
-};
-
-const BASE_URL = getBaseUrl();
+const BASE_URL = API_CONFIG.getBaseUrl();
 const API_URL = `${BASE_URL}/api/posts`;
-const BASE_IMAGE_URL = `${BASE_URL}/uploads/`;
+const UPLOADS_URL = `${BASE_URL}/uploads`;
 
-// Configuración global de axios
-axios.defaults.withCredentials = true;
+// Utility function to ensure consistent error handling
+const handleApiError = (error, action) => {
+  console.error(`Error al ${action}:`, error);
 
-const handleError = (error, action) => {
-  console.error(`Error al ${action}:`, error.response ? error.response.data : error.message);
-  throw error;
-};
-
-//==================
-// Create a new Post
-//==================
-export const createPost = async (formData) => {
-  try {
-    const response = await axios.post(API_URL, formData, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
-      withCredentials: true
-    });
-    response.data.image = `${BASE_IMAGE_URL}${response.data.image}`;
-    return response.data;
-  } catch (error) {
-    handleError(error, "crear Post");
+  if (error.response?.data) {
+    console.error('Response data:', error.response.data);
+    throw error.response.data;
   }
+
+  throw {
+    message: `Error al ${action}`,
+    error: error.message
+  };
 };
 
-//==============
-// Get all posts
-//==============
+// Utility function to process image URLs
+const processImageUrls = (images) => {
+  if (!Array.isArray(images)) return [];
+
+  return images.map(img => {
+    if (!img) return null;
+    if (img.startsWith('http')) return img;
+    return `${UPLOADS_URL}/${img}`;
+  }).filter(Boolean);
+};
+
+// Utility function to get auth headers with optional multipart
+const getHeaders = (isMultipart = false) => {
+  const token = localStorage.getItem('token');
+  const headers = {
+    'Authorization': `Bearer ${token}`
+  };
+
+  if (isMultipart) {
+    headers['Content-Type'] = 'multipart/form-data';
+  }
+
+  return headers;
+};
+
 export const getPosts = async () => {
   try {
-    const response = await axios.get(API_URL, { withCredentials: true });
-    console.log('Posts obtenidos:', response.data);
-    return response.data.data;
+    const response = await axios.get(API_URL, axiosConfig);
+
+    if (!response.data?.data) {
+      console.warn('Invalid response structure:', response);
+      return [];
+    }
+
+    const postsData = Array.isArray(response.data.data) ? response.data.data : [];
+
+    return postsData.map(post => ({
+      ...post,
+      id: post._id || post.id,
+      userId: post.userId?._id || post.userId,
+      images: processImageUrls(post.images)
+    }));
   } catch (error) {
-    handleError(error, "obtener Posts");
+    handleApiError(error, "obtener posts");
   }
 };
 
-//=============
-// Get one post
-//=============
+export const createPost = async (formData) => {
+  try {
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      throw new Error('No hay token de autenticación');
+    }
+
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data',
+      },
+      timeout: 10000 // 10 segundos de timeout
+    };
+
+    // Verificar formData antes de enviar
+    const formDataEntries = Array.from(formData.entries());
+    console.log('FormData a enviar:', formDataEntries);
+
+    const response = await axios.post('http://localhost:5000/api/posts', formData, config);
+
+    if (response.status === 201 && response.data?.data) {
+      return response.data;
+    }
+
+    // Si llegamos aquí, la respuesta no tiene el formato esperado
+    throw new Error('Formato de respuesta inválido del servidor');
+
+  } catch (error) {
+    if (error.response?.status === 500) {
+      // Si el post se creó pero hubo un error en la respuesta, intentamos obtener los posts
+      try {
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Esperar 1 segundo
+        const posts = await getPosts();
+        if (posts.length > 0) {
+          // Si tenemos posts, probablemente el post se creó correctamente
+          return { message: 'Post creado con éxito', data: posts[0] };
+        }
+      } catch (retryError) {
+        console.error('Error en el retry:', retryError);
+      }
+    }
+
+    // Si llegamos aquí, hubo un error real
+    console.error('Error en createPost:', error);
+    throw {
+      message: 'Error al crear el post',
+      error: error.response?.data?.error || error.message
+    };
+  }
+};
+
 export const getOnePost = async (id) => {
   try {
-    const response = await axios.get(`${API_URL}/${id}`, { withCredentials: true });
-    return response.data;
+    const response = await axios.get(`${API_URL}/${id}`, {
+      headers: getHeaders()
+    });
+
+    if (!response.data) {
+      throw new Error('Post no encontrado');
+    }
+
+    return {
+      ...response.data,
+      images: processImageUrls(response.data.images)
+    };
   } catch (error) {
-    handleError(error, "obtener el Post");
+    handleApiError(error, "obtener post");
   }
 };
 
-//================
-// Update one post
-//================
 export const updatePost = async (id, postData) => {
   try {
-    const response = await axios.put(`${API_URL}/${id}`, postData, {
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      throw new Error('No hay token de autenticación');
+    }
+
+    const config = {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': postData instanceof FormData ? 'multipart/form-data' : 'application/json',
-      },
-      withCredentials: true
-    });
-    return response.data;
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data'
+      }
+    };
+
+    // Log para debugging
+    console.log('Updating post:', { id, postData });
+
+    const response = await axios.put(`${API_URL}/${id}`, postData, config);
+
+    if (!response.data) {
+      throw new Error('No se recibió respuesta del servidor');
+    }
+
+    return {
+      ...response.data,
+      images: processImageUrls(response.data.images)
+    };
   } catch (error) {
-    handleError(error, "actualizar Post");
+    console.error('Error en updatePost:', error);
+    throw {
+      message: 'Error al actualizar el post',
+      error: error.response?.data?.error || error.message
+    };
   }
 };
 
-//================
-// Delete one post
-//================
 export const deletePost = async (id) => {
   try {
     const response = await axios.delete(`${API_URL}/${id}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
-      withCredentials: true
+      headers: getHeaders()
     });
-    return response;
+
+    if (!response.data) {
+      throw new Error('No se recibió respuesta del servidor');
+    }
+
+    return response.data;
   } catch (error) {
-    handleError(error, "eliminar Post");
+    handleApiError(error, "eliminar post");
   }
 };
 

@@ -1,38 +1,33 @@
+// likeServices.jsx
 import axios from 'axios';
+import { API_CONFIG, axiosConfig, getAuthConfig } from '../config/api.config';
 
-const API_URL = 'http://localhost:5000/api/likes';
+const BASE_URL = API_CONFIG.getBaseUrl();
+const API_URL = `${BASE_URL}/api/likes`;
 
-//==========================================
-// Función para alternar el like de un post
-//==========================================
 export const toggleLike = async (postId) => {
-  const token = localStorage.getItem('token');
-  console.log('Token:', token); // Debug token
-
   try {
-    const response = await axios.post(`${API_URL}/${postId}/toggle`, {}, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-    console.log('Response:', response); // Debug response
+    const response = await axios.post(
+      `${API_URL}/${postId}/toggle`, 
+      {}, 
+      getAuthConfig()
+    );
     return response.data;
   } catch (error) {
-    console.log('Error details:', error.response?.data); // Debug error
+    console.log('Error details:', error.response?.data);
     throw error;
   }
 };
 
-//===================================================
-// Función para obtener el conteo de likes de un post
-//===================================================
 export const getLikesCount = async (postId) => {
   try {
-    const response = await axios.get(`${API_URL}/${postId}/count`);
+    const response = await axios.get(
+      `${API_URL}/${postId}/count`,
+      axiosConfig
+    );
     return response.data;
   } catch (error) {
     console.error('Error al obtener el conteo de likes:', error);
     throw error;
   }
 };
-

@@ -1,9 +1,23 @@
-// types/index.ts
-export type UUID = string;
+import { Document, Types } from 'mongoose';
+
+export type UUID = Types.ObjectId;
 export type Timestamp = Date;
 
-export interface BaseModel {
-  id: UUID;
-  created_at?: Timestamp;
-  updated_at?: Timestamp;
+// Base interface para todos los modelos
+export interface BaseModel extends Document {
+  _id: UUID;
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
+}
+
+// Enums
+export enum UserRole {
+  ADMIN = 'admin',
+  USER = 'user'
+}
+
+export enum PostType {
+  BLOG = 'blog',
+  NEWS = 'news',
+  TUTORIAL = 'tutorial'
 }

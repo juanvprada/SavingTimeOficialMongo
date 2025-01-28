@@ -4,113 +4,206 @@ import { logoImg } from '../utils';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import useStore from '../store/store';
+import { normalizeImageUrl } from '../utils/imageUtils';
+
+// Define PostType enum
+export const PostType = {
+  BAR: 'Bar',
+  RESTAURANTE: 'Restaurante',
+  ALOJAMIENTO: 'Alojamiento',
+  MUSICAL: 'Musical',
+  TEATRO: 'Teatro',
+  LUGAR: 'Lugar',
+  EVENTO: 'Evento',
+};
 
 export const Create = ({ post, onSubmit, onCancel }) => {
-  const [images, setImages] = useState([]);
+  const [formData, setFormData] = useState({
+    name: '',
+    kindOfPost: '',
+    description: '',
+    images: [],
+    city: '',
+    price: '',
+    rating: ""
+  });
   const [imagePreviews, setImagePreviews] = useState([]);
-  const [title, setTitle] = useState('');
-  const [kindOfPost, setKindOfPost] = useState('');
-  const [description, setDescription] = useState('');
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const userId = useStore((state) => state.userId);
+  const [mainImageIndex, setMainImageIndex] = useState(0);
 
   useEffect(() => {
     if (post?.data) {
-      setTitle(post.data.name || '');
-      setKindOfPost(post.data.kindOfPost || '');
-      setDescription(post.data.description || '');
-      // Set image previews if there are existing images
+      setFormData({
+        name: post.data.name || '',
+        kindOfPost: post.data.kindOfPost || '',
+        description: post.data.description || '',
+        images: [],
+        city: post.data.city || '',
+        price: post.data.price?.toString() || '',
+        rating: post.data.rating?.toString() || ''
+      });
+
       if (post.data.images && Array.isArray(post.data.images)) {
-        setImagePreviews(post.data.images);
-      } else if (post.data.image) {
-        setImagePreviews([post.data.image]);
+        setImagePreviews(post.data.images.map(normalizeImageUrl).filter(Boolean));
       }
     }
   }, [post]);
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const validateImage = (file) => {
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+    if (!validTypes.includes(file.type)) {
+      toast.error(`${file.name} no es un tipo de imagen válido`);
+      return false;
+    }
+
+    if (file.size > maxSize) {
+      toast.error(`${file.name} excede el límite de 5MB`);
+      return false;
+    }
+
+    return true;
+  };
+
   const handleImageChange = (event) => {
-    const selectedImages = Array.from(event.target.files);
-    
-    if (selectedImages.length === 0) {
+    const selectedFiles = Array.from(event.target.files || []);
+    const totalImages = formData.images.length + selectedFiles.length;
+
+    if (totalImages > 10) {
+      toast.error('No puedes subir más de 10 imágenes');
       return;
     }
 
-    // Validate each image
-    const validImages = selectedImages.filter(file => {
-      const isValidType = file.type.startsWith('image/');
-      const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB limit
+    const validFiles = selectedFiles.filter(validateImage);
 
-      if (!isValidType) {
-        toast.error(`${file.name} no es un tipo de imagen válido`);
-      }
-      if (!isValidSize) {
-        toast.error(`${file.name} excede el límite de 5MB`);
-      }
+    setFormData(prev => ({
+      ...prev,
+      images: [...prev.images, ...validFiles]
+    }));
 
-      return isValidType && isValidSize;
-    });
+    // Create preview URLs
+    const newPreviews = validFiles.map(file => URL.createObjectURL(file));
+    setImagePreviews(prev => [...prev, ...newPreviews]);
 
-    if (validImages.length === 0) {
-      return;
+    // Si no hay imagen principal seleccionada, usar la primera
+    if (mainImageIndex === -1 && validFiles.length > 0) {
+      setMainImageIndex(0);
     }
-
-    setImages(prevImages => [...prevImages, ...validImages]);
-    
-    // Create preview URLs for valid images
-    const newPreviews = validImages.map(file => URL.createObjectURL(file));
-    setImagePreviews(prevPreviews => [...prevPreviews, ...newPreviews]);
   };
 
   const removeImage = (index) => {
-    setImages(prevImages => prevImages.filter((_, i) => i !== index));
-    setImagePreviews(prevPreviews => {
-      const newPreviews = prevPreviews.filter((_, i) => i !== index);
-      return newPreviews;
-    });
+    // Revoke the URL to prevent memory leaks
+    if (imagePreviews[index]?.startsWith('blob:')) {
+      URL.revokeObjectURL(imagePreviews[index]);
+    }
+
+    // Actualizar mainImageIndex si es necesario
+    if (index === mainImageIndex) {
+      setMainImageIndex(0);
+    } else if (index < mainImageIndex) {
+      setMainImageIndex(prev => prev - 1);
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
+
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    if (!userId) {
-      setError('Sesión no válida. Por favor, inicia sesión nuevamente.');
-      return;
-    }
-
-    if (images.length === 0 && !post?.data) {
-      toast.error('Debes subir al menos una imagen.');
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('name', title);
-    formData.append('kindOfPost', kindOfPost);
-    formData.append('description', description);
-    formData.append('userId', userId);
-
-    // Append all images
-    images.forEach((image, index) => {
-      formData.append('images', image);
-    });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError('');
 
     try {
+      // Validaciones existentes
+      if (!formData.name.trim()) throw new Error('El nombre es requerido');
+      if (!formData.kindOfPost) throw new Error('El tipo de post es requerido');
+      if (formData.description.trim().length < 10) throw new Error('La descripción debe tener al menos 10 caracteres');
+      if (!formData.city.trim()) throw new Error('La ciudad es requerida');
+      if (!formData.price || Number(formData.price) < 0) throw new Error('El precio debe ser un número válido');
+      if (!formData.rating || Number(formData.rating) < 1 || Number(formData.rating) > 5) throw new Error('La puntuación debe estar entre 1 y 5');
+
+      const submitData = new FormData();
+      submitData.append('name', formData.name.trim());
+      submitData.append('kindOfPost', formData.kindOfPost);
+      submitData.append('description', formData.description.trim());
+      submitData.append('userId', userId.toString());
+      submitData.append('city', formData.city.trim());
+      submitData.append('price', Number(formData.price).toString());
+      submitData.append('rating', Number(formData.rating).toString());
+
+      // Manejo de imágenes
+      if (imagePreviews?.length > 0) {
+        // Reordenar previews
+        const reorderedPreviews = [...imagePreviews];
+        if (mainImageIndex > 0) {
+          const mainImage = reorderedPreviews[mainImageIndex];
+          reorderedPreviews.splice(mainImageIndex, 1);
+          reorderedPreviews.unshift(mainImage);
+        }
+
+        // Agregar todas las imágenes existentes
+        reorderedPreviews.forEach((preview, index) => {
+          if (preview.startsWith('http')) {
+            submitData.append('existingImages', preview);
+          }
+        });
+
+        // Agregar las nuevas imágenes
+        if (formData.images.length > 0) {
+          formData.images.forEach(file => {
+            submitData.append('images', file);
+          });
+        }
+      }
       let response;
-      if (post?.data) {
-        response = await updatePost(post.data.id, formData);
-        toast.success('Post actualizado exitosamente');
+      if (post?.data?.id) {
+        response = await updatePost(post.data.id, submitData);
+        toast.success('Post actualizado con éxito');
       } else {
-        response = await createPost(formData);
-        toast.success('Post creado exitosamente');
+        response = await createPost(submitData);
+        toast.success('Post creado con éxito');
       }
 
-      console.log('Respuesta del servidor:', response);
-      onSubmit(response.data);
-      onCancel();
+      setFormData({
+        name: '',
+        kindOfPost: '',
+        description: '',
+        city: '',
+        price: '',
+        rating: '',
+        images: []
+      });
+      setImagePreviews([]);
+      setMainImageIndex(0);
+
+      if (onSubmit) onSubmit(response.data);
+      navigate('/blog');
+
     } catch (error) {
-      console.error('Error al procesar el Post:', error);
-      toast.error('Hubo un error al procesar el Post: ' + error.message);
-      setError('Hubo un error al procesar el Post: ' + error.message);
+      console.error('Error en submit:', error);
+      const errorMessage = error instanceof Error ? error.message :
+        typeof error === 'string' ? error :
+          error.response?.data?.message || 'Error al crear el post';
+      toast.error(errorMessage);
+      setError(errorMessage);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -120,97 +213,158 @@ export const Create = ({ post, onSubmit, onCancel }) => {
         <div className="flex justify-center mb-4">
           <img src={logoImg} alt="Logo" className="h-12 sm:h-16 w-auto" />
         </div>
+
         <h3 className="text-center text-2xl font-bold text-[#1B3A4B] mb-4 sm:mb-6">
           {post?.data ? 'Editar Post' : 'Nuevo Post'}
         </h3>
-        {error && <div className="text-[#C68B59] text-center mb-4">{error}</div>}
 
-        <form onSubmit={handleSubmit} className="flex flex-col items-center gap-4 w-full">
+        {error && (
+          <div className="text-red-500 text-center mb-4 p-2 bg-red-100 rounded">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
-            id="title"
+            name="name"
+            value={formData.name}
+            onChange={handleInputChange}
             placeholder="Nombre"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full p-2 sm:p-3 border border-[#8A8B6C] rounded-md bg-white text-lg focus:border-[#C68B59] focus:outline-none"
+            className="w-full p-2 border rounded focus:ring-2"
             required
           />
+
           <select
-            id="kindOfPost"
-            value={kindOfPost}
-            onChange={(e) => setKindOfPost(e.target.value)}
-            className="w-full p-2 sm:p-3 border border-[#8A8B6C] rounded-md bg-white text-lg focus:border-[#C68B59] focus:outline-none"
+            name="kindOfPost"
+            value={formData.kindOfPost}
+            onChange={handleInputChange}
+            className="w-full p-2 border rounded focus:ring-2"
             required
           >
             <option value="">Selecciona un tipo</option>
-            <option value="Bar">Bar</option>
-            <option value="Restaurante">Restaurante</option>
-            <option value="Alojamiento">Alojamiento</option>
-            <option value="Musical">Musical</option>
-            <option value="Teatro">Teatro</option>
-            <option value="Lugar">Lugar</option>
-            <option value="Evento">Evento</option>
+            {Object.values(PostType).map(type => (
+              <option key={type} value={type}>{type}</option>
+            ))}
           </select>
-          <textarea
-            id="description"
-            placeholder="Descripción"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="w-full p-2 sm:p-3 border border-[#8A8B6C] rounded-md bg-white text-lg focus:border-[#C68B59] focus:outline-none h-24 resize-none"
-            required
-          ></textarea>
 
-          <div className="w-full">
+          <input
+            type="text"
+            name="city"
+            value={formData.city}
+            onChange={handleInputChange}
+            placeholder="Ciudad"
+            className="w-full p-2 border rounded focus:ring-2"
+            required
+          />
+
+          <input
+            type="number"
+            name="price"
+            value={formData.price}
+            onChange={handleInputChange}
+            placeholder="Precio"
+            min="0"
+            step="0.01"
+            className="w-full p-2 border rounded focus:ring-2"
+            required
+          />
+
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
+            placeholder="Descripción"
+            className="w-full p-2 border rounded focus:ring-2 h-32"
+            required
+          />
+          <input
+            type="number"
+            name="rating"
+            value={formData.rating}
+            onChange={handleInputChange}
+            placeholder="Puntuación (1-5)"
+            min="1"
+            max="5"
+            className="w-full p-2 border rounded focus:ring-2"
+            required
+          />
+
+
+          <div className="space-y-2">
             <input
               type="file"
-              id="images"
               accept="image/*"
               onChange={handleImageChange}
-              className="w-full p-2 text-sm border border-[#8A8B6C] rounded-md bg-white"
               multiple
+              className="w-full p-2 border rounded"
             />
-            <p className="text-sm text-gray-500 mt-1">
-              Máximo 5MB por imagen. Formatos permitidos: JPG, PNG, GIF
+            <p className="text-sm text-gray-500">
+              Máximo 10 imágenes, 5MB por imagen
             </p>
           </div>
 
           {imagePreviews.length > 0 && (
-            <div className="w-full">
-              <h4 className="text-lg text-[#1B3A4B] my-2">Imágenes:</h4>
+            <div className="space-y-2">
+              <p className="text-sm text-gray-500 mb-2">
+                Click en "★" para establecer como imagen principal
+              </p>
               <div className="grid grid-cols-2 gap-2">
                 {imagePreviews.map((preview, index) => (
-                  <div key={index} className="relative">
+                  <div key={index} className="relative group">
                     <img
                       src={preview}
                       alt={`Preview ${index + 1}`}
-                      className="w-full h-32 object-cover rounded-lg"
+                      className={`w-full h-32 object-cover rounded ${index === mainImageIndex ? 'ring-2 ring-[#1B3A4B]' : ''
+                        }`}
                     />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors"
-                    >
-                      ×
-                    </button>
+                    <div className="absolute top-1 right-1 flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setMainImageIndex(index)}
+                        className={`w-6 h-6 flex items-center justify-center rounded-full ${index === mainImageIndex
+                          ? 'bg-[#1B3A4B] text-white'
+                          : 'bg-white text-gray-400 hover:text-[#1B3A4B]'
+                          }`}
+                      >
+                        ★
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center"
+                      >
+                        ×
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          <input
-            type="submit"
-            id="save"
-            value={post?.data ? "Actualizar" : "Crear"}
-            className="w-full p-3 text-lg font-bold bg-[#1B3A4B] text-white rounded-md cursor-pointer hover:bg-[#8A8B6C] transition-colors"
-          />
-          <button
-            type="button"
-            onClick={onCancel}
-            className="w-full p-3 text-lg font-bold bg-[#C68B59] text-white rounded-md cursor-pointer hover:bg-[#8A8B6C] transition-colors"
-          >
-            Cancelar
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`flex-1 p-2 text-white rounded ${isSubmitting ? 'bg-gray-400' : 'bg-[#1B3A4B] hover:bg-[#8A8B6C]'
+                }`}
+            >
+              {isSubmitting
+                ? 'Procesando...'
+                : post?.data
+                  ? 'Actualizar'
+                  : 'Crear'}
+            </button>
+
+            <button
+              type="button"
+              onClick={onCancel}
+              className="flex-1 p-2 bg-[#C68B59] text-white rounded hover:bg-[#8A8B6C]"
+            >
+              Cancelar
+            </button>
+          </div>
         </form>
       </div>
     </div>

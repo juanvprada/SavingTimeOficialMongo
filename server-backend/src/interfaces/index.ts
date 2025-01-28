@@ -1,37 +1,38 @@
-import { UUID, Timestamp, BaseModel } from '../types';
+// interfaces/index.ts
+import { Types } from 'mongoose';
+import { MongoBaseModel } from '../types/mongoBaseModel';
 
-export interface IUser extends BaseModel {
+export interface IUser extends MongoBaseModel {
   name: string;
   email: string;
   password: string;
   role: UserRole;
 }
 
-export interface IPost extends BaseModel {
+export interface IPost extends MongoBaseModel {
   name: string;
   kindOfPost: PostType;
   description: string;
   images: string[] | null;
-  userId: UUID;
+  userId: Types.ObjectId;
+  city: string;
+  price: number;
+  rating: number;
 }
 
-// Actualizamos ILike para extender de BaseModel y usar UUID para id
-export interface ILike extends BaseModel {
-  postId: UUID;
-  userId: UUID;
+export interface ILike extends MongoBaseModel {
+  postId: Types.ObjectId;
+  userId: Types.ObjectId;
   post?: IPost;
   user?: IUser;
 }
 
-// Actualizamos IComment para extender de BaseModel y usar UUID para id
-export interface IComment extends BaseModel {
-  postId: UUID;
-  userId: UUID;
+export interface IComment extends MongoBaseModel {
+  postId: Types.ObjectId;
+  userId: Types.ObjectId;
   content: string;
   post?: IPost;
   user?: IUser;
-  created_at?: Date;
-  updated_at?: Date;
 }
 
 export enum UserRole {
@@ -47,5 +48,4 @@ export enum PostType {
   Teatro = 'Teatro',
   Lugar = 'Lugar',
   Evento = 'Evento',
-
 }

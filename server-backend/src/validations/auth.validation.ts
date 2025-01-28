@@ -1,27 +1,56 @@
+// auth.validation.ts
 import { body } from 'express-validator';
 
 export const AuthValidation = {
   register: [
-    body('name').notEmpty().withMessage('El nombre es requerido'),
-    body('email').isEmail().withMessage('Email inválido'),
+    body('name')
+      .trim()
+      .notEmpty().withMessage('El nombre es requerido')
+      .isLength({ min: 2, max: 100 }).withMessage('El nombre debe tener entre 2 y 100 caracteres')
+      .matches(/^[a-zA-ZÀ-ÿ\s]{2,}$/).withMessage('El nombre solo debe contener letras'),
+    
+    body('email')
+      .trim()
+      .notEmpty().withMessage('El email es requerido')
+      .isEmail().withMessage('Email inválido')
+      .normalizeEmail(),
+    
     body('password')
-      .isLength({ min: 6 })
-      .withMessage('La contraseña debe tener al menos 6 caracteres')
+      .trim()
+      .notEmpty().withMessage('La contraseña es requerida')
+      .isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres')
+      .matches(/\d/).withMessage('La contraseña debe contener al menos un número')
   ],
   
   login: [
-    body('email').isEmail().withMessage('Email inválido'),
-    body('password').notEmpty().withMessage('La contraseña es requerida')
+    body('email')
+      .trim()
+      .notEmpty().withMessage('El email es requerido')
+      .isEmail().withMessage('Email inválido')
+      .normalizeEmail(),
+    
+    body('password')
+      .trim()
+      .notEmpty().withMessage('La contraseña es requerida')
   ],
   
   recoverPassword: [
-    body('email').isEmail().withMessage('Email inválido')
+    body('email')
+      .trim()
+      .notEmpty().withMessage('El email es requerido')
+      .isEmail().withMessage('Email inválido')
+      .normalizeEmail()
   ],
   
   resetPassword: [
-    body('token').notEmpty().withMessage('Token es requerido'),
+    body('token')
+      .trim()
+      .notEmpty().withMessage('Token es requerido'),
+    
     body('password')
-      .isLength({ min: 6 })
-      .withMessage('La contraseña debe tener al menos 6 caracteres')
+      .trim()
+      .notEmpty().withMessage('La contraseña es requerida')
+      .isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres')
+      .matches(/\d/).withMessage('La contraseña debe contener al menos un número')
   ]
 };

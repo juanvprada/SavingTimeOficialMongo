@@ -7,7 +7,7 @@ const ProtectedRoute = ({ element }) => {
   const token = useStore((state) => state.token);
   const isAuthenticated = !!token;
 
-  return isAuthenticated ? element : <Navigate to="/acceso" />;
+  return isAuthenticated ? element : <Navigate to="/" />;
 };
 
 export default ProtectedRoute;

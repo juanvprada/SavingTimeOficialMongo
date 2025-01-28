@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { User } from '../models';
+import { User } from '../models/userModel';
 import { AuthService } from '../services/auth.service';
 import { ApiResponse, AuthResponse, AuthRequest } from '../types/request.types';
 import { IUser } from '../interfaces';
@@ -8,92 +8,92 @@ import { CONFIG } from '../config/constants';
 
 export class UserController {
   static async register(req: Request, res: Response<ApiResponse<AuthResponse>>) {
-    const { name, email, password, role = 'user' } = req.body;
+    const { name, email, password } = req.body;
 
     try {
-      const existingUser = await User.findOne({ where: { email } });
+      // Check if email already exists
+      const existingUser = await User.findOne({ email: email.toLowerCase() });
       if (existingUser) {
-        return res.status(400).json({ 
-          message: 'El usuario ya existe' 
+        return res.status(400).json({
+          message: 'Este email ya está registrado'
         });
       }
 
+      // Create new user
       const hashedPassword = await AuthService.hashPassword(password);
       const newUser = await User.create({
-        name,
-        email,
+        name: name.trim(),
+        email: email.toLowerCase().trim(),
         password: hashedPassword,
-        role,
+        role: 'user' // Default role
       });
 
-      const token = AuthService.generateToken(newUser);
+      // Generate token
+      const token = AuthService.generateToken({
+        userId: newUser._id.toString(),
+        role: newUser.role,
+        email: newUser.email,
+        name: newUser.name,
+      });
 
       return res.status(201).json({
         message: 'Usuario registrado con éxito',
         data: {
-          userId: newUser.id,
+          userId: newUser._id.toString(),
           role: newUser.role,
           name: newUser.name,
-          token
-        }
+          token,
+        },
       });
     } catch (error) {
       console.error('Error al registrar usuario:', error);
       return res.status(500).json({
-        message: 'Error al registrar el usuario',
-        error
+        message: 'Error al registrar el usuario, por favor intente nuevamente',
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   }
 
   static async login(req: Request, res: Response<ApiResponse<AuthResponse>>) {
     const { email, password } = req.body;
-  
+
     try {
-      const user = await User.findOne({ 
-        where: { email },
-        attributes: ['id', 'name', 'email', 'password', 'role']
-      });
-  
+      const user = await User.findOne({ email }).select('+password');
+
       if (!user || !(await AuthService.comparePasswords(password, user.password))) {
         return res.status(401).json({
-          message: 'Credenciales inválidas'
+          message: 'Credenciales inválidas',
         });
       }
-  
-      const token = AuthService.generateToken(user);
-  
-      // Añade console.log para debug
-      console.log('Enviando respuesta:', {
-        userId: user.id,
+
+      const token = AuthService.generateToken({
+        userId: user._id.toString(), // Convertir ObjectId a string
         role: user.role,
+        email: user.email,
         name: user.name,
-        token
       });
-  
+
       return res.json({
         message: 'Inicio de sesión exitoso',
         data: {
-          userId: user.id,  
+          userId: user._id.toString(), // Convertir ObjectId a string
           role: user.role,
           name: user.name,
-          token
-        }
+          token,
+        },
       });
     } catch (error) {
       console.error('Error en login:', error);
       return res.status(500).json({
         message: 'Error al iniciar sesión',
-        error
+        error,
       });
     }
   }
 
   static async getAll(req: Request, res: Response<ApiResponse<IUser[]>>) {
     try {
-      const users = await User.findAll({
-        attributes: ['id', 'email', 'role']
-      });
+      const users = await User.find({}, 'email role');
 
       return res.json({
         message: 'Usuarios obtenidos con éxito',
@@ -107,20 +107,19 @@ export class UserController {
       });
     }
   }
+
   static async getById(req: Request, res: Response<ApiResponse<IUser>>) {
     const { id } = req.params;
-  
+
     try {
-      const user = await User.findByPk(id, {
-        attributes: ['id', 'name', 'email', 'role']
-      });
-  
+      const user = await User.findById(id).select('-password');
+
       if (!user) {
         return res.status(404).json({
           message: 'Usuario no encontrado'
         });
       }
-  
+
       return res.json({
         message: 'Usuario encontrado',
         data: user
@@ -133,22 +132,23 @@ export class UserController {
       });
     }
   }
-  
   static async update(req: Request, res: Response<ApiResponse<IUser>>) {
     const { id } = req.params;
     const updateData = req.body;
-  
+
     try {
-      const user = await User.findByPk(id);
-  
-      if (!user) {
+      const updatedUser = await User.findByIdAndUpdate(
+        id,
+        { $set: updateData },
+        { new: true, runValidators: true }
+      ).select('-password');
+
+      if (!updatedUser) {
         return res.status(404).json({
           message: 'Usuario no encontrado'
         });
       }
-  
-      const updatedUser = await user.update(updateData);
-  
+
       return res.json({
         message: 'Usuario actualizado exitosamente',
         data: updatedUser
@@ -161,32 +161,33 @@ export class UserController {
       });
     }
   }
+
   static async recoverPassword(req: Request, res: Response) {
     const { email } = req.body;
 
     try {
-      const user = await User.findOne({ where: { email } });
+      const user = await User.findOne({ email });
       if (!user) {
-        return res.status(404).json({ 
-          message: 'Usuario no encontrado' 
+        return res.status(404).json({
+          message: 'Usuario no encontrado',
         });
       }
 
       const token = jwt.sign(
-        { userId: user.id },
+        { userId: user._id.toString() }, // Convertir ObjectId a string
         CONFIG.JWT.SECRET,
         { expiresIn: '2h' }
       );
-      
+
       return res.status(200).json({
         message: 'Token de recuperación generado exitosamente',
-        data: { token }
+        data: { token },
       });
     } catch (error) {
       console.error('Error al generar token de recuperación:', error);
       return res.status(500).json({
         message: 'Error al generar token de recuperación',
-        error
+        error,
       });
     }
   }
@@ -196,25 +197,25 @@ export class UserController {
 
     try {
       const decoded = jwt.verify(token, CONFIG.JWT.SECRET) as { userId: string };
-      const user = await User.findByPk(decoded.userId);
+      const user = await User.findById(decoded.userId);
 
       if (!user) {
-        return res.status(404).json({ 
-          message: 'Usuario no encontrado' 
+        return res.status(404).json({
+          message: 'Usuario no encontrado',
         });
       }
 
       const hashedPassword = await AuthService.hashPassword(password);
-      await user.update({ password: hashedPassword });
+      await User.findByIdAndUpdate(user._id, { password: hashedPassword });
 
       return res.status(200).json({
-        message: 'Contraseña restablecida exitosamente'
+        message: 'Contraseña restablecida exitosamente',
       });
     } catch (error) {
       console.error('Error al restablecer contraseña:', error);
       return res.status(400).json({
         message: 'Token inválido o expirado',
-        error
+        error,
       });
     }
   }
@@ -223,13 +224,11 @@ export class UserController {
     const userId = req.user?.userId;
 
     try {
-      const user = await User.findByPk(userId, {
-        attributes: ['id', 'name', 'email', 'role']
-      });
+      const user = await User.findById(userId).select('-password');
 
       if (!user) {
-        return res.status(404).json({ 
-          message: 'Usuario no encontrado' 
+        return res.status(404).json({
+          message: 'Usuario no encontrado'
         });
       }
 
@@ -246,7 +245,6 @@ export class UserController {
     }
   }
 }
-
 
 
 

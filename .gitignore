@@ -1,26 +1,34 @@
+# Dependencies
 client-frontend/node_modules
 server-backend/node_modules
-server-backend/src/uploads
-client-frontend/src/blog-content
 
-.vite
-.vscode
-
-#Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-# Quita o comenta esta línea
-# dist
+# Build outputs
+dist
 dist-ssr
+build
 *.local
 
-# Editor directories and files
+# Media and uploads
+server-backend/src/uploads
+client-frontend/src/blog-content
+*.jpeg
+*.jpg
+*.png
+*.webp
+*.mp4
+client-frontend/src/assets/home-video/
+
+# Environment files
+client-frontend/.env
+server-backend/.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# IDE and editor files
+.vite
+.vscode
 .idea
 .DS_Store
 *.suo
@@ -29,6 +37,26 @@ dist-ssr
 *.sln
 *.sw?
 
-# Environment variables
-client-frontend/.env
-server-backend/.env
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# MongoDB specific
+*.mongodb
+.mongodb/
+.mongosh.load
+mongod.lock
+
+# Coverage and test
+coverage
+.nyc_output
+
+# Temporary files
+.temp
+.tmp
+.cache

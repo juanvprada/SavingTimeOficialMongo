@@ -3,39 +3,66 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import useStore from '../store/store';
 import { FaUser, FaEnvelope, FaLock } from 'react-icons/fa';
+import { API_CONFIG } from '../config/api.config';
 
-const RegisterForm = ({ inputTextColor, formBackground }) => {
+const RegisterForm = ({ inputTextColor = 'text-gray-700', formBackground = 'bg-white' }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
-  const setToken = useStore((state) => state.setToken);
-  const setRole = useStore((state) => state.setRole);
-  const setUsername = useStore((state) => state.setUsername);
+  const { setUserData } = useStore();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setMessage('');
+    setIsLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/register', {
-        name,
-        email,
-        password,
-      });
-      setMessage('Usuario registrado con éxito.');
+      const response = await axios.post(
+        `${API_CONFIG.getBaseUrl()}/api/auth/register`,
+        {
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          password
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          withCredentials: true
+        }
+      );
 
       const { data } = response.data;
-      setToken(data.token);
-      setRole(data.role);
-      setUsername(data.name);
 
+      // Usar setUserData con la estructura correcta
+      setUserData({
+        token: data.token,
+        role: data.role,
+        name: data.name,
+        _id: data.userId  // Nota: cambiado a _id para coincidir con tu store
+      });
+
+      setMessage('¡Registro exitoso!');
+      
+      // Dar tiempo para que se muestre el mensaje de éxito
       setTimeout(() => {
         navigate('/blog');
-      }, 1000);
+      }, 1500);
+
     } catch (error) {
-      setMessage(error.response ? error.response.data.message : 'Error al registrar usuario');
+      console.error('Error detallado:', error.response?.data);
+      
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.errors?.[0]?.message || 
+                          'Error en el registro. Por favor, intente nuevamente.';
+      
+      setMessage(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -43,53 +70,79 @@ const RegisterForm = ({ inputTextColor, formBackground }) => {
     <section className={`max-w-md mx-auto p-8 rounded-lg shadow-lg mt-2 ${formBackground}`}>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="relative">
-          <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8A8B6C]" />
+          <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Nombre de usuario"
-            className="w-full pl-10 pr-4 py-2 border border-[#8A8B6C] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#C68B59] transition bg-transparent text-[#E3D5C7]"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-transparent text-white placeholder-gray-400"
             required
+            disabled={isLoading}
+            minLength={2}
+            maxLength={100}
           />
         </div>
+        
         <div className="relative">
-          <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8A8B6C]" />
+          <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Correo Electrónico"
-            className="w-full pl-10 pr-4 py-2 border border-[#8A8B6C] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#C68B59] transition bg-transparent text-[#E3D5C7]"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-transparent text-white placeholder-gray-400"
             required
+            disabled={isLoading}
           />
         </div>
+        
         <div className="relative">
-          <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8A8B6C]" />
+          <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Contraseña"
-            className="w-full pl-10 pr-4 py-2 border border-[#8A8B6C] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#C68B59] transition bg-transparent text-[#E3D5C7]"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-transparent text-white placeholder-gray-400"
             required
+            disabled={isLoading}
+            minLength={6}
           />
         </div>
+
         <button
           type="submit"
-          className="w-full bg-[#1B3A4B] text-white font-medium py-3 rounded-lg hover:bg-[#8A8B6C] shadow-md transition"
+          disabled={isLoading}
+          className={`w-full bg-blue-600 text-white font-medium py-3 rounded-lg transition
+            ${isLoading 
+              ? 'opacity-50 cursor-not-allowed' 
+              : 'hover:bg-blue-700 active:bg-blue-800 shadow-md hover:shadow-lg'
+            }`}
         >
-          Registrar
+          {isLoading ? 'Registrando...' : 'Registrar'}
         </button>
       </form>
-      {message && <p className="text-[#C68B59] text-sm text-center mt-4">{message}</p>}
+
+      {message && (
+        <p 
+          className={`text-sm text-center mt-4 ${
+            message.includes('exitoso') ? 'text-green-600' : 'text-red-600'
+          }`}
+        >
+          {message}
+        </p>
+      )}
+
       <p className="mt-6 text-center text-sm">
-        <span className={`hover:text-[#C68B59] transition ${inputTextColor}`}>
-          ¿Has olvidado tu contraseña?
-        </span>{' '}
+        <span className={`${inputTextColor}`}>
+          ¿Has olvidado tu contraseña?{' '}
+        </span>
         <button
           onClick={() => navigate('/recuperar-password')}
-          className="text-[#C68B59] hover:text-[#8A8B6C] hover:underline focus:outline-none transition"
+          className="text-blue-600 hover:text-blue-700 hover:underline focus:outline-none transition"
+          disabled={isLoading}
+          type="button"
         >
           Recuperar contraseña
         </button>
