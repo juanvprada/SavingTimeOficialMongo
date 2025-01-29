@@ -1,5 +1,5 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-swc'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react-swc';
 
 export default defineConfig({
   plugins: [react()],
@@ -13,14 +13,28 @@ export default defineConfig({
         changeOrigin: true,
         secure: true,
         ws: true,
-        rewrite: (path) => path.replace(/^\/api/, '/api')
+        rewrite: (path) => path.replace(/^\/api/, '/api'),
+        configure: (proxy, _options) => {
+          proxy.on('proxyReq', (proxyReq, _req, _res) => {
+            proxyReq.setHeader('X-Forwarded-Proto', 'https');
+            proxyReq.setHeader('origin', 'https://savingtimeoficial.eu-4.evennode.com');
+          });
+        }
       },
       '/uploads': {
         target: 'https://savingtimeoficial.eu-4.evennode.com',
         changeOrigin: true,
         secure: true,
-        ws: true
+        ws: true,
+        configure: (proxy, _options) => {
+          proxy.on('proxyReq', (proxyReq, _req, _res) => {
+            proxyReq.setHeader('X-Forwarded-Proto', 'https');
+          });
+        }
       }
     }
+  },
+  define: {
+    'process.env.VITE_BASE_URL': JSON.stringify('https://savingtimeoficial.eu-4.evennode.com')
   }
-})
+});

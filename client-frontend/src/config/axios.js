@@ -7,54 +7,48 @@ const api = axios.create({
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    'Accept': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest'
   }
 });
 
-// Interceptor para forzar HTTPS y normalizar URLs
-api.interceptors.request.use(
-  config => {
-    // Construir una URL completa para manipular
-    const urlObject = new URL(
-      config.url.startsWith('http') ? config.url : `${config.baseURL}/${config.url}`
-    );
+// Interceptor simplificado y más robusto
+api.interceptors.request.use((config) => {
+  try {
+    // Asegurar HTTPS en baseURL
+    config.baseURL = BASE_URL;
     
-    // Forzar HTTPS
-    urlObject.protocol = 'https:';
+    // Limpiar la URL de barras iniciales y dobles
+    config.url = config.url.replace(/^\/+/, '').replace(/\/+/g, '/');
     
-    // Asignar las partes normalizadas de vuelta a la configuración
-    config.baseURL = `${urlObject.protocol}//${urlObject.host}`;
-    config.url = urlObject.pathname + urlObject.search;
-
+    // Construir y verificar la URL final
+    const finalUrl = new URL(`${config.baseURL}/${config.url}`);
+    finalUrl.protocol = 'https:';
+    
+    // Actualizar configuración
+    config.baseURL = `${finalUrl.protocol}//${finalUrl.host}`;
+    config.url = finalUrl.pathname + finalUrl.search;
+    
     console.log('URL final:', `${config.baseURL}${config.url}`);
     
     return config;
-  },
-  error => {
-    console.error('Error en la configuración:', error);
-    return Promise.reject(error);
+  } catch (error) {
+    console.error('Error en interceptor:', error);
+    return config;
   }
-);
+});
 
-// Interceptor para manejo de respuestas
 api.interceptors.response.use(
   response => response,
   error => {
-    console.error('Error en la petición:', error);
+    console.error('Error en petición:', {
+      url: error.config?.url,
+      baseURL: error.config?.baseURL,
+      method: error.config?.method,
+      status: error.response?.status
+    });
     return Promise.reject(error);
   }
 );
-
-// Utilidades de API
-export const getAuthConfig = () => {
-  const token = localStorage.getItem('token');
-  return token ? { headers: { 'Authorization': `Bearer ${token}` } } : {};
-};
-
-export const getImageUrl = (imagePath) => {
-  if (!imagePath) return null;
-  if (imagePath.startsWith('https://')) return imagePath;
-  return `${BASE_URL}/uploads/${imagePath.replace(/^\/+/, '')}`;
-};
 
 export default api;
