@@ -160,7 +160,7 @@ export const Create = ({ post, onSubmit, onCancel }) => {
 
         // Agregar todas las imágenes existentes
         reorderedPreviews.forEach((preview, index) => {
-          if (preview.startsWith('http')) {
+          if (preview.startsWith('https')) {
             submitData.append('existingImages', preview);
           }
         });

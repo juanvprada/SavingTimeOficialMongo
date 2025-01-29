@@ -9,14 +9,14 @@ export const normalizeUrl = (path) => {
 
 export const normalizeImageUrl = (path) => {
   if (!path) return null;
-  if (path.startsWith('http')) return path;
+  if (path.startsWith('https')) return path;
   const cleanPath = path.replace(/^\/+/, '');
   return `${BASE_URL}/uploads/${cleanPath}`;
 };
 
 export const getImageUrl = (imagePath) => {
   if (!imagePath) return null;
-  if (imagePath.startsWith('http')) return imagePath;
+  if (imagePath.startsWith('https')) return imagePath;
   const cleanPath = imagePath.replace(/^\/+/, '');
   return `${BASE_URL}/uploads/${cleanPath}`;
 };

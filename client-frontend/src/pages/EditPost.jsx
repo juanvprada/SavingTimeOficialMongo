@@ -22,7 +22,7 @@ const EditPost = () => {
             ...response.data,
             id: response.data._id || response.data.id,
             images: response.data.images?.map(img =>
-              img.startsWith('http') ? img : normalizeUrl(`/uploads/${img}`)
+              img.startsWith('https') ? img : normalizeUrl(`/uploads/${img}`)
             ) || []
           }
         });

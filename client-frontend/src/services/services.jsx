@@ -27,7 +27,7 @@ const processImageUrls = (images) => {
 
   return images.map(img => {
     if (!img) return null;
-    if (img.startsWith('http')) return img;
+    if (img.startsWith('https')) return img;
     return `${UPLOADS_URL}/${img}`;
   }).filter(Boolean);
 };

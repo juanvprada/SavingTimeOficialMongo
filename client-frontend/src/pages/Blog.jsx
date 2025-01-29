@@ -196,7 +196,7 @@ const Blog = () => {
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = 'httpa://localhost:5000/uploads/default.jpg';
+                      e.target.src = 'https://localhost:5000/uploads/default.jpg';
                     }}
                   />
                   {article.images && article.images.length > 1 && (
