@@ -4,11 +4,11 @@ server-backend/node_modules
 
 # Build outputs (except dist folders for frontend and backend)
 dist
-!server-backend/dist/
-!client-frontend/dist/
 dist-ssr
 build
 *.local
+client-frontend/dist
+server-backend/dist
 
 # Media and uploads
 server-backend/src/uploads
