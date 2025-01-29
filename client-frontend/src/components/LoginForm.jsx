@@ -2,42 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaEnvelope, FaLock } from 'react-icons/fa';
 import useStore from '../store/store';
-import axios from 'axios';
-
-// Crear instancia configurada de axios con interceptores
-const api = axios.create({
-  baseURL: 'https://savingtimeoficial.eu-4.evennode.com',
-  withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json'
-  }
-});
-
-// Añadir interceptores para depuración y forzar HTTPS
-api.interceptors.request.use(
-  config => {
-    // Forzar HTTPS
-    if (config.baseURL.startsWith('http://')) {
-      config.baseURL = config.baseURL.replace('http://', 'https://');
-    }
-    
-    // Asegurarse de que no haya dobles barras y la URL use HTTPS
-    config.url = config.url.replace(/\/+/g, '/');
-    const fullUrl = `${config.baseURL}${config.url}`;
-    
-    // Verificar que la URL final use HTTPS
-    if (!fullUrl.startsWith('https://')) {
-      config.baseURL = config.baseURL.replace('http://', 'https://');
-    }
-    
-    console.log('URL final de la petición:', fullUrl);
-    return config;
-  },
-  error => {
-    console.error('Error en la configuración de la petición:', error);
-    return Promise.reject(error);
-  }
-);
+import api from '../config/axios';  // Importar el cliente api configurado
 
 const LoginForm = ({ inputTextColor, formBackground }) => {
   const [email, setEmail] = useState('');
@@ -63,7 +28,7 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
     setError('');
   
     try {
-      const response = await api.post('api/auth/login', {
+      const response = await api.post('/api/auth/login', {  // Nota la barra inicial en la ruta
         email,
         password
       });
