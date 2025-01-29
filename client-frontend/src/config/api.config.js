@@ -24,7 +24,7 @@ export const getAuthConfig = () => {
 
 export const getImageUrl = (imagePath) => {
   if (!imagePath) return null;
-  if (imagePath.startsWith('http')) return imagePath;
+  if (imagePath.startsWith('https')) return imagePath;
   const cleanPath = imagePath.startsWith('/') ? imagePath.substring(1) : imagePath;
   return `${BASE_URL}/uploads/${cleanPath}`;
 };

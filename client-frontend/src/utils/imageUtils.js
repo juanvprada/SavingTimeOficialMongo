@@ -7,6 +7,13 @@ export const normalizeUrl = (path) => {
   return `${BASE_URL}/${cleanPath}`;
 };
 
+export const normalizeImageUrl = (path) => {
+  if (!path) return null;
+  if (path.startsWith('http')) return path;
+  const cleanPath = path.replace(/^\/+/, '');
+  return `${BASE_URL}/uploads/${cleanPath}`;
+};
+
 export const getImageUrl = (imagePath) => {
   if (!imagePath) return null;
   if (imagePath.startsWith('http')) return imagePath;
@@ -16,5 +23,6 @@ export const getImageUrl = (imagePath) => {
 
 export default {
   normalizeUrl,
+  normalizeImageUrl,
   getImageUrl
 };
