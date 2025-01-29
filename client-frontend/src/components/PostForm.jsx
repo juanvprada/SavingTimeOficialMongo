@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import useStore from '../store/store';
 import { normalizeImageUrl } from '../utils/imageUtils';
+import { normalizeUrl } from '../utils/imageUtils';
 
 // Define PostType enum
 export const PostType = {
