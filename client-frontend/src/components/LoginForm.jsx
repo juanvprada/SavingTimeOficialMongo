@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaEnvelope, FaLock } from 'react-icons/fa';
 import useStore from '../store/store';
 import axios from 'axios';
+import { normalizeUrl } from '../utils/imageUtils';
 
 // Función para obtener la URL base
 const getBaseUrl = () => {

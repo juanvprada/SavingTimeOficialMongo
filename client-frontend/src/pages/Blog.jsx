@@ -9,6 +9,7 @@ import { getLikesCount, toggleLike } from '../services/likeServices';
 import { toast } from 'react-toastify';
 import Search from '../components/Search';
 import { PostType } from '../components/PostForm';
+import { normalizeUrl } from '../utils/imageUtils';
 
 const Blog = () => {
   const [filters, setFilters] = useState({});

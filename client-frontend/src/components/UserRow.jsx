@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import { normalizeUrl } from '../utils/imageUtils';
 
 const UserRow = ({ user, token, onRoleChange }) => {
     const handleToggleAdmin = async () => {

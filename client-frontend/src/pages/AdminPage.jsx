@@ -3,6 +3,7 @@ import axios from 'axios';
 import useStore from '../store/store';
 import { useNavigate } from 'react-router-dom';
 import UserRow from '../components/UserRow';
+import { normalizeUrl } from '../utils/imageUtils';
 
 const AdminPage = () => {
   const [users, setUsers] = useState([]);

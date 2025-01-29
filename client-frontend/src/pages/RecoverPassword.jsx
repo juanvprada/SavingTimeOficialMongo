@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { normalizeUrl } from '../utils/imageUtils';
 
 const RecoverPassword = () => {
     const [email, setEmail] = useState('');
