@@ -32,7 +32,7 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
       return;
     }
     try {
-      const response = await axios.post(`${getBaseUrl()}api/auth/login`, {
+      const response = await axios.post(`${getBaseUrl()}/api/auth/login`, {
         email,
         password
       }, {
