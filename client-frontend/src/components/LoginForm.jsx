@@ -6,13 +6,10 @@ import axios from 'axios';
 
 // Función para obtener la URL base
 const getBaseUrl = () => {
-  if (window.location.hostname === 'localhost') {
-    return 'http://localhost:5000';
-  }
-  return window.location.origin;
+  return import.meta.env.VITE_API_URL || 'https://savingtimeoficial.eu-4.evennode.com';
 };
 
-const API_URL = `${getBaseUrl()}/api/auth`;
+const API_URL = `${normalizeUrl('/api/auth')}`;
 
 const LoginForm = ({ inputTextColor, formBackground }) => {
   const [email, setEmail] = useState('');

@@ -17,11 +17,10 @@ const AdminPage = () => {
     }
     const fetchUsers = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/users', {
+        const response = await axios.get(`${normalizeUrl('/api/users')}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log(response.data);
-        setUsers(response.data.data);
+        // ...
       } catch (error) {
         console.error('Error al obtener los usuarios:', error);
       }

@@ -1,5 +1,6 @@
 // components/ImageGallery.jsx
 import React, { useState } from 'react';
+import { normalizeUrl } from '../utils/imageUtils';
 
 const ImageGallery = ({ images, postName }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -8,23 +9,18 @@ const ImageGallery = ({ images, postName }) => {
   const getImageUrl = (imageUrl) => {
     if (!imageUrl) return null;
     
-    // Si la URL ya comienza con http, la dejamos como está
     if (imageUrl.startsWith('http')) return imageUrl;
     
-    // Si la URL comienza con /uploads, añadimos solo el dominio
     if (imageUrl.startsWith('/uploads')) {
-      return `http://localhost:5000${imageUrl}`;
+      return normalizeUrl(imageUrl);
     }
     
-    // Si la URL no comienza con /uploads, lo añadimos
     if (!imageUrl.startsWith('/uploads/')) {
-      return `http://localhost:5000/uploads/${imageUrl}`;
+      return normalizeUrl(`/uploads/${imageUrl}`);
     }
     
-    // En cualquier otro caso, añadimos el dominio
-    return `http://localhost:5000${imageUrl}`;
+    return normalizeUrl(imageUrl);
   };
-
   console.log('Received images:', images); // Para debug
 
   if (!images || !Array.isArray(images) || images.length === 0) {

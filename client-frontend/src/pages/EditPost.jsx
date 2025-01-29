@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getOnePost, updatePost } from '../services/services';
 import { Create } from '../components/PostForm';
 import { toast } from 'react-toastify';
+import { normalizeUrl } from '../utils/imageUtils';
 
 const EditPost = () => {
   const { id } = useParams();
@@ -21,7 +22,7 @@ const EditPost = () => {
             ...response.data,
             id: response.data._id || response.data.id,
             images: response.data.images?.map(img =>
-              img.startsWith('http') ? img : `http://localhost:5000/uploads/${img}`
+              img.startsWith('http') ? img : normalizeUrl(`/uploads/${img}`)
             ) || []
           }
         });

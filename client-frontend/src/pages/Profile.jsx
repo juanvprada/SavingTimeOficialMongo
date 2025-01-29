@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { normalizeUrl } from '../utils/imageUtils';
 
 const Profile = () => {
     const [user, setUser] = useState(null);
@@ -6,13 +7,13 @@ const Profile = () => {
 
     useEffect(() => {
         const fetchProfile = async () => {
-            const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/auth/perfil', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`, 
-                },
-            });
+          const token = localStorage.getItem('token');
+          const response = await fetch(`${normalizeUrl('/api/auth/perfil')}`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`, 
+            },
+          });
 
             
             if (!response.ok) {

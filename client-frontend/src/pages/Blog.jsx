@@ -74,12 +74,12 @@ const Blog = () => {
           return imageUrl;
         }
         const cleanImagePath = imageUrl.replace(/^\/uploads\//, '');
-        return `http://localhost:5000/uploads/${cleanImagePath}`;
+        return normalizeUrl(`/uploads/${cleanImagePath}`);
       }
-      return 'http://localhost:5000/uploads/default.jpg';
+      return normalizeUrl('/uploads/default.jpg');
     } catch (error) {
       console.error('Error getting image:', error);
-      return 'http://localhost:5000/uploads/default.jpg';
+      return normalizeUrl('/uploads/default.jpg');
     }
   };
 

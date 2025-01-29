@@ -5,16 +5,16 @@ const UserRow = ({ user, token, onRoleChange }) => {
     const handleToggleAdmin = async () => {
         const newRole = user.role === 'admin' ? 'user' : 'admin';
         try {
-            await axios.put(
-                `http://localhost:5000/api/roles/${user.id}`,
-                { role: newRole },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            onRoleChange(user.id, newRole);  // Update role locally
+          await axios.put(
+            `${normalizeUrl(`/api/roles/${user.id}`)}`,
+            { role: newRole },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          // ...
         } catch (error) {
-            console.error('Error al actualizar el rol del usuario:', error);
+          console.error('Error al actualizar el rol del usuario:', error);
         }
-    };
+      };
 
     return (
         <tr className="hover:bg-[#E3D5C7] transition">
