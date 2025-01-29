@@ -4,19 +4,33 @@ import { FaEnvelope, FaLock } from 'react-icons/fa';
 import useStore from '../store/store';
 import axios from 'axios';
 
-// Crear instancia configurada de axios
+// Crear instancia configurada de axios con interceptores
 const api = axios.create({
-  baseURL: 'https://savingtimeoficial.eu-4.evennode.com',
+  baseURL: import.meta.env.VITE_BASE_URL || 'https://savingtimeoficial.eu-4.evennode.com',
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json'
   }
 });
 
+// Añadir interceptores para depuración
+api.interceptors.request.use(
+  config => {
+    // Asegurarse de que no haya dobles barras
+    config.url = config.url.replace(/\/+/g, '/');
+    console.log('Requesting:', config.method.toUpperCase(), `${config.baseURL}${config.url}`);
+    return config;
+  },
+  error => {
+    return Promise.reject(error);
+  }
+);
+
 const LoginForm = ({ inputTextColor, formBackground }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   // Obtener las funciones del store al inicio del componente
   const setToken = useStore((state) => state.setToken);
@@ -32,8 +46,14 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
       setError('Por favor, completa todos los campos.');
       return;
     }
+    
+    setLoading(true);
+    setError('');
+
     try {
-      const response = await api.post('/api/auth/login', {
+      console.log('Iniciando petición a:', `${api.defaults.baseURL}/api/auth/login`);
+      
+      const response = await api.post('api/auth/login', {
         email,
         password
       });
@@ -54,15 +74,14 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
     } catch (error) {
       console.error('Error completo:', error);
       if (error.response) {
-        // El servidor respondió con un estado de error
         setError(error.response.data?.message || 'Error al iniciar sesión');
       } else if (error.request) {
-        // La petición fue hecha pero no se recibió respuesta
-        setError('No se pudo conectar con el servidor');
+        setError('No se pudo conectar con el servidor. Por favor, verifica tu conexión.');
       } else {
-        // Algo ocurrió al configurar la petición
-        setError('Error al procesar la solicitud');
+        setError('Error al procesar la solicitud. Por favor, intenta de nuevo.');
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -78,6 +97,7 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Correo Electrónico"
             required
+            disabled={loading}
           />
         </div>
         <div className="relative">
@@ -89,14 +109,16 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Contraseña"
             required
+            disabled={loading}
           />
         </div>
         {error && <p className="text-[#C68B59] text-sm text-center">{error}</p>}
         <button
-          className="w-full bg-[#1B3A4B] text-white font-medium py-3 rounded-lg hover:bg-[#8A8B6C] shadow-md transition"
+          className={`w-full bg-[#1B3A4B] text-white font-medium py-3 rounded-lg hover:bg-[#8A8B6C] shadow-md transition ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
           type="submit"
+          disabled={loading}
         >
-          Iniciar Sesión
+          {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
         </button>
       </form>
       <p className="mt-6 text-center text-sm">
@@ -106,6 +128,7 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
         <button
           onClick={() => navigate('/recuperar-password')}
           className="text-[#C68B59] hover:text-[#8A8B6C] hover:underline focus:outline-none transition"
+          disabled={loading}
         >
           Recuperar contraseña
         </button>
