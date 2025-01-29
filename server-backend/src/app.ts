@@ -12,11 +12,17 @@ import roleRoutes from './routes/roleRoutes';
 import likeRoutes from './routes/likeRoutes';
 import commentRoutes from './routes/commentRoutes';
 
+
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-
+app.use((req, res, next) => {
+  if (process.env.NODE_ENV === 'production' && !req.secure) {
+    return res.redirect('https://' + req.headers.host + req.url);
+  }
+  next();
+});
 // CORS configuration
 app.use(cors({
   origin: [

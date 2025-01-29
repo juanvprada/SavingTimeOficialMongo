@@ -3,18 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { FaEnvelope, FaLock } from 'react-icons/fa';
 import useStore from '../store/store';
 import axios from 'axios';
-import { normalizeUrl } from '../utils/imageUtils';
 
-// Función para obtener la URL base
-const getBaseUrl = () => {
-  const baseUrl = import.meta.env.VITE_API_URL || 'https://savingtimeoficial.eu-4.evennode.com';
-  // Asegurarnos de que siempre use HTTPS
-  if (baseUrl.startsWith('http://')) {
-    return baseUrl.replace('http://', 'https://');
+// Crear instancia configurada de axios
+const api = axios.create({
+  baseURL: 'https://savingtimeoficial.eu-4.evennode.com',
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json'
   }
-  return baseUrl;
-};
-
+});
 
 const LoginForm = ({ inputTextColor, formBackground }) => {
   const [email, setEmail] = useState('');
@@ -36,15 +33,9 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
       return;
     }
     try {
-      const baseUrl = getBaseUrl().replace(/\/+$/, ''); // Elimina slashes al final si existen
-      const response = await axios.post(`${baseUrl}/api/auth/login`, { // Un solo slash
+      const response = await api.post('/api/auth/login', {
         email,
         password
-      }, {
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json'
-        }
       });
 
       const { data } = response.data;
