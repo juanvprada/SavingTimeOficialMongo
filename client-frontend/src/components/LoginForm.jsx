@@ -61,16 +61,17 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
     
     setLoading(true);
     setError('');
-
+  
     try {
       const response = await api.post('api/auth/login', {
         email,
         password
       });
-
+  
       const { data } = response.data;
+      console.log('Respuesta del servidor:', response);
       
-      if (data && data.token) {
+      if (data?.token) {
         setToken(data.token);
         setRole(data.role);
         setUsername(data.name);
@@ -81,16 +82,10 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
       }
     } catch (error) {
       console.error('Error completo:', error);
-      if (error.response) {
-        // El servidor respondió con un código de error
-        setError(error.response.data?.message || 'Credenciales incorrectas');
-      } else if (error.request) {
-        // No se recibió respuesta del servidor
-        setError('No se pudo conectar con el servidor. Verifica tu conexión a internet.');
-      } else {
-        // Error en la configuración de la petición
-        setError('Error al procesar la solicitud. Por favor, intenta de nuevo.');
-      }
+      setError(
+        error.response?.data?.message || 
+        'No se pudo conectar con el servidor. Por favor, intenta de nuevo.'
+      );
     } finally {
       setLoading(false);
     }
