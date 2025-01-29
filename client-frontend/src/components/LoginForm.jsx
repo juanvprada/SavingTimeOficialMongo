@@ -6,22 +6,35 @@ import axios from 'axios';
 
 // Crear instancia configurada de axios con interceptores
 const api = axios.create({
-  baseURL: import.meta.env.VITE_BASE_URL || 'https://savingtimeoficial.eu-4.evennode.com',
+  baseURL: 'https://savingtimeoficial.eu-4.evennode.com',
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json'
   }
 });
 
-// Añadir interceptores para depuración
+// Añadir interceptores para depuración y forzar HTTPS
 api.interceptors.request.use(
   config => {
-    // Asegurarse de que no haya dobles barras
+    // Forzar HTTPS
+    if (config.baseURL.startsWith('http://')) {
+      config.baseURL = config.baseURL.replace('http://', 'https://');
+    }
+    
+    // Asegurarse de que no haya dobles barras y la URL use HTTPS
     config.url = config.url.replace(/\/+/g, '/');
-    console.log('Requesting:', config.method.toUpperCase(), `${config.baseURL}${config.url}`);
+    const fullUrl = `${config.baseURL}${config.url}`;
+    
+    // Verificar que la URL final use HTTPS
+    if (!fullUrl.startsWith('https://')) {
+      config.baseURL = config.baseURL.replace('http://', 'https://');
+    }
+    
+    console.log('URL final de la petición:', fullUrl);
     return config;
   },
   error => {
+    console.error('Error en la configuración de la petición:', error);
     return Promise.reject(error);
   }
 );
@@ -32,7 +45,6 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Obtener las funciones del store al inicio del componente
   const setToken = useStore((state) => state.setToken);
   const setRole = useStore((state) => state.setRole);
   const setUsername = useStore((state) => state.setUsername);
@@ -51,33 +63,32 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
     setError('');
 
     try {
-      console.log('Iniciando petición a:', `${api.defaults.baseURL}/api/auth/login`);
-      
       const response = await api.post('api/auth/login', {
         email,
         password
       });
 
       const { data } = response.data;
-      console.log('Respuesta del servidor:', data);
-
+      
       if (data && data.token) {
         setToken(data.token);
         setRole(data.role);
         setUsername(data.name);
         setUserId(data._id || data.userId);
-
         navigate('/blog');
       } else {
-        setError('Respuesta del servidor inválida');
+        throw new Error('Respuesta del servidor inválida');
       }
     } catch (error) {
       console.error('Error completo:', error);
       if (error.response) {
-        setError(error.response.data?.message || 'Error al iniciar sesión');
+        // El servidor respondió con un código de error
+        setError(error.response.data?.message || 'Credenciales incorrectas');
       } else if (error.request) {
-        setError('No se pudo conectar con el servidor. Por favor, verifica tu conexión.');
+        // No se recibió respuesta del servidor
+        setError('No se pudo conectar con el servidor. Verifica tu conexión a internet.');
       } else {
+        // Error en la configuración de la petición
         setError('Error al procesar la solicitud. Por favor, intenta de nuevo.');
       }
     } finally {
@@ -98,6 +109,7 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
             placeholder="Correo Electrónico"
             required
             disabled={loading}
+            autoComplete="email"
           />
         </div>
         <div className="relative">
@@ -110,11 +122,18 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
             placeholder="Contraseña"
             required
             disabled={loading}
+            autoComplete="current-password"
           />
         </div>
-        {error && <p className="text-[#C68B59] text-sm text-center">{error}</p>}
+        {error && (
+          <p className="text-[#C68B59] text-sm text-center bg-[#1B3A4B] bg-opacity-20 p-2 rounded">
+            {error}
+          </p>
+        )}
         <button
-          className={`w-full bg-[#1B3A4B] text-white font-medium py-3 rounded-lg hover:bg-[#8A8B6C] shadow-md transition ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`w-full bg-[#1B3A4B] text-white font-medium py-3 rounded-lg hover:bg-[#8A8B6C] shadow-md transition duration-300 ${
+            loading ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
           type="submit"
           disabled={loading}
         >
