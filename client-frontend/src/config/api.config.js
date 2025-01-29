@@ -12,7 +12,7 @@ export const API_CONFIG = {
       return window.ENV.REACT_APP_API_URL;
     }
     // URL por defecto (desarrollo local)
-    return 'http://localhost:5000';
+    return 'https://savingtimeoficial.eu-4.evennode.com';
   }
 };
 
