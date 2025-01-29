@@ -2,13 +2,6 @@ import axios from 'axios';
 
 const BASE_URL = 'https://savingtimeoficial.eu-4.evennode.com';
 
-// Función para normalizar la URL y asegurar HTTPS
-const normalizeUrl = (url) => {
-  return url
-    .replace(/^http:\/\//i, 'https://')
-    .replace(/([^:]\/)\/+/g, '$1');
-};
-
 const api = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
@@ -18,43 +11,50 @@ const api = axios.create({
   }
 });
 
-// Interceptor para asegurar HTTPS
+// Interceptor para forzar HTTPS y normalizar URLs
 api.interceptors.request.use(
   config => {
-    // Forzar HTTPS en baseURL y URL completa
-    config.baseURL = normalizeUrl(BASE_URL);
+    // Construir una URL completa para manipular
+    const urlObject = new URL(
+      config.url.startsWith('http') ? config.url : `${config.baseURL}/${config.url}`
+    );
     
-    // Si la URL es relativa, asegurarse de que no comience con /
-    if (!config.url.startsWith('http')) {
-      config.url = config.url.replace(/^\/+/, '');
-    } else {
-      config.url = normalizeUrl(config.url);
-    }
+    // Forzar HTTPS
+    urlObject.protocol = 'https:';
     
-    // Log para depuración
-    const fullUrl = `${config.baseURL}/${config.url}`;
-    console.log('URL normalizada:', normalizeUrl(fullUrl));
+    // Asignar las partes normalizadas de vuelta a la configuración
+    config.baseURL = `${urlObject.protocol}//${urlObject.host}`;
+    config.url = urlObject.pathname + urlObject.search;
+
+    console.log('URL final:', `${config.baseURL}${config.url}`);
     
-    return {
-      ...config,
-      url: config.url,
-      baseURL: config.baseURL
-    };
+    return config;
   },
-  error => Promise.reject(error)
+  error => {
+    console.error('Error en la configuración:', error);
+    return Promise.reject(error);
+  }
 );
 
-// Interceptor para manejar respuestas
+// Interceptor para manejo de respuestas
 api.interceptors.response.use(
   response => response,
   error => {
     console.error('Error en la petición:', error);
-    if (error.config) {
-      console.log('URL que falló:', error.config.url);
-      console.log('Método:', error.config.method);
-    }
     return Promise.reject(error);
   }
 );
+
+// Utilidades de API
+export const getAuthConfig = () => {
+  const token = localStorage.getItem('token');
+  return token ? { headers: { 'Authorization': `Bearer ${token}` } } : {};
+};
+
+export const getImageUrl = (imagePath) => {
+  if (!imagePath) return null;
+  if (imagePath.startsWith('https://')) return imagePath;
+  return `${BASE_URL}/uploads/${imagePath.replace(/^\/+/, '')}`;
+};
 
 export default api;

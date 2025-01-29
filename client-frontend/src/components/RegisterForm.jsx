@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import useStore from '../store/store';
 import { FaUser, FaEnvelope, FaLock } from 'react-icons/fa';
-import { API_CONFIG } from '../config/api.config';
+import api from '../config/axios';
 
 const RegisterForm = ({ inputTextColor = 'text-gray-700', formBackground = 'bg-white' }) => {
   const [name, setName] = useState('');
@@ -21,41 +20,28 @@ const RegisterForm = ({ inputTextColor = 'text-gray-700', formBackground = 'bg-w
     setIsLoading(true);
 
     try {
-      const response = await axios.post(
-        `https://savingtimeoficial.eu-4.evennode.com/api/auth/register`,
-        {
-          name: name.trim(),
-          email: email.trim().toLowerCase(),
-          password
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          withCredentials: true
-        }
-      );
+      const response = await api.post('/api/auth/register', {
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        password
+      });
 
       const { data } = response.data;
 
-      // Usar setUserData con la estructura correcta
       setUserData({
         token: data.token,
         role: data.role,
         name: data.name,
-        _id: data.userId  // Nota: cambiado a _id para coincidir con tu store
+        _id: data.userId
       });
 
       setMessage('¡Registro exitoso!');
 
-      // Dar tiempo para que se muestre el mensaje de éxito
       setTimeout(() => {
         navigate('/blog');
       }, 1500);
 
     } catch (error) {
-
-      // Log del error completo
       console.error('Error completo:', error);
       console.error('Error response:', error.response);
       console.error('Error detallado:', error.response?.data);

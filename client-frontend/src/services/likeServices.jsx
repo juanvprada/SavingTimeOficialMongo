@@ -1,33 +1,22 @@
 // likeServices.jsx
-import axios from 'axios';
-import { API_CONFIG, axiosConfig, getAuthConfig } from '../config/api.config';
-
-const BASE_URL = API_CONFIG.getBaseUrl();
-const API_URL = `${BASE_URL}api/likes`;
+import api from '../config/axios';
 
 export const toggleLike = async (postId) => {
-  try {
-    const response = await axios.post(
-      `${API_URL}/${postId}/toggle`, 
-      {}, 
-      getAuthConfig()
-    );
-    return response.data;
-  } catch (error) {
-    console.log('Error details:', error.response?.data);
-    throw error;
-  }
+    try {
+        const response = await api.post(`/api/likes/${postId}/toggle`, {});
+        return response.data;
+    } catch (error) {
+        console.log('Error details:', error.response?.data);
+        throw error;
+    }
 };
 
 export const getLikesCount = async (postId) => {
-  try {
-    const response = await axios.get(
-      `${API_URL}/${postId}/count`,
-      axiosConfig
-    );
-    return response.data;
-  } catch (error) {
-    console.error('Error al obtener el conteo de likes:', error);
-    throw error;
-  }
+    try {
+        const response = await api.get(`/api/likes/${postId}/count`);
+        return response.data;
+    } catch (error) {
+        console.error('Error al obtener el conteo de likes:', error);
+        throw error;
+    }
 };

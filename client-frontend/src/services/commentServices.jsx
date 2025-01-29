@@ -1,16 +1,9 @@
 // commentServices.jsx
-import axios from 'axios';
-import { API_CONFIG, axiosConfig, getAuthConfig } from '../config/api.config';
-
-const BASE_URL = API_CONFIG.getBaseUrl();
-const API_URL = `${BASE_URL}/api`;
+import api from '../config/axios';
 
 export const getComments = async (postId) => {
     try {
-        const response = await axios.get(
-            `${API_URL}/comments/${postId}`,
-            axiosConfig
-        );
+        const response = await api.get(`/api/comments/${postId}`);
         return response.data;
     } catch (error) {
         console.error('Error obteniendo comentarios:', {
@@ -27,14 +20,11 @@ export const addComment = async ({ postId, content, token }) => {
     }
 
     try {
-        const response = await axios.post(
-            `${API_URL}/comments/${postId}`,
-            { 
-                content,
-                postId
-            },
-            getAuthConfig()
-        );
+        const response = await api.post(`/api/comments/${postId}`, {
+            content,
+            postId
+        });
+        
         return {
             ...response.data,
             id: response.data._id
@@ -43,4 +33,3 @@ export const addComment = async ({ postId, content, token }) => {
         throw error;
     }
 };
-

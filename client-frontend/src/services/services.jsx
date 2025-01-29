@@ -1,10 +1,8 @@
 // services.jsx
-import axios from 'axios';
-import { API_CONFIG, axiosConfig, getAuthConfig } from '../config/api.config';
+import api from '../config/axios';
 
-const BASE_URL = API_CONFIG.getBaseUrl();
-const API_URL = `${BASE_URL}api/posts`;
-const UPLOADS_URL = `${BASE_URL}/uploads`;
+const BASE_URL = 'https://savingtimeoficial.eu-4.evennode.com/';
+const UPLOADS_URL = `${BASE_URL}uploads`;
 
 // Utility function to ensure consistent error handling
 const handleApiError = (error, action) => {
@@ -32,23 +30,9 @@ const processImageUrls = (images) => {
   }).filter(Boolean);
 };
 
-// Utility function to get auth headers with optional multipart
-const getHeaders = (isMultipart = false) => {
-  const token = localStorage.getItem('token');
-  const headers = {
-    'Authorization': `Bearer ${token}`
-  };
-
-  if (isMultipart) {
-    headers['Content-Type'] = 'multipart/form-data';
-  }
-
-  return headers;
-};
-
 export const getPosts = async () => {
   try {
-    const response = await axios.get(API_URL, axiosConfig);
+    const response = await api.get('/api/posts');
 
     if (!response.data?.data) {
       console.warn('Invalid response structure:', response);
@@ -67,13 +51,9 @@ export const getPosts = async () => {
     handleApiError(error, "obtener posts");
   }
 };
-
 export const createPost = async (formData) => {
   try {
     const token = localStorage.getItem('token');
-    const baseUrl = API_CONFIG.getBaseUrl(); // Añade esta línea
-    
-    console.log('Base URL:', baseUrl); // Log de depuración
     console.log('Token:', token);
 
     if (!token) {
@@ -87,17 +67,14 @@ export const createPost = async (formData) => {
       },
       timeout: 10000 // 10 segundos de timeout
     };
-    // Usa una URL limpia y con HTTPS
-    const fullUrl = `${baseUrl}api/posts`;
-    console.log('URL completa para post:', fullUrl);
 
-    const response = await axios.post(fullUrl, formData, config);
+    console.log('Enviando petición a /api/posts');
+    const response = await api.post('/api/posts', formData, config);
 
     if (response.status === 201 && response.data?.data) {
       return response.data;
     }
 
-    // Si llegamos aquí, la respuesta no tiene el formato esperado
     throw new Error('Formato de respuesta inválido del servidor');
 
   } catch (error) {
@@ -107,7 +84,6 @@ export const createPost = async (formData) => {
         await new Promise(resolve => setTimeout(resolve, 1000)); // Esperar 1 segundo
         const posts = await getPosts();
         if (posts.length > 0) {
-          // Si tenemos posts, probablemente el post se creó correctamente
           return { message: 'Post creado con éxito', data: posts[0] };
         }
       } catch (retryError) {
@@ -115,7 +91,6 @@ export const createPost = async (formData) => {
       }
     }
 
-    // Si llegamos aquí, hubo un error real
     console.error('Error en createPost:', error);
     throw {
       message: 'Error al crear el post',
@@ -126,9 +101,7 @@ export const createPost = async (formData) => {
 
 export const getOnePost = async (id) => {
   try {
-    const response = await axios.get(`${API_URL}/${id}`, {
-      headers: getHeaders()
-    });
+    const response = await api.get(`/api/posts/${id}`);
 
     if (!response.data) {
       throw new Error('Post no encontrado');
@@ -142,7 +115,6 @@ export const getOnePost = async (id) => {
     handleApiError(error, "obtener post");
   }
 };
-
 export const updatePost = async (id, postData) => {
   try {
     const token = localStorage.getItem('token');
@@ -158,10 +130,9 @@ export const updatePost = async (id, postData) => {
       }
     };
 
-    // Log para debugging
     console.log('Updating post:', { id, postData });
 
-    const response = await axios.put(`${API_URL}/${id}`, postData, config);
+    const response = await api.put(`/api/posts/${id}`, postData, config);
 
     if (!response.data) {
       throw new Error('No se recibió respuesta del servidor');
@@ -182,9 +153,7 @@ export const updatePost = async (id, postData) => {
 
 export const deletePost = async (id) => {
   try {
-    const response = await axios.delete(`${API_URL}/${id}`, {
-      headers: getHeaders()
-    });
+    const response = await api.delete(`/api/posts/${id}`);
 
     if (!response.data) {
       throw new Error('No se recibió respuesta del servidor');
