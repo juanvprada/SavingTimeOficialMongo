@@ -11,7 +11,7 @@ export const API_CONFIG = {
     if (window.ENV?.REACT_APP_API_URL) {
       return window.ENV.REACT_APP_API_URL;
     }
-    // URL por defecto
+    // URL por defecto (desarrollo local)
     return 'http://localhost:5000';
   }
 };
@@ -20,7 +20,9 @@ export const API_CONFIG = {
 export const axiosConfig = {
   headers: {
     'Content-Type': 'application/json'
-  }
+  },
+  // Asegurarnos de que las peticiones usen el mismo protocolo que la página
+  baseURL: `${window.location.protocol}//${window.location.host}`
 };
 
 // Obtener la configuración con el token de autenticación
@@ -41,5 +43,7 @@ export const getImageUrl = (imagePath) => {
   if (imagePath.startsWith('http')) return imagePath;
   
   const baseUrl = API_CONFIG.getBaseUrl();
-  return `${baseUrl}/uploads/${imagePath}`;
+  // Eliminar posibles barras duplicadas
+  const cleanPath = imagePath.startsWith('/') ? imagePath.substring(1) : imagePath;
+  return `${baseUrl}/uploads/${cleanPath}`;
 };
