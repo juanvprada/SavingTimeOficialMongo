@@ -12,25 +12,32 @@ import roleRoutes from './routes/roleRoutes';
 import likeRoutes from './routes/likeRoutes';
 import commentRoutes from './routes/commentRoutes';
 
-
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Habilitar trust proxy para Evennode
+app.enable('trust proxy');
+
+// Middleware HTTPS
 app.use((req, res, next) => {
-  if (process.env.NODE_ENV === 'production' && !req.secure) {
-    return res.redirect('https://' + req.headers.host + req.url);
+  if (!req.secure && process.env.NODE_ENV === 'production') {
+    return res.redirect(301, `https://${req.headers.host}${req.url}`);
   }
   next();
 });
+
 // CORS configuration
 app.use(cors({
   origin: [
-    'https://localhost:3000',
-    'https://localhost:5000',
-    'https://localhost:5173',
-    'https://localhost:8080',
-    'https://savingtimeoficial.eu-4.evennode.com'
+    'https://savingtimeoficial.eu-4.evennode.com',
+    ...(process.env.NODE_ENV !== 'production' ? [
+      'http://localhost:3000',
+      'http://localhost:5000',
+      'http://localhost:5173',
+      'http://localhost:8080'
+    ] : [])
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
@@ -45,6 +52,8 @@ app.use(express.urlencoded({ extended: true }));
 // Debug logging middleware
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
+  console.log('Secure:', req.secure);
+  console.log('Protocol:', req.protocol);
   next();
 });
 
@@ -60,7 +69,6 @@ if (!fs.existsSync(uploadPath)) {
 const defaultImagePath = path.join(uploadPath, 'default.jpg');
 if (!fs.existsSync(defaultImagePath)) {
   try {
-    // Create a simple default image or copy from assets
     const defaultImageSource = path.join(__dirname, '../assets/default.jpg');
     if (fs.existsSync(defaultImageSource)) {
       fs.copyFileSync(defaultImageSource, defaultImagePath);
@@ -121,20 +129,5 @@ if (process.env.NODE_ENV === 'production') {
     res.sendFile(path.join(frontendBuildPath, 'index.html'));
   });
 }
-
-// MongoDB Connection
-mongoose
-  .connect(CONFIG.DB.URI)
-  .then(() => console.log('✅ MongoDB connection established.'))
-  .catch((err: Error) => {
-    console.error('❌ Error connecting to MongoDB:', err);
-    process.exit(1);
-  });
-
-// Start server
-// app.listen(PORT, () => {
-//   console.log(`🚀 Server running at https://localhost:${PORT}`);
-//   console.log(`📁 Uploads directory: ${uploadPath}`);
-// });
 
 export default app;
