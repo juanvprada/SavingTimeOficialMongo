@@ -3,15 +3,20 @@
 // Función que obtiene la URL base de la API
 export const API_CONFIG = {
   getBaseUrl: () => {
+    console.log('Entorno Vite:', import.meta.env);
+    console.log('Entorno Window:', window.ENV);
     // Si estamos usando Vite
     if (import.meta.env?.VITE_API_URL) {
+      console.log('URL desde Vite:', import.meta.env.VITE_API_URL);
       return import.meta.env.VITE_API_URL;
     }
     // Si estamos usando Create React App
     if (window.ENV?.REACT_APP_API_URL) {
+      console.log('URL desde Window:', window.ENV.REACT_APP_API_URL);
       return window.ENV.REACT_APP_API_URL;
     }
     // URL por defecto (desarrollo local)
+    console.log('URL por defecto');
     return 'https://savingtimeoficial.eu-4.evennode.com';
   }
 };

@@ -47,19 +47,23 @@ const RegisterForm = ({ inputTextColor = 'text-gray-700', formBackground = 'bg-w
       });
 
       setMessage('¡Registro exitoso!');
-      
+
       // Dar tiempo para que se muestre el mensaje de éxito
       setTimeout(() => {
         navigate('/blog');
       }, 1500);
 
     } catch (error) {
+
+      // Log del error completo
+      console.error('Error completo:', error);
+      console.error('Error response:', error.response);
       console.error('Error detallado:', error.response?.data);
-      
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.errors?.[0]?.message || 
-                          'Error en el registro. Por favor, intente nuevamente.';
-      
+
+      const errorMessage = error.response?.data?.message ||
+        error.response?.data?.errors?.[0]?.message ||
+        'Error en el registro. Por favor, intente nuevamente.';
+
       setMessage(errorMessage);
     } finally {
       setIsLoading(false);
@@ -83,7 +87,7 @@ const RegisterForm = ({ inputTextColor = 'text-gray-700', formBackground = 'bg-w
             maxLength={100}
           />
         </div>
-        
+
         <div className="relative">
           <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
@@ -96,7 +100,7 @@ const RegisterForm = ({ inputTextColor = 'text-gray-700', formBackground = 'bg-w
             disabled={isLoading}
           />
         </div>
-        
+
         <div className="relative">
           <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
@@ -115,8 +119,8 @@ const RegisterForm = ({ inputTextColor = 'text-gray-700', formBackground = 'bg-w
           type="submit"
           disabled={isLoading}
           className={`w-full bg-blue-600 text-white font-medium py-3 rounded-lg transition
-            ${isLoading 
-              ? 'opacity-50 cursor-not-allowed' 
+            ${isLoading
+              ? 'opacity-50 cursor-not-allowed'
               : 'hover:bg-blue-700 active:bg-blue-800 shadow-md hover:shadow-lg'
             }`}
         >
@@ -125,10 +129,9 @@ const RegisterForm = ({ inputTextColor = 'text-gray-700', formBackground = 'bg-w
       </form>
 
       {message && (
-        <p 
-          className={`text-sm text-center mt-4 ${
-            message.includes('exitoso') ? 'text-green-600' : 'text-red-600'
-          }`}
+        <p
+          className={`text-sm text-center mt-4 ${message.includes('exitoso') ? 'text-green-600' : 'text-red-600'
+            }`}
         >
           {message}
         </p>
