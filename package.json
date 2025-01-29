@@ -1,15 +1,26 @@
 {
-    "name": "your-app",
-    "version": "1.0.0",
-    "main": "app.js",
-    "scripts": {
-      "start": "node app.js",
-      "postinstall": "cd server-backend && npm install"
-    },
-    "dependencies": {
-      "express": "^4.17.1"
-    },
-    "engines": {
-      "node": "18.x"
-    }
-  }
+  "name": "saving-time",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "cd server-backend && npm start",
+    "install": "cd client-frontend && npm install && npm run build && cd ../server-backend && npm install && npm run build",
+    "build": "npm install",
+    "clean": "rm -rf client-frontend/dist server-backend/dist"
+  },
+  "engines": {
+    "node": "20.15.0"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/juanvprada/SavingTimeOficialMongo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+ 
+}
