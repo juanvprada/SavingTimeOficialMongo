@@ -50,7 +50,7 @@ const ImageGallery = ({ images, postName }) => {
           onError={(e) => {
             console.log('Error loading image:', images[currentIndex]); // Para debug
             setImageError(prev => ({ ...prev, [images[currentIndex]]: true }));
-            e.target.src = 'http://localhost:5000/uploads/default.jpg';
+            e.target.src = 'https://localhost:5000/uploads/default.jpg';
           }}
         />
         {images.length > 1 && (
@@ -88,7 +88,7 @@ const ImageGallery = ({ images, postName }) => {
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   console.log('Error loading thumbnail:', image); // Para debug
-                  e.target.src = 'http://localhost:5000/uploads/default.jpg';
+                  e.target.src = 'https://localhost:5000/uploads/default.jpg';
                 }}
               />
               {index === currentIndex && (

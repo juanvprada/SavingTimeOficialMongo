@@ -19,7 +19,7 @@ describe('Post Controller', () => {
         name: 'Nuevo Post',
         kindOfPost: 'Artículo',
         description: 'Descripción de prueba',
-        image: 'http://localhost:5000/uploads/test.jpg'
+        image: 'https://localhost:5000/uploads/test.jpg'
       });
 
       await createPost(req, res);
@@ -61,7 +61,7 @@ describe('Post Controller', () => {
           name: 'Post Actualizado',
           kindOfPost: 'Artículo',
           description: 'Nueva descripción',
-          image: 'http://localhost:5000/uploads/new_image.jpg'
+          image: 'https://localhost:5000/uploads/new_image.jpg'
         })
       });
 

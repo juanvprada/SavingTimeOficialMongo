@@ -20,10 +20,10 @@ const PORT = process.env.PORT || 5000;
 // CORS configuration
 app.use(cors({
   origin: [
-    'http://localhost:3000',
-    'http://localhost:5000',
-    'http://localhost:5173',
-    'http://localhost:8080',
+    'https://localhost:3000',
+    'https://localhost:5000',
+    'https://localhost:5173',
+    'https://localhost:8080',
     'https://savingtimeoficial.eu-4.evennode.com'
   ],
   credentials: true,
@@ -127,7 +127,7 @@ mongoose
 
 // Start server
 // app.listen(PORT, () => {
-//   console.log(`🚀 Server running at http://localhost:${PORT}`);
+//   console.log(`🚀 Server running at https://localhost:${PORT}`);
 //   console.log(`📁 Uploads directory: ${uploadPath}`);
 // });
 

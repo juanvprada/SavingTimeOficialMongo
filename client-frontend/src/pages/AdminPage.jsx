@@ -18,7 +18,7 @@ const AdminPage = () => {
     }
     const fetchUsers = async () => {
       try {
-        const response = await axios.get(`${normalizeUrl('/api/users')}`, {
+        const response = await axios.get(`${normalizeUrl('api/users')}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         // ...

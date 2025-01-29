@@ -9,7 +9,7 @@ async function startServer() {
     console.log('✅ MongoDB connection established.');
 
     app.listen(CONFIG.PORT, () => {
-      console.log(`🚀 Server running at http://localhost:${CONFIG.PORT}`);
+      console.log(`🚀 Server running at https://localhost:${CONFIG.PORT}`);
     });
   } catch (error) {
     console.error('❌ Error al iniciar el servidor:', error);

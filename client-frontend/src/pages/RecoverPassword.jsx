@@ -15,7 +15,7 @@ const RecoverPassword = () => {
         setError('');
 
         try {
-            const response = await axios.post(`${normalizeUrl('/api/auth/recover-password')}`, {
+            const response = await axios.post(`${normalizeUrl('api/auth/recover-password')}`, {
                 email,
               });
             setMessage(response.data.message);

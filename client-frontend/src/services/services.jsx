@@ -3,7 +3,7 @@ import axios from 'axios';
 import { API_CONFIG, axiosConfig, getAuthConfig } from '../config/api.config';
 
 const BASE_URL = API_CONFIG.getBaseUrl();
-const API_URL = `${BASE_URL}/api/posts`;
+const API_URL = `${BASE_URL}api/posts`;
 const UPLOADS_URL = `${BASE_URL}/uploads`;
 
 // Utility function to ensure consistent error handling
@@ -88,7 +88,7 @@ export const createPost = async (formData) => {
       timeout: 10000 // 10 segundos de timeout
     };
     // Usa una URL limpia y con HTTPS
-    const fullUrl = `${baseUrl}/api/posts`;
+    const fullUrl = `${baseUrl}api/posts`;
     console.log('URL completa para post:', fullUrl);
 
     const response = await axios.post(fullUrl, formData, config);

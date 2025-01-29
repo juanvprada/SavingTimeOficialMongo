@@ -8,7 +8,7 @@ const Profile = () => {
     useEffect(() => {
         const fetchProfile = async () => {
           const token = localStorage.getItem('token');
-          const response = await fetch(`${normalizeUrl('/api/auth/perfil')}`, {
+          const response = await fetch(`${normalizeUrl('api/auth/perfil')}`, {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${token}`, 

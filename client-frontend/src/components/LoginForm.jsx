@@ -10,7 +10,7 @@ const getBaseUrl = () => {
   return import.meta.env.VITE_API_URL || 'https://savingtimeoficial.eu-4.evennode.com';
 };
 
-const API_URL = `${normalizeUrl('/api/auth')}`;
+const API_URL = `${normalizeUrl('api/auth')}`;
 
 const LoginForm = ({ inputTextColor, formBackground }) => {
   const [email, setEmail] = useState('');
@@ -32,7 +32,7 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
       return;
     }
     try {
-      const response = await axios.post(`${getBaseUrl()}/api/auth/login`, {
+      const response = await axios.post(`${getBaseUrl()}api/auth/login`, {
         email,
         password
       }, {

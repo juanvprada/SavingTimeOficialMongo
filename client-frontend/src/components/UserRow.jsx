@@ -7,7 +7,7 @@ const UserRow = ({ user, token, onRoleChange }) => {
         const newRole = user.role === 'admin' ? 'user' : 'admin';
         try {
           await axios.put(
-            `${normalizeUrl(`/api/roles/${user.id}`)}`,
+            `${normalizeUrl(`api/roles/${user.id}`)}`,
             { role: newRole },
             { headers: { Authorization: `Bearer ${token}` } }
           );

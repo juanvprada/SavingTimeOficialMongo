@@ -9,7 +9,7 @@ const CommentSection = ({ postId }) => {
    
     const fetchComments = async () => {
       try {
-        const response = await axios.get(`/api/posts/${postId}/comments`);
+        const response = await axios.get(`api/posts/${postId}/comments`);
         setComments(response.data);
       } catch (error) {
         console.error('Error al obtener los comentarios:', error);
@@ -24,7 +24,7 @@ const CommentSection = ({ postId }) => {
 
     try {
       const response = await axios.post(
-        `/api/posts/${postId}/comments`,
+        `api/posts/${postId}/comments`,
         { content: newComment },
         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
       );

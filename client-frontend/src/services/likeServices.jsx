@@ -3,7 +3,7 @@ import axios from 'axios';
 import { API_CONFIG, axiosConfig, getAuthConfig } from '../config/api.config';
 
 const BASE_URL = API_CONFIG.getBaseUrl();
-const API_URL = `${BASE_URL}/api/likes`;
+const API_URL = `${BASE_URL}api/likes`;
 
 export const toggleLike = async (postId) => {
   try {
