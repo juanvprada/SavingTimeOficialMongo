@@ -71,6 +71,10 @@ export const getPosts = async () => {
 export const createPost = async (formData) => {
   try {
     const token = localStorage.getItem('token');
+    const baseUrl = API_CONFIG.getBaseUrl(); // Añade esta línea
+    
+    console.log('Base URL:', baseUrl); // Log de depuración
+    console.log('Token:', token);
 
     if (!token) {
       throw new Error('No hay token de autenticación');
@@ -83,12 +87,11 @@ export const createPost = async (formData) => {
       },
       timeout: 10000 // 10 segundos de timeout
     };
+    // Usa una URL limpia y con HTTPS
+    const fullUrl = `${baseUrl}/api/posts`;
+    console.log('URL completa para post:', fullUrl);
 
-    // Verificar formData antes de enviar
-    const formDataEntries = Array.from(formData.entries());
-    console.log('FormData a enviar:', formDataEntries);
-
-    const response = await axios.post(`${API_CONFIG.getBaseUrl()}/api/posts`, formData, config);
+    const response = await axios.post(fullUrl, formData, config);
 
     if (response.status === 201 && response.data?.data) {
       return response.data;
