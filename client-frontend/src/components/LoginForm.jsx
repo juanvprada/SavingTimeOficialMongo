@@ -7,10 +7,14 @@ import { normalizeUrl } from '../utils/imageUtils';
 
 // Función para obtener la URL base
 const getBaseUrl = () => {
-  return import.meta.env.VITE_API_URL || 'https://savingtimeoficial.eu-4.evennode.com';
+  const baseUrl = import.meta.env.VITE_API_URL || 'https://savingtimeoficial.eu-4.evennode.com';
+  // Asegurarnos de que siempre use HTTPS
+  if (baseUrl.startsWith('http://')) {
+    return baseUrl.replace('http://', 'https://');
+  }
+  return baseUrl;
 };
 
-const API_URL = `${normalizeUrl('api/auth')}`;
 
 const LoginForm = ({ inputTextColor, formBackground }) => {
   const [email, setEmail] = useState('');
@@ -32,7 +36,8 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
       return;
     }
     try {
-      const response = await axios.post(`${getBaseUrl()}/api/auth/login`, {
+      const baseUrl = getBaseUrl().replace(/\/+$/, ''); // Elimina slashes al final si existen
+      const response = await axios.post(`${baseUrl}/api/auth/login`, { // Un solo slash
         email,
         password
       }, {
@@ -49,8 +54,8 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
         setToken(data.token);
         setRole(data.role);
         setUsername(data.name);
-        setUserId(data._id || data.userId); 
-      
+        setUserId(data._id || data.userId);
+
         navigate('/blog');
       } else {
         setError('Respuesta del servidor inválida');
