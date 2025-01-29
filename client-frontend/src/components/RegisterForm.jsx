@@ -22,7 +22,7 @@ const RegisterForm = ({ inputTextColor = 'text-gray-700', formBackground = 'bg-w
 
     try {
       const response = await axios.post(
-        `${API_CONFIG.getBaseUrl()}/api/auth/register`,
+        `https://savingtimeoficial.eu-4.evennode.com/api/auth/register`,
         {
           name: name.trim(),
           email: email.trim().toLowerCase(),
