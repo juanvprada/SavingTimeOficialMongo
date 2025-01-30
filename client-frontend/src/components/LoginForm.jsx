@@ -3,14 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { FaEnvelope, FaLock } from 'react-icons/fa';
 import useStore from '../store/store';
 import axios from 'axios';
+import { API_CONFIG } from '../config/api.config';
 
-// Función para obtener la URL base
-const getBaseUrl = () => {
-  if (window.location.hostname === 'localhost') {
-    return 'http://localhost:5000';
-  }
-  return window.location.origin;
-};
+
 
 const API_URL = `${getBaseUrl()}/api/auth`;
 
@@ -34,7 +29,9 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
       return;
     }
     try {
-      const response = await axios.post(`https://savingtimeoficial.eu-4.evennode.com//api/auth/login/pepe'`, {
+      const API_URL = `${getBaseUrl()}/api/auth/login`;
+
+      const response = await axios.post(`${API_CONFIG.getBaseUrl()}/api/auth/login`, {
         email,
         password
       }, {
@@ -51,8 +48,8 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
         setToken(data.token);
         setRole(data.role);
         setUsername(data.name);
-        setUserId(data._id || data.userId); 
-      
+        setUserId(data._id || data.userId);
+
         navigate('/blog');
       } else {
         setError('Respuesta del servidor inválida');
