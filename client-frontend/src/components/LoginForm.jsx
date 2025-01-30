@@ -28,29 +28,37 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
     setError('');
   
     try {
-      const response = await api.post('/api/auth/login', {  // Nota la barra inicial en la ruta
-        email,
+      const response = await api.post('api/auth/login', {
+        email: email.trim().toLowerCase(),
         password
       });
   
-      const { data } = response.data;
       console.log('Respuesta del servidor:', response);
-      
-      if (data?.token) {
-        setToken(data.token);
-        setRole(data.role);
-        setUsername(data.name);
-        setUserId(data._id || data.userId);
-        navigate('/blog');
-      } else {
+  
+      // La respuesta viene con { message, data }
+      const { data } = response.data;
+  
+      if (!data || !data.token) {
         throw new Error('Respuesta del servidor inválida');
       }
+  
+      // Actualizar el estado
+      setToken(data.token);
+      setRole(data.role);
+      setUsername(data.name);
+      setUserId(data.userId);
+  
+      // Agregar el token a los headers para futuras peticiones
+      api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
+  
+      navigate('/blog');
     } catch (error) {
-      console.error('Error completo:', error);
-      setError(
-        error.response?.data?.message || 
-        'No se pudo conectar con el servidor. Por favor, intenta de nuevo.'
-      );
+      console.error('Error en login:', error);
+      
+      const errorMessage = error.response?.data?.message || 
+        'Error al conectar con el servidor. Por favor, intenta de nuevo.';
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

@@ -56,27 +56,47 @@ export class UserController {
 
   static async login(req: Request, res: Response<ApiResponse<AuthResponse>>) {
     const { email, password } = req.body;
-
+  
     try {
-      const user = await User.findOne({ email }).select('+password');
-
-      if (!user || !(await AuthService.comparePasswords(password, user.password))) {
+      console.log('Login attempt for:', email);
+  
+      const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+  
+      if (!user) {
+        console.log('User not found:', email);
         return res.status(401).json({
           message: 'Credenciales inválidas',
         });
       }
-
+  
+      const isValidPassword = await AuthService.comparePasswords(password, user.password);
+      
+      if (!isValidPassword) {
+        console.log('Invalid password for user:', email);
+        return res.status(401).json({
+          message: 'Credenciales inválidas',
+        });
+      }
+  
       const token = AuthService.generateToken({
-        userId: user._id.toString(), // Convertir ObjectId a string
+        userId: user._id.toString(),
         role: user.role,
         email: user.email,
         name: user.name,
       });
-
-      return res.json({
+  
+      console.log('Login successful for:', email);
+  
+      // Asegurar que todos los headers necesarios estén presentes
+      res.set({
+        'Access-Control-Allow-Credentials': 'true',
+        'Access-Control-Expose-Headers': 'Authorization'
+      });
+  
+      return res.status(200).json({
         message: 'Inicio de sesión exitoso',
         data: {
-          userId: user._id.toString(), // Convertir ObjectId a string
+          userId: user._id.toString(),
           role: user.role,
           name: user.name,
           token,
@@ -86,7 +106,7 @@ export class UserController {
       console.error('Error en login:', error);
       return res.status(500).json({
         message: 'Error al iniciar sesión',
-        error,
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   }

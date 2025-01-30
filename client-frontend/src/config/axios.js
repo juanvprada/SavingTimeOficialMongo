@@ -1,51 +1,52 @@
 import axios from 'axios';
 
-const BASE_URL = 'https://savingtimeoficial.eu-4.evennode.com';
+const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://savingtimeoficial.eu-4.evennode.com';
+
+console.log('Base URL configurada:', BASE_URL);
 
 const api = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'X-Requested-With': 'XMLHttpRequest'
+    'Accept': 'application/json'
   }
 });
 
-// Interceptor simplificado y más robusto
-api.interceptors.request.use((config) => {
-  try {
-    // Asegurar HTTPS en baseURL
-    config.baseURL = BASE_URL;
-    
-    // Limpiar la URL de barras iniciales y dobles
-    config.url = config.url.replace(/^\/+/, '').replace(/\/+/g, '/');
-    
-    // Construir y verificar la URL final
-    const finalUrl = new URL(`${config.baseURL}/${config.url}`);
-    finalUrl.protocol = 'https:';
-    
-    // Actualizar configuración
-    config.baseURL = `${finalUrl.protocol}//${finalUrl.host}`;
-    config.url = finalUrl.pathname + finalUrl.search;
-    
-    console.log('URL final:', `${config.baseURL}${config.url}`);
-    
+// Interceptor de peticiones
+api.interceptors.request.use(
+  (config) => {
+    console.log('Enviando petición:', {
+      method: config.method,
+      url: `${config.baseURL}${config.url}`,
+      headers: config.headers,
+      data: config.data
+    });
     return config;
-  } catch (error) {
-    console.error('Error en interceptor:', error);
-    return config;
+  },
+  (error) => {
+    console.error('Error en petición:', error);
+    return Promise.reject(error);
   }
-});
+);
 
+// Interceptor de respuestas
 api.interceptors.response.use(
-  response => response,
-  error => {
-    console.error('Error en petición:', {
-      url: error.config?.url,
-      baseURL: error.config?.baseURL,
-      method: error.config?.method,
-      status: error.response?.status
+  (response) => {
+    console.log('Respuesta recibida:', {
+      status: response.status,
+      headers: response.headers,
+      data: response.data
+    });
+    return response;
+  },
+  (error) => {
+    console.error('Error en respuesta:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      headers: error.response?.headers,
+      message: error.message
     });
     return Promise.reject(error);
   }

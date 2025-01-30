@@ -41,9 +41,17 @@ app.use(cors({
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token'],
-  exposedHeaders: ['*', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token', 'Accept'],
+  exposedHeaders: ['Authorization'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
+
+// Middleware adicional para asegurar los headers CORS
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Credentials', 'true');
+  next();
+});
 
 // Middleware
 app.use(express.json());
