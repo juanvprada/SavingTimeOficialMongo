@@ -1,38 +1,73 @@
 import axios from 'axios';
 
-const API_URL = 'https://savingtimeoficial.eu-4.evennode.com';
+const BASE_URL = 'https://savingtimeoficial.eu-4.evennode.com';
+const API_URL = `${BASE_URL}/api`;
 
-console.log('Configuración inicial:', {
+// Debug configuration
+console.log('API Configuration:', {
+  baseUrl: BASE_URL,
   apiUrl: API_URL,
-  env: import.meta.env.MODE,
-  viteApiUrl: import.meta.env.VITE_API_URL
+  environment: import.meta.env.MODE
 });
 
+// Create axios instance
 const api = axios.create({
-  baseURL: `${API_URL}/api`,
+  baseURL: API_URL,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'X-Forwarded-Proto': 'https'
+    'Accept': 'application/json'
   }
 });
 
-api.interceptors.request.use((config) => {
-  const url = new URL(config.url.startsWith('http') ? config.url : `${config.baseURL}/${config.url}`);
-  url.protocol = 'https:';
-  
-  config.baseURL = `${url.origin}/api`;
-  config.url = config.url.replace(/^\/+/, '');
+// Request interceptor for API calls
+api.interceptors.request.use(
+  (config) => {
+    // Ensure HTTPS protocol
+    const url = new URL(
+      config.url.startsWith('http') 
+        ? config.url 
+        : `${API_URL}/${config.url.replace(/^\/+/, '')}`
+    );
+    url.protocol = 'https:';
 
-  console.log('Request config:', {
-    method: config.method,
-    url: config.url,
-    baseURL: config.baseURL,
-    fullUrl: `${config.baseURL}/${config.url}`
-  });
+    // Update config
+    config.baseURL = `${url.origin}/api`;
+    config.url = url.pathname.replace(/^\/api/, '');
 
-  return config;
-});
+    // Debug log
+    console.log('Making request:', {
+      method: config.method,
+      baseURL: config.baseURL,
+      url: config.url,
+      fullUrl: `${config.baseURL}${config.url}`
+    });
+
+    return config;
+  },
+  (error) => {
+    console.error('Request error:', error);
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor
+api.interceptors.response.use(
+  (response) => {
+    console.log('Response received:', {
+      status: response.status,
+      data: response.data
+    });
+    return response;
+  },
+  (error) => {
+    console.error('Response error:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status
+    });
+    return Promise.reject(error);
+  }
+);
 
 export default api;

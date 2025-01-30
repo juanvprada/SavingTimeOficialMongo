@@ -35,6 +35,14 @@ export default defineConfig({
     }
   },
   define: {
-    'process.env.VITE_API_URL': JSON.stringify('https://savingtimeoficial.eu-4.evennode.com')
+    'import.meta.env.VITE_API_URL': JSON.stringify('https://savingtimeoficial.eu-4.evennode.com')
+  },
+  build: {
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: undefined
+      }
+    }
   }
 });

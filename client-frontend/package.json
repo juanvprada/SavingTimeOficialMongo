@@ -8,7 +8,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "jest",
-    "build": "VITE_API_URL=https://savingtimeoficial.eu-4.evennode.com vite build"
+    "build": "vite build"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.6.0",
