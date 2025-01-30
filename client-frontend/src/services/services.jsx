@@ -88,7 +88,7 @@ export const createPost = async (formData) => {
     const formDataEntries = Array.from(formData.entries());
     console.log('FormData a enviar:', formDataEntries);
 
-    const response = await axios.post('http://localhost:5000/api/posts', formData, config);
+    const response = await axios.post(`{API_CONFIG.getBaseUrl()}`, formData, config);
 
     if (response.status === 201 && response.data?.data) {
       return response.data;
