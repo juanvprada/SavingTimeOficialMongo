@@ -19,48 +19,35 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email || !password) {
-      setError('Por favor, completa todos los campos.');
-      return;
-    }
     
-    setLoading(true);
-    setError('');
-  
     try {
-      const response = await api.post('auth/login', {  // Sin /api/ y sin barra inicial
+      console.log('Iniciando petición de login a:', 'auth/login');
+      
+      const response = await api.post('auth/login', {
         email: email.trim().toLowerCase(),
         password
       });
   
-      console.log('Respuesta del servidor:', response);
-  
-      // La respuesta viene con { message, data }
-      const { data } = response.data;
-  
-      if (!data || !data.token) {
-        throw new Error('Respuesta del servidor inválida');
+      console.log('Respuesta exitosa:', response.data);
+      
+      if (response.data?.data?.token) {
+        setToken(response.data.data.token);
+        setRole(response.data.data.role);
+        setUsername(response.data.data.name);
+        setUserId(response.data.data.userId);
+        navigate('/blog');
+      } else {
+        console.error('Respuesta sin token:', response.data);
+        setError('Respuesta inválida del servidor');
       }
-  
-      // Actualizar el estado
-      setToken(data.token);
-      setRole(data.role);
-      setUsername(data.name);
-      setUserId(data.userId);
-  
-      // Agregar el token a los headers para futuras peticiones
-      api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
-  
-      navigate('/blog');
     } catch (error) {
-      console.error('Error en login:', error);
+      console.error('Error detallado:', {
+        message: error.message,
+        config: error.config,
+        response: error.response
+      });
       
-      const errorMessage = error.response?.data?.message || 
-        'Error al conectar con el servidor. Por favor, intenta de nuevo.';
-      
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
+      setError(error.response?.data?.message || 'Error de conexión');
     }
   };
 

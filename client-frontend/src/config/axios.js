@@ -2,60 +2,41 @@ import axios from 'axios';
 
 const BASE_URL = 'https://savingtimeoficial.eu-4.evennode.com';
 
-console.log('API Base URL:', BASE_URL);
+// Debug de la URL base
+console.log('Configuración inicial de axios:', {
+  baseUrl: BASE_URL,
+  fullApiUrl: `${BASE_URL}/api`
+});
 
 const api = axios.create({
-  baseURL: `${BASE_URL}/api`,  // Añadimos /api explícitamente
+  baseURL: `${BASE_URL}/api`,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    'Accept': 'application/json',
   }
 });
 
-// Interceptor para debug y limpieza de URLs
+// Interceptor para garantizar HTTPS
 api.interceptors.request.use((config) => {
-  // Remover barras iniciales duplicadas
-  config.url = config.url.replace(/^\/+/, '');
+  // Forzar HTTPS en la URL
+  const urlString = `${config.baseURL}/${config.url}`.replace(/([^:]\/)\/+/g, '$1');
+  const url = new URL(urlString);
+  url.protocol = 'https:';
   
-  const fullUrl = `${config.baseURL}/${config.url}`;
-  
-  console.log('Request:', {
-    method: config.method,
-    url: fullUrl,
-    headers: config.headers,
-    data: config.data
-  });
-  
-  return config;
-}, (error) => {
-  console.error('Request error:', error);
-  return Promise.reject(error);
-});
+  // Actualizar la configuración
+  config.baseURL = url.origin;
+  config.url = url.pathname + url.search;
 
-// Interceptor de respuestas para debug
-api.interceptors.response.use(
-  (response) => {
-    console.log('Response:', {
-      status: response.status,
-      data: response.data,
-      headers: response.headers
-    });
-    return response;
-  },
-  (error) => {
-    console.error('Response error:', {
-      status: error.response?.status,
-      data: error.response?.data,
-      message: error.message,
-      config: {
-        url: error.config?.url,
-        method: error.config?.method,
-        headers: error.config?.headers
-      }
-    });
-    return Promise.reject(error);
-  }
-);
+  console.log('Request final:', {
+    method: config.method,
+    baseURL: config.baseURL,
+    url: config.url,
+    fullUrl: `${config.baseURL}${config.url}`,
+    headers: config.headers
+  });
+
+  return config;
+});
 
 export default api;

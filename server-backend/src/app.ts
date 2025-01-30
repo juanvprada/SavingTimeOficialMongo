@@ -148,6 +148,15 @@ if (process.env.NODE_ENV === 'production') {
   app.get('*', (req, res) => {
     res.sendFile(path.join(frontendBuildPath, 'index.html'));
   });
+
+  app.get('/test-https', (req, res) => {
+    res.json({
+      protocol: req.protocol,
+      secure: req.secure,
+      headers: req.headers,
+      originalUrl: req.originalUrl
+    });
+  });
 }
 
 export default app;
