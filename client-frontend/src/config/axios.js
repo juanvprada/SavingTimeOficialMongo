@@ -1,17 +1,15 @@
 import axios from 'axios';
 
-// Forzar HTTPS desde el inicio sin depender de variables de entorno
-const BASE_URL = new URL('https://savingtimeoficial.eu-4.evennode.com').origin;
-const API_URL = `${BASE_URL}/api`;
+const API_URL = 'https://savingtimeoficial.eu-4.evennode.com';
 
 console.log('Configuración inicial:', {
-  baseUrl: BASE_URL,
   apiUrl: API_URL,
-  protocol: 'https'
+  env: import.meta.env.MODE,
+  viteApiUrl: import.meta.env.VITE_API_URL
 });
 
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: `${API_URL}/api`,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
@@ -20,35 +18,21 @@ const api = axios.create({
   }
 });
 
-// Interceptor simplificado que solo asegura HTTPS
 api.interceptors.request.use((config) => {
-  // Asegurar que la URL use HTTPS
-  const url = new URL(config.url, API_URL);
+  const url = new URL(config.url.startsWith('http') ? config.url : `${config.baseURL}/${config.url}`);
   url.protocol = 'https:';
   
-  config.url = url.pathname;
-  
+  config.baseURL = `${url.origin}/api`;
+  config.url = config.url.replace(/^\/+/, '');
+
   console.log('Request config:', {
     method: config.method,
-    baseURL: config.baseURL,
     url: config.url,
-    fullUrl: `${config.baseURL}${config.url}`
+    baseURL: config.baseURL,
+    fullUrl: `${config.baseURL}/${config.url}`
   });
-  
+
   return config;
 });
-
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    console.error('Error en petición:', {
-      url: error.config?.url,
-      method: error.config?.method,
-      status: error.response?.status,
-      message: error.message
-    });
-    return Promise.reject(error);
-  }
-);
 
 export default api;

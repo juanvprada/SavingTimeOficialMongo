@@ -35,6 +35,6 @@ export default defineConfig({
     }
   },
   define: {
-    'process.env.VITE_BASE_URL': JSON.stringify('https://savingtimeoficial.eu-4.evennode.com')
+    'process.env.VITE_API_URL': JSON.stringify('https://savingtimeoficial.eu-4.evennode.com')
   }
 });
