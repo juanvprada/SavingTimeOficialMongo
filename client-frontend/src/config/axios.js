@@ -1,11 +1,11 @@
 import axios from 'axios';
 
-const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://savingtimeoficial.eu-4.evennode.com';
+const BASE_URL = 'https://savingtimeoficial.eu-4.evennode.com';
 
-console.log('Base URL configurada:', BASE_URL);
+console.log('API Base URL:', BASE_URL);
 
 const api = axios.create({
-  baseURL: BASE_URL,
+  baseURL: `${BASE_URL}/api`,  // Añadimos /api explícitamente
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
@@ -13,40 +13,46 @@ const api = axios.create({
   }
 });
 
-// Interceptor de peticiones
-api.interceptors.request.use(
-  (config) => {
-    console.log('Enviando petición:', {
-      method: config.method,
-      url: `${config.baseURL}${config.url}`,
-      headers: config.headers,
-      data: config.data
-    });
-    return config;
-  },
-  (error) => {
-    console.error('Error en petición:', error);
-    return Promise.reject(error);
-  }
-);
+// Interceptor para debug y limpieza de URLs
+api.interceptors.request.use((config) => {
+  // Remover barras iniciales duplicadas
+  config.url = config.url.replace(/^\/+/, '');
+  
+  const fullUrl = `${config.baseURL}/${config.url}`;
+  
+  console.log('Request:', {
+    method: config.method,
+    url: fullUrl,
+    headers: config.headers,
+    data: config.data
+  });
+  
+  return config;
+}, (error) => {
+  console.error('Request error:', error);
+  return Promise.reject(error);
+});
 
-// Interceptor de respuestas
+// Interceptor de respuestas para debug
 api.interceptors.response.use(
   (response) => {
-    console.log('Respuesta recibida:', {
+    console.log('Response:', {
       status: response.status,
-      headers: response.headers,
-      data: response.data
+      data: response.data,
+      headers: response.headers
     });
     return response;
   },
   (error) => {
-    console.error('Error en respuesta:', {
+    console.error('Response error:', {
       status: error.response?.status,
-      statusText: error.response?.statusText,
       data: error.response?.data,
-      headers: error.response?.headers,
-      message: error.message
+      message: error.message,
+      config: {
+        url: error.config?.url,
+        method: error.config?.method,
+        headers: error.config?.headers
+      }
     });
     return Promise.reject(error);
   }

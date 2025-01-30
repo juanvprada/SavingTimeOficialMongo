@@ -28,7 +28,7 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
     setError('');
   
     try {
-      const response = await api.post('api/auth/login', {
+      const response = await api.post('auth/login', {  // Sin /api/ y sin barra inicial
         email: email.trim().toLowerCase(),
         password
       });

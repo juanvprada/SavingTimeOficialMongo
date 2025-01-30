@@ -15,15 +15,28 @@ import commentRoutes from './routes/commentRoutes';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
 
 // Habilitar trust proxy para Evennode
 app.enable('trust proxy');
 
-// Middleware HTTPS
+// Debug logging middleware
 app.use((req, res, next) => {
-  if (!req.secure && process.env.NODE_ENV === 'production') {
-    return res.redirect(301, `https://${req.headers.host}${req.url}`);
+  console.log({
+    method: req.method,
+    url: req.url,
+    protocol: req.protocol,
+    secure: req.secure,
+    hostname: req.hostname,
+    headers: req.headers
+  });
+  next();
+});
+
+// Force HTTPS redirect
+app.use((req, res, next) => {
+  if (process.env.NODE_ENV === 'production' && !req.secure) {
+    console.log('Redirecting to HTTPS');
+    return res.redirect(`https://${req.headers.host}${req.url}`);
   }
   next();
 });
@@ -41,29 +54,22 @@ app.use(cors({
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token', 'Accept'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   exposedHeaders: ['Authorization'],
   preflightContinue: false,
   optionsSuccessStatus: 204
 }));
 
-// Middleware adicional para asegurar los headers CORS
+// Headers adicionales de seguridad
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   next();
 });
 
-// Middleware
+// Body parsing middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Debug logging middleware
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
-  console.log('Secure:', req.secure);
-  console.log('Protocol:', req.protocol);
-  next();
-});
 
 // Static files setup
 const uploadPath = path.join(__dirname, '../uploads');
@@ -89,50 +95,56 @@ if (!fs.existsSync(defaultImagePath)) {
 }
 
 // Serve static files with proper MIME types
-app.use('/uploads', (req, res, next) => {
-  express.static(uploadPath, {
-    setHeaders: (res, path) => {
-      if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
-        res.setHeader('Content-Type', 'image/jpeg');
-      } else if (path.endsWith('.png')) {
-        res.setHeader('Content-Type', 'image/png');
-      }
+app.use('/uploads', express.static(uploadPath, {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.jpg') || filePath.endsWith('.jpeg')) {
+      res.setHeader('Content-Type', 'image/jpeg');
+    } else if (filePath.endsWith('.png')) {
+      res.setHeader('Content-Type', 'image/png');
     }
-  })(req, res, next);
-});
+  }
+}));
 
 // API Routes
 const apiRouter = express.Router();
+
+// API logging middleware
+apiRouter.use((req, res, next) => {
+  console.log('API Request:', {
+    path: req.path,
+    method: req.method,
+    body: req.body
+  });
+  next();
+});
+
 apiRouter.use('/auth', authRoutes);
 apiRouter.use('/users', userRoutes);
 apiRouter.use('/posts', postRoutes);
 apiRouter.use('/roles', roleRoutes);
 apiRouter.use('/likes', likeRoutes);
 apiRouter.use('/comments', commentRoutes);
+
+// Montar todas las rutas API bajo /api
 app.use('/api', apiRouter);
 
-// Test endpoint for uploads directory
-app.get('/test-uploads', (req, res) => {
-  try {
-    const files = fs.readdirSync(uploadPath);
-    res.json({
-      message: 'Uploads directory content',
-      files,
-      uploadPath,
-      defaultImageExists: fs.existsSync(defaultImagePath)
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: 'Error checking uploads directory',
-      error: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
+// API 404 handler
+app.use('/api/*', (req, res) => {
+  console.log('API 404:', req.originalUrl);
+  res.status(404).json({ 
+    message: 'API endpoint not found',
+    path: req.originalUrl
+  });
 });
 
+// Frontend setup for production
 if (process.env.NODE_ENV === 'production') {
   const frontendBuildPath = path.join(__dirname, '../../client-frontend/dist');
+  
+  // Servir archivos estáticos
   app.use(express.static(frontendBuildPath));
-
+  
+  // Todas las demás rutas sirven index.html
   app.get('*', (req, res) => {
     res.sendFile(path.join(frontendBuildPath, 'index.html'));
   });
