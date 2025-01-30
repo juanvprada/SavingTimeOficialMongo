@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getOnePost, updatePost } from '../services/services';
 import { Create } from '../components/PostForm';
 import { toast } from 'react-toastify';
+import { normalizeImageUrl } from '../utils/imageUtils';
 
 const EditPost = () => {
   const { id } = useParams();
@@ -15,14 +16,19 @@ const EditPost = () => {
       try {
         const response = await getOnePost(id);
         console.log('Post data fetched:', response);
-        // Asegurarnos de que pasamos la estructura correcta al formulario
+
+        // Normalizar las URLs de las imágenes
+        const normalizedImages = response.data.images?.map(img => {
+          return normalizeImageUrl(img);
+        }).filter(Boolean) || [];
+
+        console.log('Imágenes normalizadas:', normalizedImages);
+
         setPost({
           data: {
             ...response.data,
             id: response.data._id || response.data.id,
-            images: response.data.images?.map(img =>
-              img.startsWith('http') ? img : `http://localhost:5000/uploads/${img}`
-            ) || []
+            images: normalizedImages
           }
         });
       } catch (error) {
@@ -38,7 +44,7 @@ const EditPost = () => {
 
   const handleUpdate = async (updatedPost) => {
     try {
-      await updatePost(id, updatedPost); // Envía el FormData directamente
+      await updatePost(id, updatedPost);
       toast.success('Post actualizado exitosamente');
       navigate('/blog');
     } catch (error) {
