@@ -81,20 +81,20 @@ export const createPost = async (formData) => {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'multipart/form-data',
       },
-      timeout: 10000 // 10 segundos de timeout
+      timeout: 10000
     };
 
     // Verificar formData antes de enviar
     const formDataEntries = Array.from(formData.entries());
     console.log('FormData a enviar:', formDataEntries);
 
-    const response = await axios.post(API_CONFIG.getBaseUrl(), formData, config);
+    // Cambiar esta línea - usar API_URL en lugar de getBaseUrl()
+    const response = await axios.post(API_URL, formData, config);
 
     if (response.status === 201 && response.data?.data) {
       return response.data;
     }
 
-    // Si llegamos aquí, la respuesta no tiene el formato esperado
     throw new Error('Formato de respuesta inválido del servidor');
 
   } catch (error) {
