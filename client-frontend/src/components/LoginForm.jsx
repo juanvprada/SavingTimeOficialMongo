@@ -28,7 +28,6 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
       return;
     }
     try {
-      const API_URL = `${getBaseUrl()}/api/auth/login`;
 
       console.log("Actualizando bien");
 

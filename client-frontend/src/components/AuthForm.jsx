@@ -36,7 +36,7 @@ const AuthForm = ({ textColor = 'text-gray-500', inputTextColor = 'text-gray-500
                             : 'bg-[#E3D5C7] text-[#1B3A4B]'
                     }`}
                 >
-                    HOLA
+                    Iniciar Sesión
                 </button>
                 <button
                     onClick={() => setIsLogin(false)}
