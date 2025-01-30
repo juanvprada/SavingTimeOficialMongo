@@ -6,6 +6,6 @@ export const normalizeImageUrl = (imageUrl) => {
     // Remove any duplicate '/uploads'
     const cleanPath = imageUrl.replace(/\/uploads\/+/g, '/uploads/');
     
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const baseUrl = 'https://savingtimeoficial.eu-4.evennode.com';
     return `${baseUrl}${cleanPath.startsWith('/') ? cleanPath : `/${cleanPath}`}`;
   };

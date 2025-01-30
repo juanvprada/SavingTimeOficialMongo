@@ -15,13 +15,15 @@ const EditPost = () => {
       try {
         const response = await getOnePost(id);
         console.log('Post data fetched:', response);
-        // Asegurarnos de que pasamos la estructura correcta al formulario
+        
+        const baseUrl = 'https://savingtimeoficial.eu-4.evennode.com';
+        
         setPost({
           data: {
             ...response.data,
             id: response.data._id || response.data.id,
             images: response.data.images?.map(img =>
-              img.startsWith('http') ? img : `http://localhost:5000/uploads/${img}`
+              img.startsWith('http') ? img : `${baseUrl}/uploads/${img}`
             ) || []
           }
         });
@@ -32,7 +34,7 @@ const EditPost = () => {
         setLoading(false);
       }
     };
-
+  
     fetchPost();
   }, [id]);
 

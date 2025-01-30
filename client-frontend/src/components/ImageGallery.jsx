@@ -11,18 +11,16 @@ const ImageGallery = ({ images, postName }) => {
     // Si la URL ya comienza con http, la dejamos como está
     if (imageUrl.startsWith('http')) return imageUrl;
     
-    // Si la URL comienza con /uploads, añadimos solo el dominio
+    // Usar la URL de producción
+    const baseUrl = 'https://savingtimeoficial.eu-4.evennode.com';
+    
+    // Si la URL comienza con /uploads
     if (imageUrl.startsWith('/uploads')) {
-      return `http://localhost:5000${imageUrl}`;
+      return `${baseUrl}${imageUrl}`;
     }
     
-    // Si la URL no comienza con /uploads, lo añadimos
-    if (!imageUrl.startsWith('/uploads/')) {
-      return `http://localhost:5000/uploads/${imageUrl}`;
-    }
-    
-    // En cualquier otro caso, añadimos el dominio
-    return `http://localhost:5000${imageUrl}`;
+    // Si no tiene /uploads, añadirlo
+    return `${baseUrl}/uploads/${imageUrl}`;
   };
 
   console.log('Received images:', images); // Para debug
