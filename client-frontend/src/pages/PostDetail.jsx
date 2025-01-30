@@ -23,14 +23,14 @@ const PostDetail = () => {
       try {
         setLoading(true);
         const response = await getOnePost(id);
-
+        console.log('Post data recibida:', response); // Debug
+  
         if (response?.data) {
-          // Asegurarse de que images sea siempre un array
           const postData = {
             ...response.data,
-            images: response.data.images ||
-              (response.data.image ? [response.data.image] : [])
+            images: response.data.images || []
           };
+          console.log('Post data procesada:', postData); // Debug
           setPost(postData);
         }
       } catch (error) {
@@ -40,7 +40,7 @@ const PostDetail = () => {
         setLoading(false);
       }
     };
-
+  
     fetchPost();
   }, [id]);
 

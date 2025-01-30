@@ -1,31 +1,23 @@
-// components/ImageGallery.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { normalizeImageUrl } from '../utils/imageUtils';
 
 const ImageGallery = ({ images, postName }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [imageError, setImageError] = useState({});
+  const [normalizedImages, setNormalizedImages] = useState([]);
 
-  const getImageUrl = (imageUrl) => {
-    if (!imageUrl) return null;
-    
-    // Si la URL ya comienza con http, la dejamos como está
-    if (imageUrl.startsWith('http')) return imageUrl;
-    
-    // Usar la URL de producción
-    const baseUrl = 'https://savingtimeoficial.eu-4.evennode.com';
-    
-    // Si la URL comienza con /uploads
-    if (imageUrl.startsWith('/uploads')) {
-      return `${baseUrl}${imageUrl}`;
+  useEffect(() => {
+    console.log('Images recibidas:', images);
+
+    if (Array.isArray(images)) {
+      const normalized = images
+        .map(img => normalizeImageUrl(img))
+        .filter(Boolean);
+      console.log('Images normalizadas:', normalized);
+      setNormalizedImages(normalized);
     }
-    
-    // Si no tiene /uploads, añadirlo
-    return `${baseUrl}/uploads/${imageUrl}`;
-  };
+  }, [images]);
 
-  console.log('Received images:', images); // Para debug
-
-  if (!images || !Array.isArray(images) || images.length === 0) {
+  if (!normalizedImages.length) {
     return (
       <div className="w-full h-96 flex items-center justify-center bg-gray-100 rounded-lg">
         <div className="text-center">
@@ -36,35 +28,29 @@ const ImageGallery = ({ images, postName }) => {
     );
   }
 
-  // Para debug - imprimir las URLs procesadas
-  images.forEach((img, index) => {
-    console.log(`Image ${index} URL:`, getImageUrl(img));
-  });
-
   return (
     <div className="space-y-4">
       {/* Imagen principal */}
       <div className="relative w-full h-96">
         <img
-          src={getImageUrl(images[currentIndex])}
+          src={normalizedImages[currentIndex]}
           alt={`${postName} - Imagen ${currentIndex + 1}`}
           className="w-full h-full object-cover rounded-lg"
           onError={(e) => {
-            console.log('Error loading image:', images[currentIndex]); // Para debug
-            setImageError(prev => ({ ...prev, [images[currentIndex]]: true }));
-            e.target.src = 'http://localhost:5000/uploads/default.jpg';
+            console.error('Error cargando imagen:', normalizedImages[currentIndex]);
+            e.target.src = `https://savingtimeoficial.eu-4.evennode.com/uploads/default.jpg`;
           }}
         />
-        {images.length > 1 && (
+        {normalizedImages.length > 1 && (
           <>
             <button
-              onClick={() => setCurrentIndex(prev => (prev === 0 ? images.length - 1 : prev - 1))}
+              onClick={() => setCurrentIndex(prev => (prev === 0 ? normalizedImages.length - 1 : prev - 1))}
               className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-opacity-75 transition-all"
             >
               <i className="fas fa-chevron-left"></i>
             </button>
             <button
-              onClick={() => setCurrentIndex(prev => (prev === images.length - 1 ? 0 : prev + 1))}
+              onClick={() => setCurrentIndex(prev => (prev === normalizedImages.length - 1 ? 0 : prev + 1))}
               className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-opacity-75 transition-all"
             >
               <i className="fas fa-chevron-right"></i>
@@ -74,9 +60,9 @@ const ImageGallery = ({ images, postName }) => {
       </div>
 
       {/* Miniaturas */}
-      {images.length > 1 && (
+      {normalizedImages.length > 1 && (
         <div className="grid grid-cols-4 gap-2">
-          {images.map((image, index) => (
+          {normalizedImages.map((image, index) => (
             <button
               key={index}
               onClick={() => setCurrentIndex(index)}
@@ -85,12 +71,12 @@ const ImageGallery = ({ images, postName }) => {
               `}
             >
               <img
-                src={getImageUrl(image)}
+                src={image}
                 alt={`Miniatura ${index + 1}`}
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  console.log('Error loading thumbnail:', image); // Para debug
-                  e.target.src = 'http://localhost:5000/uploads/default.jpg';
+                  console.error('Error cargando miniatura:', image);
+                  e.target.src = `https://savingtimeoficial.eu-4.evennode.com/uploads/default.jpg`;
                 }}
               />
               {index === currentIndex && (
