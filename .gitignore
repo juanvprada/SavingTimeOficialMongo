@@ -1,6 +1,7 @@
 # Dependencies
 client-frontend/node_modules
 server-backend/node_modules
+node_modules
 
 # Build outputs (except dist folders for frontend and backend)
 dist
@@ -65,3 +66,4 @@ coverage
 .temp
 .tmp
 .cache
+node_modules/
