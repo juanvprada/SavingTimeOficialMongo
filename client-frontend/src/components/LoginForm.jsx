@@ -7,7 +7,6 @@ import { API_CONFIG } from '../config/api.config';
 
 
 
-const API_URL = `${getBaseUrl()}/api/auth`;
 
 const LoginForm = ({ inputTextColor, formBackground }) => {
   const [email, setEmail] = useState('');
@@ -30,6 +29,8 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
     }
     try {
       const API_URL = `${getBaseUrl()}/api/auth/login`;
+
+      console.log("Actualizando bien");
 
       const response = await axios.post(`${API_CONFIG.getBaseUrl()}/api/auth/login`, {
         email,
