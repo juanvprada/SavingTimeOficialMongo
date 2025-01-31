@@ -43,9 +43,7 @@ export class PostController {
   static async create(req: AuthRequest, res: Response<ApiResponse<IPost>>) {
     try {
       const { name, kindOfPost, description, userId, city, price, rating } = req.body;
-      
-      console.log('Files recibidos:', req.files); // Debug
-  
+
       const postData = {
         name: String(name),
         kindOfPost: String(kindOfPost),
@@ -56,33 +54,21 @@ export class PostController {
         images: [] as string[],
         rating: Number(rating),
       };
-  
-      // Manejar las imágenes de Cloudinary
+
       if (req.files && Array.isArray(req.files)) {
         const files = req.files as Express.Multer.File[];
-        console.log('Cloudinary files:', files); // Debug
-        
-        postData.images = files.map(file => {
-          // Asegurarse de que estamos usando la URL de Cloudinary
-          console.log('File path from Cloudinary:', file.path); // Debug
-          return file.path;
-        });
+        postData.images = files.map(file => (file as any).path || file.filename);
       }
-  
-      console.log('Post data antes de crear:', postData); // Debug
-  
+
       const newPost = await Post.create(postData);
-      
-      console.log('Post creado:', newPost); // Debug
-  
       const populatedPost = await Post.findById(newPost._id)
         .populate('userId', 'name email')
         .lean();
-  
+
       if (!populatedPost) {
         throw new Error('Error al crear el post');
       }
-  
+
       return res.status(201).json({
         message: 'Post creado con éxito',
         data: {
@@ -90,42 +76,15 @@ export class PostController {
           id: populatedPost._id.toString(),
         }
       });
-  
+
     } catch (error) {
-      console.error('Error detallado en el servidor:', error);
+      console.error('Error:', error);
       return res.status(500).json({
         message: 'Error al crear el post',
         error: error instanceof Error ? error.message : 'Error desconocido'
       });
     }
   }
-
-
-
-  static async getById(req: AuthRequest, res: Response<ApiResponse<IPost>>) {
-    const { id } = req.params;
-
-    try {
-      const post = await Post.findById(id).populate('userId', 'name');
-      if (!post) {
-        return res.status(404).json({
-          message: 'Post no encontrado'
-        });
-      }
-
-      return res.json({
-        message: 'Post encontrado',
-        data: post
-      });
-    } catch (error) {
-      console.error('Error al obtener post:', error);
-      return res.status(500).json({
-        message: 'Error al obtener el post',
-        error
-      });
-    }
-  }
-
   static async update(req: AuthRequest, res: Response<ApiResponse<IPost>>) {
     try {
       const { id } = req.params;

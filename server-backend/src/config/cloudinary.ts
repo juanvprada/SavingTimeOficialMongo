@@ -7,25 +7,16 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-interface StorageParams {
-  public_id: (req: any, file: any) => string;
-  allowedFormats?: string[];
-  format?: (req: any, file: any) => string | Promise<string>;
-  transformation?: any[];
-}
-
-const params: StorageParams = {
-  public_id: (req, file) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    return `saving-time/${uniqueSuffix}`;
-  },
-  allowedFormats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
-  transformation: [{ width: 1000, height: 1000, crop: 'limit' }]
-};
-
 const storage = new CloudinaryStorage({
   cloudinary,
-  params
+  params: async () => ({
+    format: 'jpg',
+    public_id: (req: any, file: any) => {
+      return `saving-time/${Date.now()}-${file.originalname.split('.')[0]}`;
+    },
+    allowedFormats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+    transformation: [{ width: 1000, height: 1000, crop: 'limit' }]
+  })
 });
 
 export { cloudinary, storage };
