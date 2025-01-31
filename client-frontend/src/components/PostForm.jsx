@@ -40,17 +40,22 @@ export const Create = ({ post, onSubmit, onCancel }) => {
         name: post.data.name || '',
         kindOfPost: post.data.kindOfPost || '',
         description: post.data.description || '',
-        images: [],
+        images: [], // Para nuevas imágenes
         city: post.data.city || '',
         price: post.data.price?.toString() || '',
         rating: post.data.rating?.toString() || ''
       });
 
+      // Manejar imágenes existentes
       if (post.data.images && Array.isArray(post.data.images)) {
-        setImagePreviews(post.data.images.map(normalizeImageUrl).filter(Boolean));
+        const normalizedImages = post.data.images
+          .map(normalizeImageUrl)
+          .filter(Boolean);
+        setImagePreviews(normalizedImages);
       }
     }
   }, [post]);
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -140,9 +145,9 @@ export const Create = ({ post, onSubmit, onCancel }) => {
       const submitData = new FormData();
       const uploadedUrls = [];
 
-      // Manejar imágenes existentes
-      if (post?.data?.images) {
-        const reorderedImages = [...post.data.images];
+      // Manejar imágenes existentes y reordenamiento
+      if (imagePreviews.length > 0) {
+        const reorderedImages = [...imagePreviews];
         if (mainImageIndex > 0) {
           const mainImage = reorderedImages[mainImageIndex];
           reorderedImages.splice(mainImageIndex, 1);
@@ -151,7 +156,7 @@ export const Create = ({ post, onSubmit, onCancel }) => {
         uploadedUrls.push(...reorderedImages);
       }
 
-      // Subir imágenes a Cloudinary
+      // Subir nuevas imágenes
       for (const file of formData.images) {
         const uploadData = new FormData();
         uploadData.append('file', file);
@@ -167,11 +172,10 @@ export const Create = ({ post, onSubmit, onCancel }) => {
 
         const responseData = await uploadResponse.json();
         console.log('Respuesta de Cloudinary:', responseData);
-
         uploadedUrls.push(responseData.secure_url);
       }
 
-      // Añadir campos al FormData...
+      // Añadir campos al FormData
       submitData.append('name', formData.name.trim());
       submitData.append('kindOfPost', formData.kindOfPost);
       submitData.append('description', formData.description.trim());
@@ -180,7 +184,7 @@ export const Create = ({ post, onSubmit, onCancel }) => {
       submitData.append('price', Number(formData.price).toString());
       submitData.append('rating', Number(formData.rating).toString());
 
-      // Añadir URLs de Cloudinary
+      // Añadir todas las URLs de imágenes
       uploadedUrls.forEach(url => {
         submitData.append('images', url);
       });
