@@ -102,56 +102,29 @@ export class PostController {
   static async update(req: AuthRequest, res: Response<ApiResponse<IPost>>) {
     try {
       const { id } = req.params;
-      const updateData = { ...req.body };
-      const files = req.files as Express.Multer.File[];
-
-      const currentPost = await Post.findById(id);
-      if (!currentPost) {
-        return res.status(404).json({ message: 'Post no encontrado' });
-      }
-
-      let images = currentPost.images || [];
-
-      // Procesar existingImages primero
-      if (updateData.existingImages) {
-        images = Array.isArray(updateData.existingImages)
-          ? updateData.existingImages
-          : [updateData.existingImages];
-      }
-
-      // Añadir nuevas imágenes
-      if (files?.length) {
-        const newImages = files.map(file => file.filename);
-        if (images.length > 0) {
-          images = [...images, ...newImages];
-        } else {
-          images = newImages;
-        }
-      }
-
-      updateData.images = images;
-      delete updateData.existingImages;
-
+      const { images, ...updateData } = req.body;
+  
+      // Procesar las imágenes
+      const imageUrls = Array.isArray(images) ? images : [images].filter(Boolean);
+      updateData.images = imageUrls;
+  
       const updatedPost = await Post.findByIdAndUpdate(
         id,
         updateData,
         { new: true, runValidators: true }
       ).populate('userId', 'name');
-
+  
       if (!updatedPost) {
         return res.status(404).json({ message: 'Error al actualizar el post' });
       }
-
+  
       return res.json({
         message: 'Post actualizado con éxito',
         data: updatedPost.toObject() as IPost
       });
     } catch (error) {
       console.error('Error al actualizar post:', error);
-      return res.status(500).json({
-        message: 'Error al actualizar el post',
-        error
-      });
+      return res.status(500).json({ message: 'Error al actualizar el post', error });
     }
   }
   static async delete(req: AuthRequest, res: Response<ApiResponse>) {
