@@ -132,40 +132,40 @@ export const Create = ({ post, onSubmit, onCancel }) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError('');
-   
+
     try {
       // Validaciones básicas...
       const submitData = new FormData();
       let finalImageUrls = [];
-   
-      // Procesar imágenes existentes
+
+      // Mantener imágenes existentes que ya están en Cloudinary
       if (imagePreviews?.length > 0) {
-        // Reordenar las imágenes existentes según la imagen principal
-        const existingImages = [...imagePreviews];
-        if (mainImageIndex > 0) {
-          const mainImage = existingImages[mainImageIndex];
-          existingImages.splice(mainImageIndex, 1);
-          existingImages.unshift(mainImage);
-        }
-        finalImageUrls = [...existingImages];
+        finalImageUrls = imagePreviews.filter(url => url.includes('cloudinary.com'));
       }
-   
-      // Procesar nuevas imágenes
+
+      // Subir las nuevas imágenes
       for (const file of formData.images) {
         const uploadData = new FormData();
         uploadData.append('file', file);
         uploadData.append('upload_preset', 'saving-time');
-   
+
         const uploadResponse = await fetch(
           'https://api.cloudinary.com/v1_1/dj4mtygcr/image/upload',
           { method: 'POST', body: uploadData }
         );
-   
+
         const responseData = await uploadResponse.json();
         finalImageUrls.push(responseData.secure_url);
       }
-   
-      // Añadir campos al FormData
+
+      // Reordenar según imagen principal
+      if (mainImageIndex > 0) {
+        const mainImage = finalImageUrls[mainImageIndex];
+        finalImageUrls.splice(mainImageIndex, 1);
+        finalImageUrls.unshift(mainImage);
+      }
+
+      // Añadir campos básicos
       submitData.append('name', formData.name.trim());
       submitData.append('kindOfPost', formData.kindOfPost);
       submitData.append('description', formData.description.trim());
@@ -173,22 +173,22 @@ export const Create = ({ post, onSubmit, onCancel }) => {
       submitData.append('city', formData.city.trim());
       submitData.append('price', Number(formData.price).toString());
       submitData.append('rating', Number(formData.rating).toString());
-   
-      // Añadir todas las URLs de imágenes
+
+      // Añadir todas las URLs
       finalImageUrls.forEach(url => {
         submitData.append('images', url);
       });
-   
+
       console.log('URLs finales:', finalImageUrls);
-   
+
       const response = post?.data?.id
         ? await updatePost(post.data.id, submitData)
         : await createPost(submitData);
-   
+
       toast.success(post?.data?.id ? 'Post actualizado' : 'Post creado');
       if (onSubmit) onSubmit(response.data);
       navigate('/blog');
-   
+
     } catch (error) {
       console.error('Error en submit:', error);
       toast.error(error.message);
@@ -196,7 +196,7 @@ export const Create = ({ post, onSubmit, onCancel }) => {
     } finally {
       setIsSubmitting(false);
     }
-   };
+  };
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-[#1B3A4B] bg-opacity-75 z-50">
       <div className="bg-[#F5F2ED] p-4 sm:p-6 rounded-lg shadow-lg w-full max-w-sm sm:max-w-md m-3 sm:m-5 relative z-10 overflow-y-auto max-h-[90vh]">
