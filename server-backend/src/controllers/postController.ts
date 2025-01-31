@@ -44,11 +44,6 @@ export class PostController {
     try {
       const { name, kindOfPost, description, userId, city, price, rating } = req.body;
   
-      // Log para debugging
-      console.log('Received data:', {
-        name, kindOfPost, description, userId, city, price,
-        files: req.files
-      });
   
       // Validar tipos de datos
       const postData = {
@@ -62,9 +57,8 @@ export class PostController {
         rating: Number(rating),
       };
   
-      // Procesar imágenes
       if (req.files && Array.isArray(req.files)) {
-        postData.images = (req.files as Express.Multer.File[]).map(file => file.filename);
+        postData.images = (req.files as Express.Multer.File[]).map(file => file.path);
       }
   
       // Crear el post

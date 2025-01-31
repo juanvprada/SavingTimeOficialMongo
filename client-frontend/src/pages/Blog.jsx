@@ -69,17 +69,12 @@ const Blog = () => {
   const getFirstImage = (article) => {
     try {
       if (article.images && Array.isArray(article.images) && article.images.length > 0) {
-        const imageUrl = article.images[0];
-        if (imageUrl.startsWith('http')) {
-          return imageUrl;
-        }
-        const cleanImagePath = imageUrl.replace(/^\/uploads\//, '');
-        return `https://savingtimeoficial.eu-4.evennode.com/uploads/${cleanImagePath}`;
+        return article.images[0];
       }
-      return 'https://savingtimeoficial.eu-4.evennode.com/uploads/default.jpg';
+      return 'https://res.cloudinary.com/[TU_CLOUD_NAME]/image/upload/v1/saving-time/default.jpg';
     } catch (error) {
       console.error('Error getting image:', error);
-      return 'https://savingtimeoficial.eu-4.evennode.com/uploads/default.jpg';
+      return 'https://res.cloudinary.com/[TU_CLOUD_NAME]/image/upload/v1/saving-time/default.jpg';
     }
   };
 

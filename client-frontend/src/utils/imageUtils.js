@@ -1,19 +1,13 @@
 export const normalizeImageUrl = (imageUrl) => {
   if (!imageUrl) return null;
 
-  console.log('Normalizing image URL:', imageUrl); // Debug
+  console.log('Normalizing image URL:', imageUrl);
 
-  // Si ya es una URL completa, retornarla
+  // Si ya es una URL de Cloudinary o una URL completa, retornarla
   if (imageUrl.startsWith('http')) {
-    console.log('URL completa detectada:', imageUrl);
     return imageUrl;
   }
 
-  const baseUrl = 'https://savingtimeoficial.eu-4.evennode.com';
-  const fullUrl = imageUrl.startsWith('/') 
-    ? `${baseUrl}${imageUrl}`
-    : `${baseUrl}/uploads/${imageUrl}`;
-
-  console.log('URL normalizada:', fullUrl); // Debug
-  return fullUrl;
+  // Si es una URL antigua (del sistema anterior), usar la URL por defecto
+  return 'https://res.cloudinary.com/[TU_CLOUD_NAME]/image/upload/v1/saving-time/default.jpg';
 };

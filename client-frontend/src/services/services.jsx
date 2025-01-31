@@ -24,12 +24,7 @@ const handleApiError = (error, action) => {
 // Utility function to process image URLs
 const processImageUrls = (images) => {
   if (!Array.isArray(images)) return [];
-
-  return images.map(img => {
-    if (!img) return null;
-    if (img.startsWith('http')) return img;
-    return `${UPLOADS_URL}/${img}`;
-  }).filter(Boolean);
+  return images.filter(Boolean);
 };
 
 // Utility function to get auth headers with optional multipart

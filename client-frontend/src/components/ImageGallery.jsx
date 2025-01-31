@@ -38,7 +38,7 @@ const ImageGallery = ({ images, postName }) => {
           className="w-full h-full object-cover rounded-lg"
           onError={(e) => {
             console.error('Error cargando imagen:', normalizedImages[currentIndex]);
-            e.target.src = `https://savingtimeoficial.eu-4.evennode.com/uploads/default.jpg`;
+            e.target.src = 'https://res.cloudinary.com/[TU_CLOUD_NAME]/image/upload/v1/saving-time/default.jpg';
           }}
         />
         {normalizedImages.length > 1 && (
@@ -75,8 +75,8 @@ const ImageGallery = ({ images, postName }) => {
                 alt={`Miniatura ${index + 1}`}
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  console.error('Error cargando miniatura:', image);
-                  e.target.src = `https://savingtimeoficial.eu-4.evennode.com/uploads/default.jpg`;
+                  console.error('Error cargando imagen:', normalizedImages[currentIndex]);
+                  e.target.src = 'https://res.cloudinary.com/[TU_CLOUD_NAME]/image/upload/v1/saving-time/default.jpg';
                 }}
               />
               {index === currentIndex && (
