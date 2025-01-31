@@ -57,7 +57,7 @@ export class PostController {
   
       if (req.files && Array.isArray(req.files)) {
         const files = req.files as Express.Multer.File[];
-        postData.images = files.map(file => (file as any).path || file.filename);
+        postData.images = files.map(file => (file as any).path); 
       }
   
       const newPost = await Post.create(postData);
