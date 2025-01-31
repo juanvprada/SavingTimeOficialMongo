@@ -8,15 +8,12 @@ cloudinary.config({
 });
 
 const storage = new CloudinaryStorage({
-  cloudinary,
-  params: async () => ({
-    format: 'jpg',
-    public_id: (req: any, file: any) => {
-      return `saving-time/${Date.now()}-${file.originalname.split('.')[0]}`;
-    },
-    allowedFormats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
-    transformation: [{ width: 1000, height: 1000, crop: 'limit' }]
-  })
+  cloudinary: cloudinary,
+  params: async () => {
+    return {
+      folder: 'saving-time', // Ahora el backend almacena en la carpeta esperada por el frontend
+    };
+  }
 });
 
 export { cloudinary, storage };

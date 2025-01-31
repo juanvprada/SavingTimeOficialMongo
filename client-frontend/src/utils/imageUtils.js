@@ -8,6 +8,6 @@ export const normalizeImageUrl = (imageUrl) => {
     return imageUrl;
   }
 
-  // Si el nombre de la imagen es solo el archivo, agregar la carpeta
+  // Si el nombre de la imagen es solo el archivo (sin URL completa)
   return `https://res.cloudinary.com/dj4mtygcr/image/upload/saving-time/${imageUrl}`;
 };
