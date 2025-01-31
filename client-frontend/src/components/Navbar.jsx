@@ -40,9 +40,9 @@ const Navbar = ({ onSearch }) => {
         {/* Logo and Title */}
         <div className="flex items-center">
           <img src={logoImg} className="w-10 h-10" alt="logo" />
-          <Link to="/" className="ml-3 text-xl font-bold text-white">
+          {/* <Link to="/" className="ml-3 text-xl font-bold text-white">
             Saving Time
-          </Link>
+          </Link> */}
         </div>
 
         {/* Desktop Menu */}
