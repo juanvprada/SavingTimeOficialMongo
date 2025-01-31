@@ -18,14 +18,14 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // CORS configuration
-app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'http://localhost:5000',
-    'http://localhost:5173',
-    'http://localhost:8080',
-    'https://savingtimeoficial.eu-4.evennode.com'
-  ],
+  app.use(cors({
+    origin: [
+      'https://savingtimeoficial.eu-4.evennode.com',
+      'http://localhost:3000',
+      'http://localhost:5000',
+      'http://localhost:5173',
+      'http://localhost:8080'
+    ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token'],

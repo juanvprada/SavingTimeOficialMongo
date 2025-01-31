@@ -74,12 +74,12 @@ const Blog = () => {
           return imageUrl;
         }
         const cleanImagePath = imageUrl.replace(/^\/uploads\//, '');
-        return `http://localhost:5000/uploads/${cleanImagePath}`;
+        return `https://savingtimeoficial.eu-4.evennode.com/uploads/${cleanImagePath}`;
       }
-      return 'http://localhost:5000/uploads/default.jpg';
+      return 'https://savingtimeoficial.eu-4.evennode.com/uploads/default.jpg';
     } catch (error) {
       console.error('Error getting image:', error);
-      return 'http://localhost:5000/uploads/default.jpg';
+      return 'https://savingtimeoficial.eu-4.evennode.com/uploads/default.jpg';
     }
   };
 
@@ -195,7 +195,7 @@ const Blog = () => {
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = 'http://localhost:5000/uploads/default.jpg';
+                      e.target.src = getFirstImage({ images: [] }); // Esto llamará al caso por defecto de getFirstImage
                     }}
                   />
                   {article.images && article.images.length > 1 && (

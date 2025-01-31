@@ -17,15 +17,15 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'https://savingtimeoficial.eu-4.evennode.com',
         changeOrigin: true,
-        secure: false,
+        secure: true,
         rewrite: (path) => path.replace(/^\/api/, '/api')
       },
       '/uploads': {
-        target: 'http://localhost:5000',
+        target: 'https://savingtimeoficial.eu-4.evennode.com',
         changeOrigin: true,
-        secure: false,
+        secure: true,
       }
     }
   }

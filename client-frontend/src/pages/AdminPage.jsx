@@ -17,7 +17,7 @@ const AdminPage = () => {
     }
     const fetchUsers = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/users', {
+        const response = await axios.get('https://savingtimeoficial.eu-4.evennode.com/api/users', {
           headers: { Authorization: `Bearer ${token}` },
         });
         console.log(response.data);

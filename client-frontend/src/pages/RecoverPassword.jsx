@@ -14,9 +14,9 @@ const RecoverPassword = () => {
         setError('');
 
         try {
-            const response = await axios.post('http://localhost:5000/api/auth/recover-password', {
+            const response = await axios.post('https://savingtimeoficial.eu-4.evennode.com/api/auth/recover-password', {
                 email,
-            });
+              });
             setMessage(response.data.message);
             setEmail('');
         } catch (err) {

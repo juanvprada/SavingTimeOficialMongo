@@ -6,10 +6,10 @@ const UserRow = ({ user, token, onRoleChange }) => {
         const newRole = user.role === 'admin' ? 'user' : 'admin';
         try {
             await axios.put(
-                `http://localhost:5000/api/roles/${user.id}`,
+                `https://savingtimeoficial.eu-4.evennode.com/api/roles/${user.id}`,
                 { role: newRole },
                 { headers: { Authorization: `Bearer ${token}` } }
-            );
+              );
             onRoleChange(user.id, newRole);  // Update role locally
         } catch (error) {
             console.error('Error al actualizar el rol del usuario:', error);

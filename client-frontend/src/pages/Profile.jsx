@@ -7,12 +7,12 @@ const Profile = () => {
     useEffect(() => {
         const fetchProfile = async () => {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/auth/perfil', {
+            const response = await fetch('https://savingtimeoficial.eu-4.evennode.com/api/auth/perfil', {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`, 
+                  'Authorization': `Bearer ${token}`,
                 },
-            });
+              });
 
             
             if (!response.ok) {
