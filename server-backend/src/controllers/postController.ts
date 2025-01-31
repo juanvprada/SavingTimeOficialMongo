@@ -41,7 +41,7 @@ export class PostController {
 
   static async create(req: AuthRequest, res: Response<ApiResponse<IPost>>) {
     try {
-      const { name, kindOfPost, description, userId, city, price, rating } = req.body;
+      const { name, kindOfPost, description, userId, city, price, rating, images } = req.body;
       
       const postData = {
         name: String(name),
@@ -50,14 +50,11 @@ export class PostController {
         city: String(city),
         price: Number(price),
         userId: new Types.ObjectId(userId),
-        images: [] as string[],
         rating: Number(rating),
+        images: images ? (Array.isArray(images) ? images : [images]) : []
       };
   
-      // Usar directamente las URLs de Cloudinary
-      if (req.files && Array.isArray(req.files)) {
-        postData.images = req.files.map(file => file.path);
-      }
+      console.log('URLs de imágenes recibidas:', postData.images);
   
       const newPost = await Post.create(postData);
       const populatedPost = await Post.findById(newPost._id)
@@ -76,7 +73,6 @@ export class PostController {
       return res.status(500).json({ message: 'Error al crear el post' });
     }
   }
-  
 
 
   static async getById(req: AuthRequest, res: Response<ApiResponse<IPost>>) {
