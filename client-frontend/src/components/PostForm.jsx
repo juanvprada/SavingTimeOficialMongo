@@ -140,6 +140,17 @@ export const Create = ({ post, onSubmit, onCancel }) => {
       const submitData = new FormData();
       const uploadedUrls = [];
 
+      // Manejar imágenes existentes
+      if (post?.data?.images) {
+        const reorderedImages = [...post.data.images];
+        if (mainImageIndex > 0) {
+          const mainImage = reorderedImages[mainImageIndex];
+          reorderedImages.splice(mainImageIndex, 1);
+          reorderedImages.unshift(mainImage);
+        }
+        uploadedUrls.push(...reorderedImages);
+      }
+
       // Subir imágenes a Cloudinary
       for (const file of formData.images) {
         const uploadData = new FormData();
@@ -157,15 +168,10 @@ export const Create = ({ post, onSubmit, onCancel }) => {
         const responseData = await uploadResponse.json();
         console.log('Respuesta de Cloudinary:', responseData);
 
-        if (!uploadResponse.ok || responseData.error) {
-          console.error('Error completo de Cloudinary:', responseData);
-          throw new Error(responseData.error?.message || 'Error al subir imagen');
-        }
-
         uploadedUrls.push(responseData.secure_url);
       }
 
-      // Añadir campos al FormData
+      // Añadir campos al FormData...
       submitData.append('name', formData.name.trim());
       submitData.append('kindOfPost', formData.kindOfPost);
       submitData.append('description', formData.description.trim());
