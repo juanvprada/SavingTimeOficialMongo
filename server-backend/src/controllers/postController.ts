@@ -43,9 +43,7 @@ export class PostController {
   static async create(req: AuthRequest, res: Response<ApiResponse<IPost>>) {
     try {
       const { name, kindOfPost, description, userId, city, price, rating } = req.body;
-  
-  
-      // Validar tipos de datos
+
       const postData = {
         name: String(name),
         kindOfPost: String(kindOfPost),
@@ -56,23 +54,24 @@ export class PostController {
         images: [] as string[],
         rating: Number(rating),
       };
-  
+
+      // Ahora req.files contendrá las URLs de Cloudinary
       if (req.files && Array.isArray(req.files)) {
         postData.images = (req.files as Express.Multer.File[]).map(file => file.path);
+        console.log('Cloudinary URLs:', postData.images);
       }
-  
-      // Crear el post
+
       const newPost = await Post.create(postData);
-  
+
       // Poblar el usuario
       const populatedPost = await Post.findById(newPost._id)
         .populate('userId', 'name email')
         .lean();
-  
+
       if (!populatedPost) {
         throw new Error('Error al crear el post');
       }
-  
+
       return res.status(201).json({
         message: 'Post creado con éxito',
         data: {
@@ -80,7 +79,7 @@ export class PostController {
           id: populatedPost._id.toString(),
         }
       });
-  
+
     } catch (error) {
       console.error('Error detallado en el servidor:', error);
       return res.status(500).json({
@@ -119,23 +118,23 @@ export class PostController {
   static async update(req: AuthRequest, res: Response<ApiResponse<IPost>>) {
     try {
       const { id } = req.params;
-      const updateData = {...req.body};
+      const updateData = { ...req.body };
       const files = req.files as Express.Multer.File[];
-  
+
       const currentPost = await Post.findById(id);
       if (!currentPost) {
         return res.status(404).json({ message: 'Post no encontrado' });
       }
-  
+
       let images = currentPost.images || [];
-  
+
       // Procesar existingImages primero
       if (updateData.existingImages) {
-        images = Array.isArray(updateData.existingImages) 
-          ? updateData.existingImages 
+        images = Array.isArray(updateData.existingImages)
+          ? updateData.existingImages
           : [updateData.existingImages];
       }
-  
+
       // Añadir nuevas imágenes
       if (files?.length) {
         const newImages = files.map(file => file.filename);
@@ -145,20 +144,20 @@ export class PostController {
           images = newImages;
         }
       }
-  
+
       updateData.images = images;
       delete updateData.existingImages;
-  
+
       const updatedPost = await Post.findByIdAndUpdate(
         id,
         updateData,
         { new: true, runValidators: true }
       ).populate('userId', 'name');
-  
+
       if (!updatedPost) {
         return res.status(404).json({ message: 'Error al actualizar el post' });
       }
-  
+
       return res.json({
         message: 'Post actualizado con éxito',
         data: updatedPost.toObject() as IPost

@@ -148,29 +148,41 @@ export const Create = ({ post, onSubmit, onCancel }) => {
       submitData.append('rating', Number(formData.rating).toString());
 
       // Manejo de imágenes
+      const processedImages = [];
+
+      // Primero, manejar imágenes existentes
       if (imagePreviews?.length > 0) {
-        // Reordenar previews
         const reorderedPreviews = [...imagePreviews];
+
+        // Reordenar si hay una imagen principal seleccionada
         if (mainImageIndex > 0) {
           const mainImage = reorderedPreviews[mainImageIndex];
           reorderedPreviews.splice(mainImageIndex, 1);
           reorderedPreviews.unshift(mainImage);
         }
 
-        // Agregar todas las imágenes existentes
-        reorderedPreviews.forEach((preview, index) => {
+        // Agregar URLs de Cloudinary existentes
+        reorderedPreviews.forEach(preview => {
           if (preview.startsWith('http')) {
+            processedImages.push(preview);
             submitData.append('existingImages', preview);
           }
         });
-
-        // Agregar las nuevas imágenes
-        if (formData.images.length > 0) {
-          formData.images.forEach(file => {
-            submitData.append('images', file);
-          });
-        }
       }
+
+      // Luego, manejar nuevas imágenes
+      if (formData.images.length > 0) {
+        formData.images.forEach((file, index) => {
+          submitData.append('images', file);
+          // No agregamos las nuevas imágenes a processedImages porque
+          // serán procesadas por Cloudinary en el backend
+        });
+      }
+
+      // Log para debugging
+      console.log('Imágenes procesadas:', processedImages);
+      console.log('FormData a enviar:', Array.from(submitData.entries()));
+
       let response;
       if (post?.data?.id) {
         response = await updatePost(post.data.id, submitData);
@@ -180,6 +192,7 @@ export const Create = ({ post, onSubmit, onCancel }) => {
         toast.success('Post creado con éxito');
       }
 
+      // Resetear el formulario
       setFormData({
         name: '',
         kindOfPost: '',

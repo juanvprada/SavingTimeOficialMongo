@@ -24,7 +24,10 @@ const handleApiError = (error, action) => {
 // Utility function to process image URLs
 const processImageUrls = (images) => {
   if (!Array.isArray(images)) return [];
-  return images.filter(Boolean);
+  return images.map(img => {
+    if (!img) return null;
+    return img; // Las URLs de Cloudinary ya vienen completas
+  }).filter(Boolean);
 };
 
 // Utility function to get auth headers with optional multipart
