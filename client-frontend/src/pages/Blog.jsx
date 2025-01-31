@@ -157,12 +157,13 @@ const Blog = () => {
     <div className="min-h-screen bg-[#F5F2ED]">
       <header className="bg-[#1B3A4B] text-[#F5F2ED] py-8">
         <div className="container mx-auto text-center">
-          <h1 className="text-4xl font-bold">Bienvenidos a Saving Time</h1>
+          <h1 className="text-4xl font-bold md:hidden">Saving Time</h1>
+          <h1 className="text-4xl font-bold hidden md:block">Bienvenidos a Saving Time</h1>
           <p className="mt-4 text-xl text-[#E3D5C7]">Saber a dónde volver</p>
         </div>
       </header>
 
-      <h2 className="text-3xl font-semibold text-center text-[#1B3A4B] mt-4">
+      <h2 className="text-2xl md:text-3xl font-semibold text-center text-[#1B3A4B] mt-4">
         Todas las publicaciones
       </h2>
 
