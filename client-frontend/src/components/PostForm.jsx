@@ -85,26 +85,29 @@ export const Create = ({ post, onSubmit, onCancel }) => {
   const handleImageChange = (event) => {
     const selectedFiles = Array.from(event.target.files || []);
     if (!selectedFiles.length) return;
-
+   
     const validFiles = selectedFiles.filter(validateImage);
-
+   
     if (validFiles.length === 0) {
       toast.error('No se seleccionaron imágenes válidas.');
       return;
     }
-
-    // Limpiar `formData.images` para evitar duplicados
+   
+    // Mantener imágenes existentes y añadir nuevas
     setFormData(prev => ({
       ...prev,
-      images: validFiles // Solo archivos, sin URLs
+      images: [...prev.images, ...validFiles]
     }));
-
-    // Crear URLs de vista previa
+   
+    // Mantener vistas previas existentes y añadir nuevas
     const newPreviews = validFiles.map(file => URL.createObjectURL(file));
-    setImagePreviews(newPreviews);
-
+    setImagePreviews(prev => {
+      const existingPreviews = prev.filter(url => url.includes('cloudinary.com'));
+      return [...existingPreviews, ...newPreviews];
+    });
+   
     console.log("✅ Imágenes seleccionadas:", validFiles);
-  };
+   };
 
 
   const removeImage = (index) => {
