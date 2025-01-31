@@ -38,7 +38,7 @@ const ImageGallery = ({ images, postName }) => {
           className="w-full h-full object-cover rounded-lg"
           onError={(e) => {
             console.error('Error cargando imagen:', normalizedImages[currentIndex]);
-            e.target.src = 'https://res.cloudinary.com/[TU_CLOUD_NAME]/image/upload/v1/saving-time/default.jpg';
+            e.target.src = 'https://res.cloudinary.com/dxtkyn527/image/upload/v1/saving-time/default.jpg';
           }}
         />
         {normalizedImages.length > 1 && (
@@ -76,7 +76,7 @@ const ImageGallery = ({ images, postName }) => {
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   console.error('Error cargando imagen:', normalizedImages[currentIndex]);
-                  e.target.src = 'https://res.cloudinary.com/[TU_CLOUD_NAME]/image/upload/v1/saving-time/default.jpg';
+                  e.target.src = 'https://res.cloudinary.com/dxtkyn527/image/upload/v1/saving-time/default.jpg';
                 }}
               />
               {index === currentIndex && (

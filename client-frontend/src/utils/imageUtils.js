@@ -9,5 +9,5 @@ export const normalizeImageUrl = (imageUrl) => {
   }
 
   // Si es una URL antigua (del sistema anterior), usar la URL por defecto
-  return 'https://res.cloudinary.com/[TU_CLOUD_NAME]/image/upload/v1/saving-time/default.jpg';
+  return 'https://res.cloudinary.com/dxtkyn527/image/upload/v1/saving-time/default.jpg';
 };
