@@ -19,7 +19,7 @@ const Home = () => {
 
           {/* Título y AuthForm */}
           <div className="absolute inset-0 flex flex-col items-center bg-black bg-opacity-70 px-4">
-            <h1 className="hidden sm:block text-white text-opacity-30 font-bold text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-10xl 2xl:text-11xl mt-4 sm:mt-6 md:mt-8">
+          <h1 className="text-white text-opacity-30 font-bold text-5xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-10xl 2xl:text-11xl mt-4 sm:mt-6 md:mt-8">
               Saving Time
             </h1>
             {!isLoggedIn && (
