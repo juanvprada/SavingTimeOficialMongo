@@ -80,27 +80,27 @@ export const Create = ({ post, onSubmit, onCancel }) => {
   const handleImageChange = (event) => {
     const selectedFiles = Array.from(event.target.files || []);
     if (!selectedFiles.length) return;
-  
+
     const validFiles = selectedFiles.filter(validateImage);
-  
+
     if (validFiles.length === 0) {
       toast.error('No se seleccionaron imágenes válidas.');
       return;
     }
-  
+
     // Limpiar `formData.images` para evitar duplicados
     setFormData(prev => ({
       ...prev,
       images: validFiles // Solo archivos, sin URLs
     }));
-  
+
     // Crear URLs de vista previa
     const newPreviews = validFiles.map(file => URL.createObjectURL(file));
     setImagePreviews(newPreviews);
-  
+
     console.log("✅ Imágenes seleccionadas:", validFiles);
   };
-  
+
 
   const removeImage = (index) => {
     // Revoke the URL to prevent memory leaks
@@ -127,7 +127,7 @@ export const Create = ({ post, onSubmit, onCancel }) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError('');
-   
+
     try {
       // Validaciones
       if (!formData.name.trim()) throw new Error('El nombre es requerido');
@@ -136,7 +136,7 @@ export const Create = ({ post, onSubmit, onCancel }) => {
       if (!formData.city.trim()) throw new Error('La ciudad es requerida');
       if (!formData.price || Number(formData.price) < 0) throw new Error('El precio debe ser un número válido');
       if (!formData.rating || Number(formData.rating) < 1 || Number(formData.rating) > 5) throw new Error('La puntuación debe estar entre 1 y 5');
-   
+
       const submitData = new FormData();
       submitData.append('name', formData.name.trim());
       submitData.append('kindOfPost', formData.kindOfPost);
@@ -145,31 +145,35 @@ export const Create = ({ post, onSubmit, onCancel }) => {
       submitData.append('city', formData.city.trim());
       submitData.append('price', Number(formData.price).toString());
       submitData.append('rating', Number(formData.rating).toString());
-   
-      // Subir imágenes a Cloudinary primero
-      const uploadedImages = [];
+
+      // Subir imágenes a Cloudinary
+      const uploadedUrls = [];
       for (const file of formData.images) {
-        const cloudinaryData = new FormData();
-        cloudinaryData.append('file', file);
-        cloudinaryData.append('upload_preset', 'your_upload_preset');
-        cloudinaryData.append('folder', 'saving-time');
-        
-        const response = await fetch(
+        const uploadData = new FormData();
+        uploadData.append('file', file);
+        uploadData.append('upload_preset', 'saving-time'); // Tu preset de Cloudinary
+
+        const uploadResponse = await fetch(
           'https://api.cloudinary.com/v1_1/dj4mtygcr/image/upload',
           {
             method: 'POST',
-            body: cloudinaryData
+            body: uploadData
           }
         );
-        const data = await response.json();
-        uploadedImages.push(data.secure_url);
+
+        if (!uploadResponse.ok) {
+          throw new Error('Error al subir imagen a Cloudinary');
+        }
+
+        const uploadResult = await uploadResponse.json();
+        uploadedUrls.push(uploadResult.secure_url);
       }
-   
-      // Añadir URLs de Cloudinary al submitData
-      uploadedImages.forEach(url => {
+
+      // Añadir URLs de Cloudinary al FormData
+      uploadedUrls.forEach(url => {
         submitData.append('images', url);
       });
-   
+
       // Enviar al backend
       let response;
       if (post?.data?.id) {
@@ -179,7 +183,7 @@ export const Create = ({ post, onSubmit, onCancel }) => {
         response = await createPost(submitData);
         toast.success('Post creado con éxito');
       }
-   
+
       // Reset del formulario
       setFormData({
         name: '',
@@ -192,10 +196,10 @@ export const Create = ({ post, onSubmit, onCancel }) => {
       });
       setImagePreviews([]);
       setMainImageIndex(0);
-   
+
       if (onSubmit) onSubmit(response.data);
       navigate('/blog');
-   
+
     } catch (error) {
       console.error('Error en submit:', error);
       const errorMessage = error instanceof Error ? error.message :
@@ -206,7 +210,7 @@ export const Create = ({ post, onSubmit, onCancel }) => {
     } finally {
       setIsSubmitting(false);
     }
-   };
+  };
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-[#1B3A4B] bg-opacity-75 z-50">
       <div className="bg-[#F5F2ED] p-4 sm:p-6 rounded-lg shadow-lg w-full max-w-sm sm:max-w-md m-3 sm:m-5 relative z-10 overflow-y-auto max-h-[90vh]">
