@@ -79,29 +79,28 @@ export const Create = ({ post, onSubmit, onCancel }) => {
 
   const handleImageChange = (event) => {
     const selectedFiles = Array.from(event.target.files || []);
-    const totalImages = formData.images.length + selectedFiles.length;
-
-    if (totalImages > 10) {
-      toast.error('No puedes subir más de 10 imágenes');
+    if (!selectedFiles.length) return;
+  
+    const validFiles = selectedFiles.filter(validateImage);
+  
+    if (validFiles.length === 0) {
+      toast.error('No se seleccionaron imágenes válidas.');
       return;
     }
-
-    const validFiles = selectedFiles.filter(validateImage);
-
+  
+    // Limpiar `formData.images` para evitar duplicados
     setFormData(prev => ({
       ...prev,
-      images: [...prev.images, ...validFiles]
+      images: validFiles // Solo archivos, sin URLs
     }));
-
-    // Create preview URLs
+  
+    // Crear URLs de vista previa
     const newPreviews = validFiles.map(file => URL.createObjectURL(file));
-    setImagePreviews(prev => [...prev, ...newPreviews]);
-
-    // Si no hay imagen principal seleccionada, usar la primera
-    if (mainImageIndex === -1 && validFiles.length > 0) {
-      setMainImageIndex(0);
-    }
+    setImagePreviews(newPreviews);
+  
+    console.log("✅ Imágenes seleccionadas:", validFiles);
   };
+  
 
   const removeImage = (index) => {
     // Revoke the URL to prevent memory leaks
@@ -137,6 +136,8 @@ export const Create = ({ post, onSubmit, onCancel }) => {
       if (!formData.city.trim()) throw new Error('La ciudad es requerida');
       if (!formData.price || Number(formData.price) < 0) throw new Error('El precio debe ser un número válido');
       if (!formData.rating || Number(formData.rating) < 1 || Number(formData.rating) > 5) throw new Error('La puntuación debe estar entre 1 y 5');
+      // Verificar que las imágenes son archivos
+      console.log("Contenido de formData.images:", formData.images);
 
       const submitData = new FormData();
       submitData.append('name', formData.name.trim());
@@ -146,6 +147,15 @@ export const Create = ({ post, onSubmit, onCancel }) => {
       submitData.append('city', formData.city.trim());
       submitData.append('price', Number(formData.price).toString());
       submitData.append('rating', Number(formData.rating).toString());
+
+      // Agregar imágenes al FormData
+      formData.images.forEach((file, index) => {
+        console.log(`Añadiendo imagen ${index + 1}:`, file);
+        submitData.append('images', file);
+      });
+
+      // Verificar que FormData tiene imágenes antes de enviarlo
+      console.log("FormData final a enviar:", Array.from(submitData.entries()));
 
       // Manejo de imágenes
       const processedImages = [];

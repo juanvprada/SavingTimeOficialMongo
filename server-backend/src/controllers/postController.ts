@@ -39,11 +39,14 @@ export class PostController {
   }
 
 
-  // Crear un nuevo post
   static async create(req: AuthRequest, res: Response<ApiResponse<IPost>>) {
     try {
+      console.log("📥 Recibiendo nueva solicitud de creación de post...");
+      console.log("📝 Request body:", req.body);
+      console.log("🖼 Archivos recibidos en `req.files`:", req.files);
+  
       const { name, kindOfPost, description, userId, city, price, rating } = req.body;
-      
+  
       const postData = {
         name: String(name),
         kindOfPost: String(kindOfPost),
@@ -57,7 +60,10 @@ export class PostController {
   
       if (req.files && Array.isArray(req.files)) {
         const files = req.files as Express.Multer.File[];
-        postData.images = files.map(file => (file as any).path || file.filename);
+        postData.images = files.map(file => file.path); // Guardar la URL de Cloudinary
+        console.log("✅ Imágenes guardadas en postData:", postData.images);
+      } else {
+        console.warn("⚠️ No se recibieron archivos en req.files");
       }
   
       const newPost = await Post.create(postData);
@@ -71,21 +77,15 @@ export class PostController {
   
       return res.status(201).json({
         message: 'Post creado con éxito',
-        data: {
-          ...populatedPost,
-          id: populatedPost._id.toString(),
-        }
+        data: { ...populatedPost, id: populatedPost._id.toString() }
       });
   
     } catch (error) {
-      console.error('Error:', error);
-      return res.status(500).json({
-        message: 'Error al crear el post',
-        error: error instanceof Error ? error.message : 'Error desconocido'
-      });
+      console.error('❌ Error al crear post:', error);
+      return res.status(500).json({ message: 'Error al crear el post',});
     }
   }
-
+  
 
 
   static async getById(req: AuthRequest, res: Response<ApiResponse<IPost>>) {
