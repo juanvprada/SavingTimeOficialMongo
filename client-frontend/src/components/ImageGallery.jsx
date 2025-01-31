@@ -76,7 +76,7 @@ const ImageGallery = ({ images, postName }) => {
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   console.error('Error cargando imagen:', normalizedImages[currentIndex]);
-                  e.target.src = 'hhttps://res.cloudinary.com/dj4mtygcr/image/upload/v1738324021/default_ohqt2c.jpg';
+                  e.target.src = 'https://res.cloudinary.com/dj4mtygcr/image/upload/v1738324021/default_ohqt2c.jpg';
                 }}
               />
               {index === currentIndex && (
