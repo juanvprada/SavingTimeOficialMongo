@@ -71,10 +71,10 @@ const Blog = () => {
       if (article.images && Array.isArray(article.images) && article.images.length > 0) {
         return article.images[0];
       }
-      return 'https://res.cloudinary.com/dxtkyn527/image/upload/v1/saving-time/default.jpg';
+      return 'https://res.cloudinary.com/dj4mtygcr/image/upload/v1738324021/default_ohqt2c.jpg';
     } catch (error) {
       console.error('Error getting image:', error);
-      return 'https://res.cloudinary.com/dxtkyn527/image/upload/v1/saving-time/default.jpg';
+      return 'https://res.cloudinary.com/dj4mtygcr/image/upload/v1738324021/default_ohqt2c.jpg';
     }
   };
 
