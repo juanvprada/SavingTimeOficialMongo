@@ -2,7 +2,7 @@
 import { Outlet } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import CookieConsent from './CookieConsent'; // Cambiar este import
+import CookieConsent from '../components/CookieConsent'; // Cambiar este import
 import { useState } from 'react';
 import { CookieProvider } from '../contexts/CookieContext';
 
