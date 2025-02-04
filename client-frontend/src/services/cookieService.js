@@ -9,6 +9,11 @@ export const getCookieConsent = () => {
 export const setCookieConsent = (consent) => {
   localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(consent));
   
+  // Siempre configurar cookies necesarias
+  configureCookie('st_necessary', 'true', 365);
+  configureCookie('st_session', 'active', 1);
+  
+  // Configurar otras cookies según preferencias
   Object.entries(consent).forEach(([type, isEnabled]) => {
     if (type === 'necessary') return;
     
@@ -17,11 +22,11 @@ export const setCookieConsent = (consent) => {
         case 'analytics':
           configureCookie('_ga', 'true', 365);
           configureCookie('_gid', 'true', 1);
-          configureCookie('st_analytics', 'true', 365); // Cookie específica de SavingTime
+          configureCookie('st_analytics', 'true', 365);
           break;
         case 'marketing':
           configureCookie('_fbp', 'true', 90);
-          configureCookie('st_marketing', 'true', 365); // Cookie específica de SavingTime
+          configureCookie('st_marketing', 'true', 365);
           break;
       }
     } else {
