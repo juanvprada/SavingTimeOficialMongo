@@ -9,20 +9,19 @@ export const getCookieConsent = () => {
 export const setCookieConsent = (consent) => {
   localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(consent));
   
-  // Aplicar las preferencias de cookies
   Object.entries(consent).forEach(([type, isEnabled]) => {
-    if (type === 'necessary') return; // Las cookies necesarias siempre se mantienen
+    if (type === 'necessary') return;
     
     if (isEnabled) {
       switch(type) {
         case 'analytics':
-          // Configurar cookies analíticas
           configureCookie('_ga', 'true', 365);
           configureCookie('_gid', 'true', 1);
+          configureCookie('st_analytics', 'true', 365); // Cookie específica de SavingTime
           break;
         case 'marketing':
-          // Configurar cookies de marketing
           configureCookie('_fbp', 'true', 90);
+          configureCookie('st_marketing', 'true', 365); // Cookie específica de SavingTime
           break;
       }
     } else {
@@ -30,9 +29,11 @@ export const setCookieConsent = (consent) => {
         case 'analytics':
           removeCookie('_ga');
           removeCookie('_gid');
+          removeCookie('st_analytics');
           break;
         case 'marketing':
           removeCookie('_fbp');
+          removeCookie('st_marketing');
           break;
       }
     }
@@ -43,9 +44,11 @@ export const configureCookie = (name, value, days = 365) => {
   const date = new Date();
   date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
   const expires = `expires=${date.toUTCString()}`;
-  document.cookie = `${name}=${value};${expires};path=/;SameSite=Strict`;
+  const domain = 'savingtimeoficial.eu-4.evennode.com';
+  document.cookie = `${name}=${value};${expires};path=/;SameSite=Strict;domain=${domain};secure`;
 };
 
 export const removeCookie = (name) => {
-  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+  const domain = 'savingtimeoficial.eu-4.evennode.com';
+  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${domain};secure`;
 };

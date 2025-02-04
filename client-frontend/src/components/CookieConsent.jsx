@@ -13,6 +13,35 @@ const CookieConsent = () => {
     marketing: false,
   });
 
+  const verifyCookies = () => {
+    const allCookies = document.cookie.split(';').reduce((cookies, cookie) => {
+      const [name, value] = cookie.split('=').map(c => c.trim());
+      cookies[name] = value;
+      return cookies;
+    }, {});
+
+    console.group('🍪 Estado de Cookies SavingTime');
+    console.log('Dominio:', window.location.hostname);
+    console.log('Consentimiento guardado:', localStorage.getItem('cookieConsent'));
+    console.log('Cookies activas:', allCookies);
+    
+    // Verificar cookies específicas
+    const cookieStatus = {
+      analytics: {
+        ga: !!allCookies['_ga'],
+        gid: !!allCookies['_gid'],
+        stAnalytics: !!allCookies['st_analytics']
+      },
+      marketing: {
+        fbp: !!allCookies['_fbp'],
+        stMarketing: !!allCookies['st_marketing']
+      }
+    };
+    
+    console.log('Estado detallado de cookies:', cookieStatus);
+    console.groupEnd();
+  };
+
   // Si ya hay consentimiento, no mostrar el banner
   if (cookieConsent) return null;
 
@@ -23,6 +52,7 @@ const CookieConsent = () => {
       marketing: true
     };
     updateCookieConsent(allConsent);
+    setTimeout(verifyCookies, 100); // Verificar después de establecer
   };
 
   const handleDeclineAll = () => {
@@ -32,10 +62,12 @@ const CookieConsent = () => {
       marketing: false
     };
     updateCookieConsent(minimalConsent);
+    setTimeout(verifyCookies, 100); // Verificar después de rechazar
   };
 
   const handleSavePreferences = () => {
     updateCookieConsent(preferences);
+    setTimeout(verifyCookies, 100); // Verificar después de guardar preferencias
   };
 
   const handlePreferenceChange = (type) => {
@@ -45,7 +77,6 @@ const CookieConsent = () => {
       [type]: !prev[type]
     }));
   };
-
   return (
     <div className="fixed bottom-0 inset-x-0 bg-gray-900 text-white p-6 flex flex-col md:flex-row justify-between items-center shadow-lg z-50">
       {!showPreferences ? (
