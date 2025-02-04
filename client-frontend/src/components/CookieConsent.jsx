@@ -1,28 +1,50 @@
+// src/components/CookieConsent.jsx
 import React, { useState } from "react";
 import { FaCookieBite } from "react-icons/fa";
 import { AiOutlineClose } from "react-icons/ai";
+import { useCookieConsent } from '../contexts/CookieContext';
 
 const CookieConsent = () => {
-  const [showConsent, setShowConsent] = useState(true);
+  const { cookieConsent, updateCookieConsent } = useCookieConsent();
   const [showPreferences, setShowPreferences] = useState(false);
+  const [preferences, setPreferences] = useState({
+    necessary: true,
+    analytics: false,
+    marketing: false,
+  });
+
+  // Si ya hay consentimiento, no mostrar el banner
+  if (cookieConsent) return null;
 
   const handleAcceptAll = () => {
-    // Implementar la lógica para aceptar todas las cookies
-    setShowConsent(false);
+    const allConsent = {
+      necessary: true,
+      analytics: true,
+      marketing: true
+    };
+    updateCookieConsent(allConsent);
   };
 
   const handleDeclineAll = () => {
-    // Implementar la lógica para rechazar todas las cookies
-    setShowConsent(false);
+    const minimalConsent = {
+      necessary: true,
+      analytics: false,
+      marketing: false
+    };
+    updateCookieConsent(minimalConsent);
   };
 
   const handleSavePreferences = () => {
-    // Implementar la lógica para guardar las preferencias de cookies
-    setShowConsent(false);
-    setShowPreferences(false);
+    updateCookieConsent(preferences);
   };
 
-  if (!showConsent) return null;
+  const handlePreferenceChange = (type) => {
+    if (type === 'necessary') return;
+    setPreferences(prev => ({
+      ...prev,
+      [type]: !prev[type]
+    }));
+  };
 
   return (
     <div className="fixed bottom-0 inset-x-0 bg-gray-900 text-white p-6 flex flex-col md:flex-row justify-between items-center shadow-lg z-50">
@@ -33,32 +55,69 @@ const CookieConsent = () => {
             <p>Este sitio utiliza cookies para mejorar su experiencia. Al continuar navegando, aceptas nuestro uso de cookies.</p>
           </div>
           <div className="flex space-x-2 mt-4 md:mt-0">
-  <button onClick={handleAcceptAll} className="bg-green-500 px-3 py-1 rounded-lg hover:bg-green-600 transition duration-300 text-sm">Aceptar Todo</button>
-  <button onClick={() => setShowPreferences(true)} className="bg-yellow-500 px-3 py-1 rounded-lg hover:bg-yellow-600 transition duration-300 text-sm">Preferencias</button>
-  <button onClick={handleDeclineAll} className="bg-red-500 px-3 py-1 rounded-lg hover:bg-red-600 transition duration-300 text-sm">Rechazar Todo</button>
-</div>
-
+            <button 
+              onClick={handleAcceptAll} 
+              className="bg-green-500 px-3 py-1 rounded-lg hover:bg-green-600 transition duration-300 text-sm"
+            >
+              Aceptar Todo
+            </button>
+            <button 
+              onClick={() => setShowPreferences(true)} 
+              className="bg-yellow-500 px-3 py-1 rounded-lg hover:bg-yellow-600 transition duration-300 text-sm"
+            >
+              Preferencias
+            </button>
+            <button 
+              onClick={handleDeclineAll} 
+              className="bg-red-500 px-3 py-1 rounded-lg hover:bg-red-600 transition duration-300 text-sm"
+            >
+              Rechazar Todo
+            </button>
+          </div>
         </>
       ) : (
         <div className="w-full">
           <div className="flex justify-end">
-            <AiOutlineClose className="text-2xl cursor-pointer" onClick={() => setShowPreferences(false)} />
+            <AiOutlineClose 
+              className="text-2xl cursor-pointer" 
+              onClick={() => setShowPreferences(false)} 
+            />
           </div>
           <h2 className="text-xl font-bold mb-4">Preferencias de Cookies</h2>
           <p className="mb-4">Seleccione sus preferencias para las cookies:</p>
           <div className="mb-4">
-            <input type="checkbox" id="necessary" defaultChecked disabled />
+            <input 
+              type="checkbox" 
+              id="necessary" 
+              checked={preferences.necessary}
+              disabled 
+            />
             <label htmlFor="necessary" className="ml-2">Cookies Necesarias</label>
           </div>
           <div className="mb-4">
-            <input type="checkbox" id="analytics" />
+            <input 
+              type="checkbox" 
+              id="analytics"
+              checked={preferences.analytics}
+              onChange={() => handlePreferenceChange('analytics')}
+            />
             <label htmlFor="analytics" className="ml-2">Cookies de Analítica</label>
           </div>
           <div className="mb-4">
-            <input type="checkbox" id="marketing" />
+            <input 
+              type="checkbox" 
+              id="marketing"
+              checked={preferences.marketing}
+              onChange={() => handlePreferenceChange('marketing')}
+            />
             <label htmlFor="marketing" className="ml-2">Cookies de Marketing</label>
           </div>
-          <button onClick={handleSavePreferences} className="bg-blue-500 px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-300">Guardar Preferencias</button>
+          <button 
+            onClick={handleSavePreferences} 
+            className="bg-blue-500 px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-300"
+          >
+            Guardar Preferencias
+          </button>
         </div>
       )}
     </div>
