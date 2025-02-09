@@ -9,6 +9,8 @@ import { getLikesCount, toggleLike } from '../services/likeServices';
 import { toast } from 'react-toastify';
 import Search from '../components/Search';
 import { PostType } from '../components/PostForm';
+import LocationsMap from '../components/LocationsMap';
+import { Map } from 'lucide-react';
 
 const Blog = () => {
   const [filters, setFilters] = useState({});
@@ -16,6 +18,7 @@ const Blog = () => {
   const [showCreate, setShowCreate] = useState(false);
   const [likes, setLikes] = useState({});
   const [loading, setLoading] = useState(true);
+  const [showMap, setShowMap] = useState(false);
   const navigate = useNavigate();
   const role = localStorage.getItem('role');
   const token = localStorage.getItem('token');
@@ -173,84 +176,100 @@ const Blog = () => {
           postTypes={Object.values(PostType)}
         />
 
-        {loading ? (
+{loading ? (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#1B3A4B]"></div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {filteredArticles.map((article) => (
-              <div
-                key={article.id}
-                className="bg-white shadow-lg rounded-xl overflow-hidden hover:shadow-2xl transition-transform transform hover:-translate-y-1"
+          <>
+            <div className="mb-4 flex justify-end">
+              <button
+                onClick={() => setShowMap(!showMap)}
+                className="flex items-center gap-2 px-4 py-2 bg-[#1B3A4B] text-white rounded-lg hover:bg-[#8A8B6C] transition-colors"
               >
-                <div className="relative h-52 group">
-                  <img
-                    src={getFirstImage(article)}
-                    alt={article.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = getFirstImage({ images: [] }); // Esto llamará al caso por defecto de getFirstImage
-                    }}
-                  />
-                  {article.images && article.images.length > 1 && (
-                    <div className="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded-lg text-sm">
-                      <i className="fas fa-images mr-1"></i>
-                      {article.images.length}
-                    </div>
-                  )}
-                </div>
+                <Map size={20} />
+                {showMap ? 'Ver lista' : 'Ver mapa'}
+              </button>
+            </div>
 
-                <div className="p-6">
-                  <h3 className="text-2xl font-semibold text-[#1B3A4B] mb-3">{article.name}</h3>
-                  <p className="text-[#8A8B6C] mb-4 line-clamp-4 leading-relaxed">
-                    {article.description}
-                  </p>
-
-                  <div className="flex justify-between items-center">
-                    <div className="flex space-x-2">
-                      {role === 'admin' && token && (
-                        <>
-                          <ButtonIcon
-                            icon="fas fa-edit"
-                            onClick={() => navigate(`/editar/${article.id}`)}
-                            title="Editar"
-                            className="text-[#8A8B6C] hover:text-[#1B3A4B]"
-                          />
-                          <ButtonIcon
-                            icon="fas fa-trash"
-                            onClick={() => handleDelete(article.id)}
-                            title="Eliminar"
-                            className="text-[#C68B59] hover:text-[#1B3A4B]"
-                          />
-                        </>
+            {showMap ? (
+              <LocationsMap articles={filteredArticles} />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {filteredArticles.map((article) => (
+                  <div
+                    key={article.id}
+                    className="bg-white shadow-lg rounded-xl overflow-hidden hover:shadow-2xl transition-transform transform hover:-translate-y-1"
+                  >
+                    <div className="relative h-52 group">
+                      <img
+                        src={getFirstImage(article)}
+                        alt={article.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = getFirstImage({ images: [] });
+                        }}
+                      />
+                      {article.images && article.images.length > 1 && (
+                        <div className="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded-lg text-sm">
+                          <i className="fas fa-images mr-1"></i>
+                          {article.images.length}
+                        </div>
                       )}
                     </div>
 
-                    {token && (
-                      <div className="flex items-center">
-                        <ButtonIcon
-                          icon={likes[article.id] ? "fas fa-heart text-[#C68B59]" : "far fa-heart"}
-                          onClick={() => handleLike(article.id)}
-                          title="Me gusta"
-                          className={likes[article.id] ? "text-[#C68B59]" : "text-[#8A8B6C]"}
-                        />
-                        <span className="ml-2 text-[#8A8B6C]">{likes[article.id] || 0}</span>
-                      </div>
-                    )}
-                  </div>
+                    <div className="p-6">
+                      <h3 className="text-2xl font-semibold text-[#1B3A4B] mb-3">{article.name}</h3>
+                      <p className="text-[#8A8B6C] mb-4 line-clamp-4 leading-relaxed">
+                        {article.description}
+                      </p>
 
-                  <Link
-                    to={`/post/${article.id}`}
-                    className="text-[#1B3A4B] font-medium hover:text-[#C68B59] transition-colors mt-6 inline-block"
-                  >
-                    Leer más...
-                  </Link>
-                </div>
+                      <div className="flex justify-between items-center">
+                        <div className="flex space-x-2">
+                          {role === 'admin' && token && (
+                            <>
+                              <ButtonIcon
+                                icon="fas fa-edit"
+                                onClick={() => navigate(`/editar/${article.id}`)}
+                                title="Editar"
+                                className="text-[#8A8B6C] hover:text-[#1B3A4B]"
+                              />
+                              <ButtonIcon
+                                icon="fas fa-trash"
+                                onClick={() => handleDelete(article.id)}
+                                title="Eliminar"
+                                className="text-[#C68B59] hover:text-[#1B3A4B]"
+                              />
+                            </>
+                          )}
+                        </div>
+
+                        {token && (
+                          <div className="flex items-center">
+                            <ButtonIcon
+                              icon={likes[article.id] ? "fas fa-heart text-[#C68B59]" : "far fa-heart"}
+                              onClick={() => handleLike(article.id)}
+                              title="Me gusta"
+                              className={likes[article.id] ? "text-[#C68B59]" : "text-[#8A8B6C]"}
+                            />
+                            <span className="ml-2 text-[#8A8B6C]">{likes[article.id] || 0}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <Link
+                        to={`/post/${article.id}`}
+                        className="text-[#1B3A4B] font-medium hover:text-[#C68B59] transition-colors mt-6 inline-block"
+                      >
+                        Leer más...
+                      </Link>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
 
         {showCreate && role === 'admin' && token && (
