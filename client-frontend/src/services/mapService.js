@@ -1,4 +1,3 @@
-// services/mapService.js
 const NOMINATIM_BASE_URL = 'https://nominatim.openstreetmap.org/search';
 
 export const getCoordinates = async (city) => {
@@ -25,39 +24,34 @@ export const getCitiesCoordinates = async (articles) => {
   const uniqueCities = [...new Set(articles.map(article => article.city))];
   const coordinates = await Promise.all(
     uniqueCities.map(async (city) => {
-      const coords = await getCoordinates(city);
+      const baseCoords = await getCoordinates(city);
+      if (!baseCoords) return null;
+
       const cityArticles = articles.filter(article => article.city === city);
       
-      // Crear un array de ubicaciones con offset para cada artículo
-      const articleLocations = cityArticles.map((article, index) => {
-        if (index === 0 || cityArticles.length === 1) {
-          return {
-            id: article.id,
-            coords: coords,
-            article
-          };
-        }
-        
-        // Calcular offset en forma de espiral
-        const angle = (index * (2 * Math.PI)) / cityArticles.length;
+      // Calcular offset para la ciudad si tiene múltiples artículos
+      if (cityArticles.length > 1) {
         const radius = 0.002; // Aproximadamente 200 metros
+        const angle = (2 * Math.PI) / cityArticles.length;
+        
         return {
-          id: article.id,
+          city,
           coords: {
-            lat: coords.lat + radius * Math.cos(angle),
-            lng: coords.lng + radius * Math.sin(angle)
+            lat: baseCoords.lat + radius * Math.cos(angle),
+            lng: baseCoords.lng + radius * Math.sin(angle)
           },
-          article
+          articles: cityArticles
         };
-      });
+      }
 
+      // Si solo hay un artículo, usar las coordenadas base
       return {
         city,
-        articles: cityArticles,
-        locations: articleLocations
+        coords: baseCoords,
+        articles: cityArticles
       };
     })
   );
   
-  return coordinates.filter(item => item.locations && item.locations.length > 0);
+  return coordinates.filter(item => item !== null);
 };
