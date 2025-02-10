@@ -26,13 +26,38 @@ export const getCitiesCoordinates = async (articles) => {
   const coordinates = await Promise.all(
     uniqueCities.map(async (city) => {
       const coords = await getCoordinates(city);
+      const cityArticles = articles.filter(article => article.city === city);
+      
+      // Crear un array de ubicaciones con offset para cada artículo
+      const articleLocations = cityArticles.map((article, index) => {
+        if (index === 0 || cityArticles.length === 1) {
+          return {
+            id: article.id,
+            coords: coords,
+            article
+          };
+        }
+        
+        // Calcular offset en forma de espiral
+        const angle = (index * (2 * Math.PI)) / cityArticles.length;
+        const radius = 0.002; // Aproximadamente 200 metros
+        return {
+          id: article.id,
+          coords: {
+            lat: coords.lat + radius * Math.cos(angle),
+            lng: coords.lng + radius * Math.sin(angle)
+          },
+          article
+        };
+      });
+
       return {
         city,
-        coords,
-        articles: articles.filter(article => article.city === city)
+        articles: cityArticles,
+        locations: articleLocations
       };
     })
   );
   
-  return coordinates.filter(item => item.coords !== null);
+  return coordinates.filter(item => item.locations && item.locations.length > 0);
 };
