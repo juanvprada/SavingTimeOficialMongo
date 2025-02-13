@@ -158,20 +158,23 @@ const Blog = () => {
   const filteredArticles = filterArticles(articles, filters);
   return (
     <div className="min-h-screen bg-[#F5F2ED]">
-      {/* Header optimizado para móvil */}
       <header className="bg-[#1B3A4B] text-[#F5F2ED] py-6 md:py-8">
         <div className="container mx-auto text-center px-4">
-          {/* Título optimizado para móvil/desktop */}
+          {/* Eliminamos el texto redundante en móvil */}
           <h1 className="text-3xl md:text-4xl font-bold">
-            {/* En móvil solo "Saving Time", en desktop "Bienvenidos a Saving Time" */}
             <span className="md:hidden">Saving Time</span>
             <span className="hidden md:block">Bienvenidos a Saving Time</span>
           </h1>
-          <p className="mt-2 md:mt-4 text-base md:text-xl text-[#E3D5C7]">
+          <p className="mt-2 md:mt-4 text-sm md:text-xl text-[#E3D5C7]">
             Saber a dónde volver
           </p>
         </div>
       </header>
+
+      {/* Eliminamos el título redundante "Todas las publicaciones" en móvil */}
+      <h2 className="hidden md:block text-2xl md:text-3xl font-semibold text-center text-[#1B3A4B] mt-4">
+        Todas las publicaciones
+      </h2>
 
       <section className="container mx-auto py-6 md:py-12 px-4">
         <Search
@@ -200,7 +203,7 @@ const Blog = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
                 {filteredArticles.map((article) => (
-                  <Card
+                  <div
                     key={article.id}
                     className="bg-white shadow-lg rounded-xl overflow-hidden hover:shadow-2xl transition-transform hover:-translate-y-1"
                   >
@@ -216,6 +219,7 @@ const Blog = () => {
                       />
                       {article.images && article.images.length > 1 && (
                         <div className="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded-lg text-xs md:text-sm">
+                          <i className="fas fa-images mr-1"></i>
                           {article.images.length}
                         </div>
                       )}
@@ -271,7 +275,7 @@ const Blog = () => {
                         Leer más...
                       </Link>
                     </div>
-                  </Card>
+                  </div>
                 ))}
               </div>
             )}
