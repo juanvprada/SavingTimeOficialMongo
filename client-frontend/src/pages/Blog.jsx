@@ -158,22 +158,26 @@ const Blog = () => {
   const filteredArticles = filterArticles(articles, filters);
   return (
     <div className="min-h-screen bg-[#F5F2ED]">
-      <header className="bg-[#1B3A4B] text-[#F5F2ED] py-6">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-3xl font-bold">Saving Time</h1>
-          <p className="mt-2 text-[#E3D5C7] text-sm italic">Saber a dónde volver</p>
+      {/* Header optimizado para móvil */}
+      <header className="bg-[#1B3A4B] text-[#F5F2ED] py-6 md:py-8">
+        <div className="container mx-auto text-center px-4">
+          {/* Título optimizado para móvil/desktop */}
+          <h1 className="text-3xl md:text-4xl font-bold">
+            {/* En móvil solo "Saving Time", en desktop "Bienvenidos a Saving Time" */}
+            <span className="md:hidden">Saving Time</span>
+            <span className="hidden md:block">Bienvenidos a Saving Time</span>
+          </h1>
+          <p className="mt-2 md:mt-4 text-base md:text-xl text-[#E3D5C7]">
+            Saber a dónde volver
+          </p>
         </div>
       </header>
 
-      <section className="container mx-auto py-8 px-4">
-        {/* Barra de búsqueda */}
-        <div className="relative mb-6">
-          <input
-            type="text"
-            placeholder="Buscar lugares..."
-            className="w-full px-4 py-2 rounded-lg border border-[#1B3A4B] focus:outline-none focus:ring-2 focus:ring-[#1B3A4B] focus:border-transparent"
-          />
-        </div>
+      <section className="container mx-auto py-6 md:py-12 px-4">
+        <Search
+          onSearch={setFilters}
+          postTypes={Object.values(PostType)}
+        />
 
         {loading ? (
           <div className="flex justify-center items-center h-64">
@@ -184,17 +188,15 @@ const Blog = () => {
             <div className="mb-4 flex justify-end">
               <button
                 onClick={() => setShowMap(!showMap)}
-                className="flex items-center gap-2 px-3 py-1.5 bg-[#1B3A4B] text-white rounded-lg hover:bg-[#8A8B6C] transition-colors text-sm"
+                className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-[#1B3A4B] text-white rounded-lg hover:bg-[#8A8B6C] transition-colors text-sm md:text-base"
               >
-                <Map className="w-4 h-4" />
-                {showMap ? 'Lista' : 'Mapa'}
+                <Map size={16} className="md:w-5 md:h-5" />
+                {showMap ? 'Ver lista' : 'Ver mapa'}
               </button>
             </div>
 
             {showMap ? (
-              <div className="h-96 bg-gray-100 rounded-lg flex items-center justify-center">
-                <p className="text-gray-500">Componente de mapa aquí</p>
-              </div>
+              <LocationsMap articles={filteredArticles} />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
                 {filteredArticles.map((article) => (
@@ -202,7 +204,7 @@ const Blog = () => {
                     key={article.id}
                     className="bg-white shadow-lg rounded-xl overflow-hidden hover:shadow-2xl transition-transform hover:-translate-y-1"
                   >
-                    <div className="relative h-48 group">
+                    <div className="relative h-48 md:h-52 group">
                       <img
                         src={getFirstImage(article)}
                         alt={article.name}
@@ -213,15 +215,17 @@ const Blog = () => {
                         }}
                       />
                       {article.images && article.images.length > 1 && (
-                        <div className="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded-lg text-xs">
+                        <div className="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded-lg text-xs md:text-sm">
                           {article.images.length}
                         </div>
                       )}
                     </div>
 
-                    <div className="p-4">
-                      <h3 className="text-xl font-semibold text-[#1B3A4B] mb-2">{article.name}</h3>
-                      <p className="text-[#8A8B6C] text-sm mb-3 line-clamp-3">
+                    <div className="p-4 md:p-6">
+                      <h3 className="text-xl md:text-2xl font-semibold text-[#1B3A4B] mb-2 md:mb-3">
+                        {article.name}
+                      </h3>
+                      <p className="text-[#8A8B6C] text-sm md:text-base mb-3 md:mb-4 line-clamp-3 md:line-clamp-4 leading-relaxed">
                         {article.description}
                       </p>
 
@@ -229,41 +233,43 @@ const Blog = () => {
                         <div className="flex space-x-2">
                           {role === 'admin' && token && (
                             <>
-                              <button
+                              <ButtonIcon
+                                icon="fas fa-edit"
                                 onClick={() => navigate(`/editar/${article.id}`)}
-                                className="text-[#8A8B6C] hover:text-[#1B3A4B] transition-colors"
-                              >
-                                <Edit className="w-4 h-4" />
-                              </button>
-                              <button
+                                title="Editar"
+                                className="text-[#8A8B6C] hover:text-[#1B3A4B]"
+                              />
+                              <ButtonIcon
+                                icon="fas fa-trash"
                                 onClick={() => handleDelete(article.id)}
-                                className="text-[#C68B59] hover:text-[#1B3A4B] transition-colors"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
+                                title="Eliminar"
+                                className="text-[#C68B59] hover:text-[#1B3A4B]"
+                              />
                             </>
                           )}
                         </div>
 
                         {token && (
                           <div className="flex items-center">
-                            <button
+                            <ButtonIcon
+                              icon={likes[article.id] ? "fas fa-heart text-[#C68B59]" : "far fa-heart"}
                               onClick={() => handleLike(article.id)}
+                              title="Me gusta"
                               className={likes[article.id] ? "text-[#C68B59]" : "text-[#8A8B6C]"}
-                            >
-                              <Heart className="w-4 h-4 fill-current" />
-                            </button>
-                            <span className="ml-2 text-sm text-[#8A8B6C]">{likes[article.id] || 0}</span>
+                            />
+                            <span className="ml-2 text-sm md:text-base text-[#8A8B6C]">
+                              {likes[article.id] || 0}
+                            </span>
                           </div>
                         )}
                       </div>
 
-                      <button
-                        onClick={() => {/* Implementar navegación */}}
-                        className="text-[#1B3A4B] text-sm font-medium hover:text-[#C68B59] transition-colors mt-4 inline-block"
+                      <Link
+                        to={`/post/${article.id}`}
+                        className="text-[#1B3A4B] text-sm md:text-base font-medium hover:text-[#C68B59] transition-colors mt-4 md:mt-6 inline-block"
                       >
                         Leer más...
-                      </button>
+                      </Link>
                     </div>
                   </Card>
                 ))}
@@ -272,36 +278,18 @@ const Blog = () => {
           </>
         )}
 
-        {role === 'admin' && token && (
-          <button
-            onClick={() => setShowCreate(true)}
-            className="fixed bottom-6 right-6 bg-[#1B3A4B] hover:bg-[#8A8B6C] text-white p-3 rounded-full shadow-lg transition-colors"
-          >
-            <PlusCircle className="w-6 h-6" />
-          </button>
+        {showCreate && role === 'admin' && token && (
+          <Create
+            onCancel={() => setShowCreate(false)}
+            onSubmit={handleNewPost}
+          />
         )}
 
-        {showCreate && role === 'admin' && token && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md">
-              <h3 className="text-xl font-semibold mb-4">Crear nueva publicación</h3>
-              {/* Aquí iría el formulario de creación */}
-              <div className="flex justify-end gap-2 mt-4">
-                <button
-                  onClick={() => setShowCreate(false)}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={() => {/* Implementar creación */}}
-                  className="px-4 py-2 bg-[#1B3A4B] text-white rounded-lg hover:bg-[#8A8B6C] transition-colors"
-                >
-                  Crear
-                </button>
-              </div>
-            </div>
-          </div>
+        {role === 'admin' && token && (
+          <IconCreate
+            onClick={() => setShowCreate(true)}
+            className="fixed bottom-6 right-6 md:bottom-8 md:right-8 bg-[#1B3A4B] hover:bg-[#8A8B6C] text-white p-3 md:p-4 rounded-full shadow-lg transition-colors"
+          />
         )}
       </section>
     </div>
