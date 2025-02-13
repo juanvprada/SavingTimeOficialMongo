@@ -158,25 +158,24 @@ const Blog = () => {
   const filteredArticles = filterArticles(articles, filters);
   return (
     <div className="min-h-screen bg-[#F5F2ED]">
-      <header className="bg-[#1B3A4B] text-[#F5F2ED] py-8">
-        <div className="container mx-auto text-center">
-          <h1 className="text-4xl font-bold md:hidden">Saving Time</h1>
-          <h1 className="text-4xl font-bold hidden md:block">Bienvenidos a Saving Time</h1>
-          <p className="mt-4 text-xl text-[#E3D5C7]">Saber a dónde volver</p>
+      <header className="bg-[#1B3A4B] text-[#F5F2ED] py-6">
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="text-3xl font-bold">Saving Time</h1>
+          <p className="mt-2 text-[#E3D5C7] text-sm italic">Saber a dónde volver</p>
         </div>
       </header>
 
-      <h2 className="text-2xl md:text-3xl font-semibold text-center text-[#1B3A4B] mt-4">
-        Todas las publicaciones
-      </h2>
+      <section className="container mx-auto py-8 px-4">
+        {/* Barra de búsqueda */}
+        <div className="relative mb-6">
+          <input
+            type="text"
+            placeholder="Buscar lugares..."
+            className="w-full px-4 py-2 rounded-lg border border-[#1B3A4B] focus:outline-none focus:ring-2 focus:ring-[#1B3A4B] focus:border-transparent"
+          />
+        </div>
 
-      <section className="container mx-auto py-12 px-4">
-        <Search
-          onSearch={setFilters}
-          postTypes={Object.values(PostType)}
-        />
-
-{loading ? (
+        {loading ? (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#1B3A4B]"></div>
           </div>
@@ -185,23 +184,25 @@ const Blog = () => {
             <div className="mb-4 flex justify-end">
               <button
                 onClick={() => setShowMap(!showMap)}
-                className="flex items-center gap-2 px-4 py-2 bg-[#1B3A4B] text-white rounded-lg hover:bg-[#8A8B6C] transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 bg-[#1B3A4B] text-white rounded-lg hover:bg-[#8A8B6C] transition-colors text-sm"
               >
-                <Map size={20} />
-                {showMap ? 'Ver lista' : 'Ver mapa'}
+                <Map size={16} />
+                {showMap ? 'Lista' : 'Mapa'}
               </button>
             </div>
 
             {showMap ? (
-              <LocationsMap articles={filteredArticles} />
+              <div className="h-96 bg-gray-100 rounded-lg flex items-center justify-center">
+                <p className="text-gray-500">Componente de mapa aquí</p>
+              </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
                 {filteredArticles.map((article) => (
-                  <div
+                  <Card
                     key={article.id}
-                    className="bg-white shadow-lg rounded-xl overflow-hidden hover:shadow-2xl transition-transform transform hover:-translate-y-1"
+                    className="bg-white shadow-lg rounded-xl overflow-hidden hover:shadow-2xl transition-transform hover:-translate-y-1"
                   >
-                    <div className="relative h-52 group">
+                    <div className="relative h-48 group">
                       <img
                         src={getFirstImage(article)}
                         alt={article.name}
@@ -212,16 +213,15 @@ const Blog = () => {
                         }}
                       />
                       {article.images && article.images.length > 1 && (
-                        <div className="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded-lg text-sm">
-                          <i className="fas fa-images mr-1"></i>
+                        <div className="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded-lg text-xs">
                           {article.images.length}
                         </div>
                       )}
                     </div>
 
-                    <div className="p-6">
-                      <h3 className="text-2xl font-semibold text-[#1B3A4B] mb-3">{article.name}</h3>
-                      <p className="text-[#8A8B6C] mb-4 line-clamp-4 leading-relaxed">
+                    <div className="p-4">
+                      <h3 className="text-xl font-semibold text-[#1B3A4B] mb-2">{article.name}</h3>
+                      <p className="text-[#8A8B6C] text-sm mb-3 line-clamp-3">
                         {article.description}
                       </p>
 
@@ -229,61 +229,79 @@ const Blog = () => {
                         <div className="flex space-x-2">
                           {role === 'admin' && token && (
                             <>
-                              <ButtonIcon
-                                icon="fas fa-edit"
+                              <button
                                 onClick={() => navigate(`/editar/${article.id}`)}
-                                title="Editar"
-                                className="text-[#8A8B6C] hover:text-[#1B3A4B]"
-                              />
-                              <ButtonIcon
-                                icon="fas fa-trash"
+                                className="text-[#8A8B6C] hover:text-[#1B3A4B] transition-colors"
+                              >
+                                <Edit size={16} />
+                              </button>
+                              <button
                                 onClick={() => handleDelete(article.id)}
-                                title="Eliminar"
-                                className="text-[#C68B59] hover:text-[#1B3A4B]"
-                              />
+                                className="text-[#C68B59] hover:text-[#1B3A4B] transition-colors"
+                              >
+                                <Trash2 size={16} />
+                              </button>
                             </>
                           )}
                         </div>
 
                         {token && (
                           <div className="flex items-center">
-                            <ButtonIcon
-                              icon={likes[article.id] ? "fas fa-heart text-[#C68B59]" : "far fa-heart"}
+                            <button
                               onClick={() => handleLike(article.id)}
-                              title="Me gusta"
                               className={likes[article.id] ? "text-[#C68B59]" : "text-[#8A8B6C]"}
-                            />
-                            <span className="ml-2 text-[#8A8B6C]">{likes[article.id] || 0}</span>
+                            >
+                              <Heart size={16} className="fill-current" />
+                            </button>
+                            <span className="ml-2 text-sm text-[#8A8B6C]">{likes[article.id] || 0}</span>
                           </div>
                         )}
                       </div>
 
-                      <Link
-                        to={`/post/${article.id}`}
-                        className="text-[#1B3A4B] font-medium hover:text-[#C68B59] transition-colors mt-6 inline-block"
+                      <button
+                        onClick={() => {/* Implementar navegación */}}
+                        className="text-[#1B3A4B] text-sm font-medium hover:text-[#C68B59] transition-colors mt-4 inline-block"
                       >
                         Leer más...
-                      </Link>
+                      </button>
                     </div>
-                  </div>
+                  </Card>
                 ))}
               </div>
             )}
           </>
         )}
 
-        {showCreate && role === 'admin' && token && (
-          <Create
-            onCancel={() => setShowCreate(false)}
-            onSubmit={handleNewPost}
-          />
+        {role === 'admin' && token && (
+          <button
+            onClick={() => setShowCreate(true)}
+            className="fixed bottom-6 right-6 bg-[#1B3A4B] hover:bg-[#8A8B6C] text-white p-3 rounded-full shadow-lg transition-colors"
+          >
+            <Plus size={24} />
+          </button>
         )}
 
-        {role === 'admin' && token && (
-          <IconCreate
-            onClick={() => setShowCreate(true)}
-            className="fixed bottom-8 right-8 bg-[#1B3A4B] hover:bg-[#8A8B6C] text-white p-4 rounded-full shadow-lg transition-colors"
-          />
+        {showCreate && role === 'admin' && token && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <h3 className="text-xl font-semibold mb-4">Crear nueva publicación</h3>
+              {/* Aquí iría el formulario de creación */}
+              <div className="flex justify-end gap-2 mt-4">
+                <button
+                  onClick={() => setShowCreate(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => {/* Implementar creación */}}
+                  className="px-4 py-2 bg-[#1B3A4B] text-white rounded-lg hover:bg-[#8A8B6C] transition-colors"
+                >
+                  Crear
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </section>
     </div>
