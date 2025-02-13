@@ -158,54 +158,27 @@ const Blog = () => {
   const filteredArticles = filterArticles(articles, filters);
   return (
     <div className="min-h-screen bg-[#F5F2ED]">
-      {/* Header más compacto y moderno */}
-      <header className="bg-[#1B3A4B]">
-        {/* Navbar superior con logo */}
-        <div className="md:hidden flex items-center justify-between px-4 py-2 border-b border-[#E3D5C7]/20">
-          <img 
-            src="/logo.png" 
-            alt="Logo" 
-            className="w-8 h-8 rounded-full"
-          />
-          <button className="text-[#F5F2ED] p-2">
-            <div className="space-y-1">
-              <div className="w-6 h-0.5 bg-current"></div>
-              <div className="w-6 h-0.5 bg-current"></div>
-              <div className="w-6 h-0.5 bg-current"></div>
-            </div>
-          </button>
-        </div>
-        
-        {/* Contenido del header */}
-        <div className="px-4 py-4 md:py-8">
-          <div className="container mx-auto text-center">
-            <h1 className="text-2xl md:text-4xl font-bold text-[#F5F2ED]">
-              <span className="md:hidden">Saving Time</span>
-              <span className="hidden md:block">Bienvenidos a Saving Time</span>
-            </h1>
-            <p className="mt-1 md:mt-4 text-sm md:text-xl text-[#E3D5C7] font-light">
-              Saber a dónde volver
-            </p>
-          </div>
+      <header className="bg-[#1B3A4B] text-[#F5F2ED] py-8">
+        <div className="container mx-auto text-center">
+          {/* Ajustamos solo los tamaños en móvil */}
+          <h1 className="text-3xl md:text-4xl font-bold md:hidden">Saving Time</h1>
+          <h1 className="text-4xl font-bold hidden md:block">Bienvenidos a Saving Time</h1>
+          <p className="mt-2 md:mt-4 text-base md:text-xl text-[#E3D5C7]">
+            Saber a dónde volver
+          </p>
         </div>
       </header>
 
-      <section className="container mx-auto px-4 pb-20">
-        {/* Barra de búsqueda mejorada */}
-        <div className="relative -mt-4 mb-6">
-          <div className="bg-white rounded-xl shadow-lg p-4">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="¿Qué estás buscando?"
-                className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A4B] focus:border-transparent"
-              />
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                <i className="fas fa-search text-sm"></i>
-              </span>
-            </div>
-          </div>
-        </div>
+      {/* En móvil ocultamos este título */}
+      <h2 className="hidden md:block text-2xl md:text-3xl font-semibold text-center text-[#1B3A4B] mt-4">
+        Todas las publicaciones
+      </h2>
+
+      <section className="container mx-auto py-8 md:py-12 px-4">
+        <Search
+          onSearch={setFilters}
+          postTypes={Object.values(PostType)}
+        />
 
         {loading ? (
           <div className="flex justify-center items-center h-64">
@@ -213,13 +186,12 @@ const Blog = () => {
           </div>
         ) : (
           <>
-            {/* Botón de mapa mejorado */}
-            <div className="mb-4">
+            <div className="mb-4 flex justify-end">
               <button
                 onClick={() => setShowMap(!showMap)}
-                className="w-full md:w-auto px-4 py-2.5 bg-[#1B3A4B] text-white rounded-lg hover:bg-[#8A8B6C] transition-colors text-sm flex items-center justify-center gap-2"
+                className="flex items-center gap-2 px-4 py-2 bg-[#1B3A4B] text-white rounded-lg hover:bg-[#8A8B6C] transition-colors"
               >
-                <Map size={16} />
+                <Map size={20} />
                 {showMap ? 'Ver lista' : 'Ver mapa'}
               </button>
             </div>
@@ -227,13 +199,13 @@ const Blog = () => {
             {showMap ? (
               <LocationsMap articles={filteredArticles} />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
                 {filteredArticles.map((article) => (
                   <div
                     key={article.id}
-                    className="bg-white shadow-lg rounded-xl overflow-hidden hover:shadow-2xl transition-transform hover:-translate-y-1"
+                    className="bg-white shadow-lg rounded-xl overflow-hidden hover:shadow-2xl transition-transform transform hover:-translate-y-1"
                   >
-                    <div className="relative h-48 md:h-52">
+                    <div className="relative h-48 md:h-52 group">
                       <img
                         src={getFirstImage(article)}
                         alt={article.name}
@@ -244,17 +216,16 @@ const Blog = () => {
                         }}
                       />
                       {article.images && article.images.length > 1 && (
-                        <div className="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded text-xs">
+                        <div className="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded-lg text-sm">
+                          <i className="fas fa-images mr-1"></i>
                           {article.images.length}
                         </div>
                       )}
                     </div>
 
-                    <div className="p-4">
-                      <h3 className="text-lg md:text-xl font-semibold text-[#1B3A4B] mb-2">
-                        {article.name}
-                      </h3>
-                      <p className="text-[#8A8B6C] text-sm mb-3 line-clamp-2 md:line-clamp-3">
+                    <div className="p-4 md:p-6">
+                      <h3 className="text-xl font-semibold text-[#1B3A4B] mb-2">{article.name}</h3>
+                      <p className="text-[#8A8B6C] text-sm md:text-base mb-3 line-clamp-2 md:line-clamp-4 leading-relaxed">
                         {article.description}
                       </p>
 
@@ -286,16 +257,14 @@ const Blog = () => {
                               title="Me gusta"
                               className={likes[article.id] ? "text-[#C68B59]" : "text-[#8A8B6C]"}
                             />
-                            <span className="ml-2 text-xs md:text-sm text-[#8A8B6C]">
-                              {likes[article.id] || 0}
-                            </span>
+                            <span className="ml-2 text-[#8A8B6C]">{likes[article.id] || 0}</span>
                           </div>
                         )}
                       </div>
 
                       <Link
                         to={`/post/${article.id}`}
-                        className="text-[#1B3A4B] text-sm font-medium hover:text-[#C68B59] transition-colors mt-3 inline-block"
+                        className="text-[#1B3A4B] font-medium hover:text-[#C68B59] transition-colors mt-4 inline-block"
                       >
                         Leer más...
                       </Link>
@@ -317,7 +286,7 @@ const Blog = () => {
         {role === 'admin' && token && (
           <IconCreate
             onClick={() => setShowCreate(true)}
-            className="fixed bottom-20 right-4 md:bottom-8 md:right-8 bg-[#1B3A4B] hover:bg-[#8A8B6C] text-white p-3 md:p-4 rounded-full shadow-lg transition-colors z-10"
+            className="fixed bottom-8 right-8 bg-[#1B3A4B] hover:bg-[#8A8B6C] text-white p-4 rounded-full shadow-lg transition-colors"
           />
         )}
       </section>
