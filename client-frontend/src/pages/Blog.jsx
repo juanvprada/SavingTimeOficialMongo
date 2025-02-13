@@ -186,7 +186,7 @@ const Blog = () => {
                 onClick={() => setShowMap(!showMap)}
                 className="flex items-center gap-2 px-3 py-1.5 bg-[#1B3A4B] text-white rounded-lg hover:bg-[#8A8B6C] transition-colors text-sm"
               >
-                <Map size={16} />
+                <Map className="w-4 h-4" />
                 {showMap ? 'Lista' : 'Mapa'}
               </button>
             </div>
@@ -233,13 +233,13 @@ const Blog = () => {
                                 onClick={() => navigate(`/editar/${article.id}`)}
                                 className="text-[#8A8B6C] hover:text-[#1B3A4B] transition-colors"
                               >
-                                <Edit size={16} />
+                                <Edit className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={() => handleDelete(article.id)}
                                 className="text-[#C68B59] hover:text-[#1B3A4B] transition-colors"
                               >
-                                <Trash2 size={16} />
+                                <Trash2 className="w-4 h-4" />
                               </button>
                             </>
                           )}
@@ -251,7 +251,7 @@ const Blog = () => {
                               onClick={() => handleLike(article.id)}
                               className={likes[article.id] ? "text-[#C68B59]" : "text-[#8A8B6C]"}
                             >
-                              <Heart size={16} className="fill-current" />
+                              <Heart className="w-4 h-4 fill-current" />
                             </button>
                             <span className="ml-2 text-sm text-[#8A8B6C]">{likes[article.id] || 0}</span>
                           </div>
@@ -277,7 +277,7 @@ const Blog = () => {
             onClick={() => setShowCreate(true)}
             className="fixed bottom-6 right-6 bg-[#1B3A4B] hover:bg-[#8A8B6C] text-white p-3 rounded-full shadow-lg transition-colors"
           >
-            <Plus size={24} />
+            <PlusCircle className="w-6 h-6" />
           </button>
         )}
 
