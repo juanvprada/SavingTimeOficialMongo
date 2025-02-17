@@ -1,9 +1,9 @@
-const NOMINATIM_BASE_URL = 'https://nominatim.openstreetmap.org/search';
+const NOMINATIM_BASE_URL = 'https://nominatim.openstreetmap.org';
 
 export const getCoordinates = async (city) => {
   try {
     const response = await fetch(
-      `${NOMINATIM_BASE_URL}?q=${encodeURIComponent(city)}&format=json&limit=1`
+      `${NOMINATIM_BASE_URL}/search?q=${encodeURIComponent(city)}&format=json&limit=1`
     );
     const data = await response.json();
     
@@ -20,6 +20,33 @@ export const getCoordinates = async (city) => {
   }
 };
 
+export const getPlaceDetails = async (coords) => {
+  try {
+    const response = await fetch(
+      `${NOMINATIM_BASE_URL}/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}&addressdetails=1&zoom=18`,
+      {
+        headers: {
+          'User-Agent': 'TuAppName/1.0'
+        }
+      }
+    );
+    const data = await response.json();
+
+    return {
+      name: data.name || data.amenity || data.shop || data.leisure || data.tourism || data.display_name,
+      city: data.address.city || data.address.town || data.address.village || 'Ciudad desconocida',
+      coords: {
+        lat: parseFloat(coords.lat),
+        lng: parseFloat(coords.lng)
+      },
+      type: data.amenity || data.shop || data.leisure || data.tourism || 'lugar'
+    };
+  } catch (error) {
+    console.error('Error getting place details:', error);
+    return null;
+  }
+};
+
 export const getCitiesCoordinates = async (articles) => {
   const uniqueCities = [...new Set(articles.map(article => article.city))];
   const coordinates = await Promise.all(
@@ -29,26 +56,16 @@ export const getCitiesCoordinates = async (articles) => {
 
       const cityArticles = articles.filter(article => article.city === city);
       
-      // Calcular offset para la ciudad si tiene múltiples artículos
-      if (cityArticles.length > 1) {
-        const radius = 0.002; // Aproximadamente 200 metros
-        const angle = (2 * Math.PI) / cityArticles.length;
-        
-        return {
-          city,
-          coords: {
-            lat: baseCoords.lat + radius * Math.cos(angle),
-            lng: baseCoords.lng + radius * Math.sin(angle)
-          },
-          articles: cityArticles
-        };
-      }
-
-      // Si solo hay un artículo, usar las coordenadas base
+      // Si hay coordenadas específicas en los artículos, usarlas
+      const articlesWithCoords = cityArticles.map(article => ({
+        ...article,
+        coords: article.coordenadas || baseCoords
+      }));
+      
       return {
         city,
         coords: baseCoords,
-        articles: cityArticles
+        articles: articlesWithCoords
       };
     })
   );

@@ -11,6 +11,7 @@ import Search from '../components/Search';
 import { PostType } from '../components/PostForm';
 import LocationsMap from '../components/LocationsMap';
 import { Map } from 'lucide-react';
+import { ThumbsDown } from 'lucide-react';
 
 const Blog = () => {
   const [filters, setFilters] = useState({});
@@ -121,6 +122,15 @@ const Blog = () => {
         console.error("Error al eliminar el post:", error);
         toast.error('Error al eliminar el post');
       }
+    }
+  };
+  const handleNoVolverPost = async (newPost) => {
+    try {
+      await fetchPosts();
+      toast.success('Lugar marcado como "No volver"');
+    } catch (error) {
+      console.error('Error al actualizar la lista:', error);
+      toast.error('Error al crear el post de No volver');
     }
   };
 
@@ -283,12 +293,18 @@ const Blog = () => {
           />
         )}
 
-        {role === 'admin' && token && (
-          <IconCreate
-            onClick={() => setShowCreate(true)}
-            className="fixed bottom-8 right-8 bg-[#1B3A4B] hover:bg-[#8A8B6C] text-white p-4 rounded-full shadow-lg transition-colors"
-          />
-        )}
+{role === 'admin' && token && (
+  <div className="fixed bottom-4 right-4 inline-flex gap-3">
+    <button 
+      onClick={handleNoVolverPost}
+      className="w-12 h-12 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-red-600 transition"
+      aria-label="No Volver"
+    >
+      <ThumbsDown size={20} />
+    </button>
+    <IconCreate onClick={() => setShowCreate(true)} />
+  </div>
+)}
       </section>
     </div>
   );
