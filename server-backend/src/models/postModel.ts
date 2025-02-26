@@ -1,7 +1,7 @@
 // models/postModel.ts
 import mongoose, { Schema } from 'mongoose';
 import { IPost } from '../interfaces';
-import { PostType } from '../interfaces';
+import { PostType, RecommendationStatus } from '../interfaces';
 
 const postSchema = new Schema<IPost>({
   name: {
@@ -43,6 +43,11 @@ const postSchema = new Schema<IPost>({
     required: true,
     min: 1,
     max: 5
+  },
+  recommendationStatus: {
+    type: String,
+    enum: Object.values(RecommendationStatus),
+    default: RecommendationStatus.NONE
   }
 }, {
   timestamps: true,

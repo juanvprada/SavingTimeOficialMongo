@@ -17,6 +17,13 @@ export const PostType = {
   EVENTO: 'Evento',
 };
 
+// Define Recommendation Status
+export const RecommendationStatus = {
+  NONE: 'Ninguno',
+  RECOMMENDED: 'Recomendado',
+  DO_NOT_RETURN: 'No volver',
+};
+
 export const Create = ({ post, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -25,7 +32,8 @@ export const Create = ({ post, onSubmit, onCancel }) => {
     images: [],
     city: '',
     price: '',
-    rating: ""
+    rating: "",
+    recommendationStatus: RecommendationStatus.NONE, // Nuevo campo
   });
   const [imagePreviews, setImagePreviews] = useState([]);
   const [error, setError] = useState('');
@@ -36,6 +44,7 @@ export const Create = ({ post, onSubmit, onCancel }) => {
 
   useEffect(() => {
     if (post?.data) {
+      console.log('Datos iniciales del post:', post.data);
       setFormData({
         name: post.data.name || '',
         kindOfPost: post.data.kindOfPost || '',
@@ -43,7 +52,8 @@ export const Create = ({ post, onSubmit, onCancel }) => {
         images: [], // Para nuevas imágenes
         city: post.data.city || '',
         price: post.data.price?.toString() || '',
-        rating: post.data.rating?.toString() || ''
+        rating: post.data.rating?.toString() || '',
+        recommendationStatus: post.data.recommendationStatus || RecommendationStatus.NONE,
       });
 
       // Manejar imágenes existentes
@@ -85,29 +95,29 @@ export const Create = ({ post, onSubmit, onCancel }) => {
   const handleImageChange = (event) => {
     const selectedFiles = Array.from(event.target.files || []);
     if (!selectedFiles.length) return;
-   
+
     const validFiles = selectedFiles.filter(validateImage);
-   
+
     if (validFiles.length === 0) {
       toast.error('No se seleccionaron imágenes válidas.');
       return;
     }
-   
+
     // Mantener imágenes existentes y añadir nuevas
     setFormData(prev => ({
       ...prev,
       images: [...prev.images, ...validFiles]
     }));
-   
+
     // Mantener vistas previas existentes y añadir nuevas
     const newPreviews = validFiles.map(file => URL.createObjectURL(file));
     setImagePreviews(prev => {
       const existingPreviews = prev.filter(url => url.includes('cloudinary.com'));
       return [...existingPreviews, ...newPreviews];
     });
-   
+
     console.log("✅ Imágenes seleccionadas:", validFiles);
-   };
+  };
 
 
   const removeImage = (index) => {
@@ -176,6 +186,7 @@ export const Create = ({ post, onSubmit, onCancel }) => {
       submitData.append('city', formData.city.trim());
       submitData.append('price', Number(formData.price).toString());
       submitData.append('rating', Number(formData.rating).toString());
+      submitData.append('recommendationStatus', formData.recommendationStatus);
 
       // Añadir todas las URLs
       finalImageUrls.forEach(url => {
@@ -271,6 +282,7 @@ export const Create = ({ post, onSubmit, onCancel }) => {
             className="w-full p-2 border rounded focus:ring-2 h-32"
             required
           />
+
           <input
             type="number"
             name="rating"
@@ -283,6 +295,18 @@ export const Create = ({ post, onSubmit, onCancel }) => {
             required
           />
 
+          {/* Nuevo select para estado de recomendación */}
+          <select
+            name="recommendationStatus"
+            value={formData.recommendationStatus}
+            onChange={handleInputChange}
+            className="w-full p-2 border rounded focus:ring-2"
+            required
+          >
+            {Object.values(RecommendationStatus).map(status => (
+              <option key={status} value={status}>{status}</option>
+            ))}
+          </select>
 
           <div className="space-y-2">
             <input

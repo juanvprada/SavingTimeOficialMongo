@@ -1,4 +1,5 @@
 import { body } from 'express-validator';
+import { RecommendationStatus } from '../interfaces';
 
 export const PostValidation = {
   create: [
@@ -25,7 +26,16 @@ export const PostValidation = {
     body('price')
       .notEmpty().withMessage('El precio es requerido')
       .isNumeric().withMessage('El precio debe ser un número')
-      .custom((value) => value >= 0).withMessage('El precio no puede ser negativo')
+      .custom((value) => value >= 0).withMessage('El precio no puede ser negativo'),
+    
+    body('rating')
+      .notEmpty().withMessage('La puntuación es requerida')
+      .isNumeric().withMessage('La puntuación debe ser un número')
+      .custom((value) => value >= 1 && value <= 5).withMessage('La puntuación debe estar entre 1 y 5'),
+      
+    body('recommendationStatus')
+      .optional()
+      .isIn(Object.values(RecommendationStatus)).withMessage('Estado de recomendación no válido')
   ],
   
   update: [
@@ -53,6 +63,15 @@ export const PostValidation = {
     body('price')
       .optional()
       .isNumeric().withMessage('El precio debe ser un número')
-      .custom((value) => value >= 0).withMessage('El precio no puede ser negativo')
+      .custom((value) => value >= 0).withMessage('El precio no puede ser negativo'),
+    
+    body('rating')
+      .optional()
+      .isNumeric().withMessage('La puntuación debe ser un número')
+      .custom((value) => value >= 1 && value <= 5).withMessage('La puntuación debe estar entre 1 y 5'),
+      
+    body('recommendationStatus')
+      .optional()
+      .isIn(Object.values(RecommendationStatus)).withMessage('Estado de recomendación no válido')
   ]
 };

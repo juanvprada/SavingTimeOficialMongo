@@ -3,18 +3,18 @@ import React, { useState, useEffect } from 'react';
 import { getPosts, deletePost } from '../services/services';
 import ButtonIcon from '../components/ButtonIcon';
 import { useNavigate, Link } from 'react-router-dom';
-import { Create } from '../components/PostForm';
+import { Create, RecommendationStatus } from '../components/PostForm';
 import IconCreate from '../components/IconCreate';
 import { getLikesCount, toggleLike } from '../services/likeServices';
 import { toast } from 'react-toastify';
 import Search from '../components/Search';
 import { PostType } from '../components/PostForm';
 import LocationsMap from '../components/LocationsMap';
-import { Map } from 'lucide-react';
-import { ThumbsDown } from 'lucide-react';
+import { Map, ThumbsDown, ThumbsUp, Filter } from 'lucide-react';
 
 const Blog = () => {
   const [filters, setFilters] = useState({});
+  const [recommendationFilter, setRecommendationFilter] = useState(null);
   const [articles, setArticles] = useState([]);
   const [showCreate, setShowCreate] = useState(false);
   const [likes, setLikes] = useState({});
@@ -24,10 +24,17 @@ const Blog = () => {
   const role = localStorage.getItem('role');
   const token = localStorage.getItem('token');
 
-  const filterArticles = (articles, filters) => {
+  const filterArticles = (articles, filters, recommendationFilter) => {
     if (!Array.isArray(articles)) return [];
 
     return articles.filter(article => {
+      // Filtrar por estado de recomendación
+      if (recommendationFilter) {
+        if (article.recommendationStatus !== recommendationFilter) {
+          return false;
+        }
+      }
+
       // Filtrar por nombre
       if (filters.name && !article.name?.toLowerCase().includes(filters.name.toLowerCase())) {
         return false;
@@ -107,6 +114,7 @@ const Blog = () => {
       setLoading(false);
     }
   };
+  
   useEffect(() => {
     fetchPosts();
   }, []);
@@ -124,16 +132,7 @@ const Blog = () => {
       }
     }
   };
-  const handleNoVolverPost = async (newPost) => {
-    try {
-      await fetchPosts();
-      toast.success('Lugar marcado como "No volver"');
-    } catch (error) {
-      console.error('Error al actualizar la lista:', error);
-      toast.error('Error al crear el post de No volver');
-    }
-  };
-
+  
   const handleNewPost = async (newPost) => {
     try {
       await fetchPosts(); // Recargar la lista completa
@@ -143,6 +142,12 @@ const Blog = () => {
       console.error('Error al actualizar la lista:', error);
       toast.error('Error al actualizar la lista de posts');
     }
+  };
+
+  const handleCreateNoVolver = () => {
+    setShowCreate(true);
+    // Preconfigurar el formulario para "No volver"
+    // Esto se manejará en el componente Create
   };
 
   const handleLike = async (postId) => {
@@ -165,7 +170,28 @@ const Blog = () => {
     }
   };
 
-  const filteredArticles = filterArticles(articles, filters);
+  // Manejar filtros de recomendación
+  const handleRecommendationFilter = (status) => {
+    if (recommendationFilter === status) {
+      // Si ya está seleccionado, lo quitamos
+      setRecommendationFilter(null);
+    } else {
+      // Si no, lo aplicamos
+      setRecommendationFilter(status);
+    }
+  };
+
+  // Limpiar todos los filtros
+  const clearAllFilters = () => {
+    setFilters({});
+    setRecommendationFilter(null);
+  };
+
+  const filteredArticles = filterArticles(articles, filters, recommendationFilter);
+  
+  // Determinar si algún filtro está activo
+  const isAnyFilterActive = Object.keys(filters).length > 0 || recommendationFilter !== null;
+
   return (
     <div className="min-h-screen bg-[#F5F2ED]">
       <header className="bg-[#1B3A4B] text-[#F5F2ED] py-8">
@@ -190,22 +216,59 @@ const Blog = () => {
           postTypes={Object.values(PostType)}
         />
 
+        {/* Botones de filtro rápido */}
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => handleRecommendationFilter(RecommendationStatus.RECOMMENDED)}
+              className={`flex items-center gap-1 px-3 py-2 rounded-lg border transition-colors ${
+                recommendationFilter === RecommendationStatus.RECOMMENDED
+                  ? 'bg-green-500 text-white border-green-600'
+                  : 'bg-white text-gray-700 border-gray-300 hover:bg-green-50'
+              }`}
+            >
+              <ThumbsUp size={16} />
+              <span>Recomendados</span>
+            </button>
+            
+            <button
+              onClick={() => handleRecommendationFilter(RecommendationStatus.DO_NOT_RETURN)}
+              className={`flex items-center gap-1 px-3 py-2 rounded-lg border transition-colors ${
+                recommendationFilter === RecommendationStatus.DO_NOT_RETURN
+                  ? 'bg-red-500 text-white border-red-600'
+                  : 'bg-white text-gray-700 border-gray-300 hover:bg-red-50'
+              }`}
+            >
+              <ThumbsDown size={16} />
+              <span>No volver</span>
+            </button>
+
+            {isAnyFilterActive && (
+              <button
+                onClick={clearAllFilters}
+                className="flex items-center gap-1 px-3 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
+              >
+                <Filter size={16} />
+                <span>Limpiar filtros</span>
+              </button>
+            )}
+          </div>
+
+          <button
+            onClick={() => setShowMap(!showMap)}
+            className="flex items-center gap-2 px-4 py-2 bg-[#1B3A4B] text-white rounded-lg hover:bg-[#8A8B6C] transition-colors"
+          >
+            <Map size={20} />
+            {showMap ? 'Ver lista' : 'Ver mapa'}
+          </button>
+        </div>
+
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#1B3A4B]"></div>
           </div>
         ) : (
           <>
-            <div className="mb-4 flex justify-end">
-              <button
-                onClick={() => setShowMap(!showMap)}
-                className="flex items-center gap-2 px-4 py-2 bg-[#1B3A4B] text-white rounded-lg hover:bg-[#8A8B6C] transition-colors"
-              >
-                <Map size={20} />
-                {showMap ? 'Ver lista' : 'Ver mapa'}
-              </button>
-            </div>
-
             {showMap ? (
               <LocationsMap articles={filteredArticles} />
             ) : (
@@ -229,6 +292,21 @@ const Blog = () => {
                         <div className="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded-lg text-sm">
                           <i className="fas fa-images mr-1"></i>
                           {article.images.length}
+                        </div>
+                      )}
+                      
+                      {/* Indicador de estado de recomendación */}
+                      {article.recommendationStatus === RecommendationStatus.RECOMMENDED && (
+                        <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded-lg text-sm flex items-center gap-1">
+                          <ThumbsUp size={14} />
+                          <span>Recomendado</span>
+                        </div>
+                      )}
+                      
+                      {article.recommendationStatus === RecommendationStatus.DO_NOT_RETURN && (
+                        <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-lg text-sm flex items-center gap-1">
+                          <ThumbsDown size={14} />
+                          <span>No volver</span>
                         </div>
                       )}
                     </div>
@@ -293,18 +371,22 @@ const Blog = () => {
           />
         )}
 
-{role === 'admin' && token && (
-  <div className="fixed bottom-4 right-4 inline-flex gap-3">
-    <button 
-      onClick={handleNoVolverPost}
-      className="w-12 h-12 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-red-600 transition"
-      aria-label="No Volver"
-    >
-      <ThumbsDown size={20} />
-    </button>
-    <IconCreate onClick={() => setShowCreate(true)} />
-  </div>
-)}
+        {role === 'admin' && token && (
+          <div className="fixed bottom-4 right-4 inline-flex gap-3">
+            <button 
+              onClick={() => {
+                setShowCreate(true);
+                // Podríamos configurar aquí un estado para preseleccionar "No volver" en el formulario
+              }}
+              className="w-12 h-12 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-red-600 transition"
+              aria-label="No Volver"
+              title="Crear post de No Volver"
+            >
+              <ThumbsDown size={20} />
+            </button>
+            <IconCreate onClick={() => setShowCreate(true)} />
+          </div>
+        )}
       </section>
     </div>
   );

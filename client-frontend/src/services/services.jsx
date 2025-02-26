@@ -44,9 +44,24 @@ const getHeaders = (isMultipart = false) => {
   return headers;
 };
 
-export const getPosts = async () => {
+export const getPosts = async (filters = {}) => {
   try {
-    const response = await axios.get(API_URL, axiosConfig);
+    let url = API_URL;
+    const queryParams = [];
+    
+    // Añadir filtro de estado de recomendación si existe
+    if (filters.recommendationStatus) {
+      queryParams.push(`recommendationStatus=${encodeURIComponent(filters.recommendationStatus)}`);
+    }
+    
+    // Añadir otros filtros aquí si es necesario
+    
+    // Construir URL con query params
+    if (queryParams.length > 0) {
+      url = `${API_URL}?${queryParams.join('&')}`;
+    }
+    
+    const response = await axios.get(url, axiosConfig);
 
     if (!response.data?.data) {
       console.warn('Invalid response structure:', response);
@@ -63,6 +78,29 @@ export const getPosts = async () => {
     }));
   } catch (error) {
     handleApiError(error, "obtener posts");
+  }
+};
+
+// Nueva función para obtener posts por estado de recomendación específico
+export const getPostsByRecommendation = async (status) => {
+  try {
+    const response = await axios.get(`${API_URL}/recommendation/${status}`, axiosConfig);
+
+    if (!response.data?.data) {
+      console.warn('Invalid response structure:', response);
+      return [];
+    }
+
+    const postsData = Array.isArray(response.data.data) ? response.data.data : [];
+
+    return postsData.map(post => ({
+      ...post,
+      id: post._id || post.id,
+      userId: post.userId?._id || post.userId,
+      images: processImageUrls(post.images)
+    }));
+  } catch (error) {
+    handleApiError(error, `obtener posts ${status}`);
   }
 };
 
@@ -194,6 +232,7 @@ export const deletePost = async (id) => {
 export default {
   createPost,
   getPosts,
+  getPostsByRecommendation,
   getOnePost,
   updatePost,
   deletePost

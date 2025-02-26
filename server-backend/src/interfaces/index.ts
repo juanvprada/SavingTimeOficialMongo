@@ -9,6 +9,13 @@ export interface IUser extends MongoBaseModel {
   role: UserRole;
 }
 
+// Añadir este enum
+export enum RecommendationStatus {
+  NONE = 'Ninguno',
+  RECOMMENDED = 'Recomendado',
+  DO_NOT_RETURN = 'No volver',
+}
+
 export interface IPost extends MongoBaseModel {
   name: string;
   kindOfPost: PostType;
@@ -18,6 +25,7 @@ export interface IPost extends MongoBaseModel {
   city: string;
   price: number;
   rating: number;
+  recommendationStatus?: RecommendationStatus; // Nuevo campo
 }
 
 export interface ILike extends MongoBaseModel {

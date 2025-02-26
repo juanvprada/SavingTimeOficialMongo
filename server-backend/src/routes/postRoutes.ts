@@ -7,8 +7,11 @@ import { PostValidation } from '../validations/post.validation';
 
 const router = Router();
 
-router.get('/', PostController.getAll);
+// Ruta para filtrar por estado de recomendación - debe ir antes de la ruta con :id
+router.get('/recommendation/:status', PostController.getByRecommendationStatus);
 
+// Rutas estándar
+router.get('/', PostController.getAll);
 router.get('/:id', PostController.getById);
 
 router.post('/',
@@ -31,7 +34,6 @@ router.delete('/:id',
 );
 
 export default router;
-
 
 
 
