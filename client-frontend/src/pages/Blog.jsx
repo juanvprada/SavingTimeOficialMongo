@@ -484,15 +484,6 @@ const Blog = () => {
             </div>
 
             <ul className="py-4 px-6 space-y-4">
-              {/* <li>
-                <Link
-                  className="text-white hover:text-[#C68B59] block py-2"
-                  to="/"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Inicio
-                </Link>
-              </li> */}
               <li>
                 <Link
                   className="text-white hover:text-[#C68B59] block py-2"
@@ -520,6 +511,21 @@ const Blog = () => {
                   Contacto
                 </Link>
               </li>
+              {/* Añadir enlace al perfil para usuarios logueados */}
+              {token && (
+                <li>
+                  <Link
+                    className="text-white hover:text-[#C68B59] flex items-center gap-2 py-2"
+                    to="/perfil"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    <span>Mi Perfil</span>
+                  </Link>
+                </li>
+              )}
               {role === 'admin' && (
                 <li>
                   <Link

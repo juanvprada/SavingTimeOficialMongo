@@ -2,16 +2,20 @@ import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { logoImg } from "../utils";
 import useStore from "../store/store";
-import { FaBars, FaSignOutAlt } from "react-icons/fa";
+import { FaBars, FaSignOutAlt, FaUser } from "react-icons/fa";
 
 const Navbar = ({ onSearch }) => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const isLoggedIn = useStore((state) => !!state.token);
+  
+  // Usar selectores individuales en lugar de derivar valores
+  const token = useStore((state) => state.token);
   const username = useStore((state) => state.username);
   const role = useStore((state) => state.role);
-
+  
+  // Derivar isLoggedIn de token
+  const isLoggedIn = !!token;
   const isBlogPage = location.pathname === "/blog";
 
   const toggleMenu = () => {
@@ -23,17 +27,27 @@ const Navbar = ({ onSearch }) => {
   };
 
   const handleLogout = () => {
-    useStore.getState().setToken(null);
-    useStore.getState().setRole(null);
-    useStore.getState().setUsername(null);
-    localStorage.removeItem("token");
-    localStorage.removeItem("name");
+    const clearStore = useStore.getState().clearStore;
+    if (clearStore) {
+      clearStore();
+    } else {
+      // Fallback para compatibilidad
+      useStore.getState().setToken(null);
+      useStore.getState().setRole(null);
+      useStore.getState().setUsername(null);
+      useStore.getState().setUserId(null);
+      localStorage.removeItem("token");
+      localStorage.removeItem("name");
+      localStorage.removeItem("role");
+      localStorage.removeItem("userId");
+    }
     navigate("/");
     closeMenu();
   };
 
-  const navigateToRegister = () => {
-    navigate(location.pathname === "/acceso" ? "/" : "/acceso");
+  const navigateToLogin = () => {
+    navigate("/acceso");
+    closeMenu();
   };
 
   return (
@@ -41,10 +55,9 @@ const Navbar = ({ onSearch }) => {
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo and Title */}
         <div className="flex items-center">
-          <img src={logoImg} className="w-10 h-10" alt="logo" />
-          {/* <Link to="/" className="ml-3 text-xl font-bold text-white">
-            Saving Time
-          </Link> */}
+          <Link to="/">
+            <img src={logoImg} className="w-10 h-10" alt="logo" />
+          </Link>
         </div>
 
         {/* Desktop Menu */}
@@ -77,26 +90,33 @@ const Navbar = ({ onSearch }) => {
                 </Link>
               </li>
             )}
+            {isLoggedIn && (
+              <li>
+                <Link className="text-gray-300 hover:text-green-400" to="/perfil">
+                  <span className="flex items-center">
+                    <FaUser className="mr-2" size={16} />
+                    Mi Perfil
+                  </span>
+                </Link>
+              </li>
+            )}
           </ul>
+          
           {isLoggedIn ? (
-            <>
-              <span className="text-gray-300">
-                Hola, <strong>{username}</strong>
-              </span>
-              <button
-                onClick={handleLogout}
-                className="text-gray-300 hover:text-green-400 focus:outline-none ml-4"
-                title="Cerrar Sesión"
-              >
-                <FaSignOutAlt size={20} />
-              </button>
-            </>
+            <button
+              onClick={handleLogout}
+              className="text-gray-300 hover:text-green-400 focus:outline-none"
+              title="Cerrar Sesión"
+            >
+              <FaSignOutAlt size={20} />
+            </button>
           ) : (
             <button
-              onClick={navigateToRegister}
-              className="text-gray-300 hover:text-green-400 focus:outline-none"
-              title="Registrarse"
-            />
+              onClick={navigateToLogin}
+              className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md focus:outline-none"
+            >
+              Acceder
+            </button>
           )}
         </div>
 
@@ -160,6 +180,20 @@ const Navbar = ({ onSearch }) => {
                   Contacto
                 </Link>
               </li>
+              {isLoggedIn && (
+                <li>
+                  <Link
+                    className="text-gray-300 hover:text-green-400"
+                    to="/perfil"
+                    onClick={closeMenu}
+                  >
+                    <span className="flex items-center">
+                      <FaUser className="mr-2" size={16} />
+                      Mi Perfil
+                    </span>
+                  </Link>
+                </li>
+              )}
               {role === "admin" && (
                 <li>
                   <Link
@@ -191,6 +225,3 @@ const Navbar = ({ onSearch }) => {
 };
 
 export default Navbar;
-
-
-
