@@ -1,79 +1,256 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Carousel from '../components/Carousel';
 import { logoImg } from '../utils';
-
+import axios from 'axios'; // Asegúrate de que tienes axios instalado
 
 const AboutUs = () => {
+  // Estado para almacenar las estadísticas
+  const [stats, setStats] = useState({
+    placesCount: 0,
+    usersCount: 0,
+    countriesCount: 0,
+    loading: true
+  });
+
+  // Obtener las estadísticas cuando el componente se monte
+  useEffect(() => {
+    const fetchStatistics = async () => {
+      try {
+        // Muestra la URL completa para depuración
+        console.log('Fetching statistics from:', '/api/statistics');
+        
+        const response = await axios.get('/api/statistics');
+        console.log('Statistics response:', response.data);
+        
+        setStats({
+          placesCount: response.data.placesCount || 0,
+          usersCount: response.data.usersCount || 0,
+          countriesCount: response.data.countriesCount || 0,
+          loading: false
+        });
+      } catch (error) {
+        console.error('Error al obtener estadísticas:', error);
+        // Muestra más detalles del error para depuración
+        if (error.response) {
+          console.error('Error response:', error.response.data);
+          console.error('Status:', error.response.status);
+        } else if (error.request) {
+          console.error('No response received:', error.request);
+        }
+        
+        setStats(prev => ({ ...prev, loading: false }));
+      }
+    };
+
+    fetchStatistics();
+  }, []);
+
+  // Componente de contador animado
+  const Counter = ({ end, duration = 2000 }) => {
+    const [count, setCount] = useState(0);
+    
+    useEffect(() => {
+      if (end === 0) return; // No animar si el valor es 0
+      
+      let startTime = null;
+      let requestId = null;
+      
+      const animate = (timestamp) => {
+        if (!startTime) startTime = timestamp;
+        const runtime = timestamp - startTime;
+        const progress = Math.min(runtime / duration, 1);
+        
+        // Función ease-out para movimiento más natural
+        const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+        
+        setCount(Math.floor(easeOut(progress) * end));
+        
+        if (runtime < duration) {
+          requestId = requestAnimationFrame(animate);
+        }
+      };
+      
+      requestId = requestAnimationFrame(animate);
+      
+      return () => {
+        if (requestId) {
+          cancelAnimationFrame(requestId);
+        }
+      };
+    }, [end]);
+    
+    return <>{count}+</>;
+  };
+
   return (
-    <div className="bg-[#F5F2ED] text-[#1B3A4B]">
-      {/* Header */}
-      <header className="bg-[#1B3A4B] py-6">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-[#F5F2ED] mb-2">
+    <div className="bg-[#F5F2ED] text-[#1B3A4B] min-h-screen">
+      {/* Header con gradiente y tipografía elegante */}
+      <header className="bg-gradient-to-r from-[#1B3A4B] to-[#2D4C5E] py-8 md:py-12">
+        <div className="container mx-auto px-4 md:px-8 text-center">
+          <h1 className="text-3xl md:text-4xl font-bold text-[#F5F2ED] mb-2 font-playfair tracking-wide">
             El arte de saber a dónde volver
-          </h2>
-          <p className="text-[#E3D5C7] mt-4 text-lg">
-            {/* ... your existing text ... */}
+          </h1>
+          <p className="text-[#E3D5C7] mt-4 text-base md:text-lg font-montserrat italic max-w-2xl mx-auto">
+            Descubre y comparte experiencias únicas que merecen ser revividas
           </p>
         </div>
       </header>
 
-      {/* Historia y Misión */}
-      <section className="container mx-auto py-16 px-4">
+      {/* Historia y Misión con diseño mejorado */}
+      <section className="container mx-auto py-10 md:py-16 px-4 md:px-8">
         <div className="text-center mb-12 relative">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#E3D5C7]/20 to-transparent rounded-full transform -translate-y-1/2 scale-150 opacity-30 blur-3xl"></div>
           <div className="relative z-10 flex flex-col items-center justify-center">
             <img
               src={logoImg}
-              className="w-60 mb-8 transform transition duration-500 ease-in-out hover:scale-110"
+              className="w-40 md:w-60 mb-8 transform transition duration-500 ease-in-out hover:scale-110 drop-shadow-xl"
               alt="Logo Saving Time"
             />
-            <h2 className="text-3xl font-bold text-[#1B3A4B]"></h2>
-            <p className="mt-6 text-lg text-[#8A8B6C]">
-              {/* ... your existing text ... */}
+            <h2 className="text-3xl md:text-4xl font-bold text-[#1B3A4B] font-playfair"></h2>
+            <p className="mt-6 text-base md:text-lg text-[#8A8B6C] font-montserrat max-w-2xl mx-auto leading-relaxed">
+              En Saving Time, creemos que los mejores viajes están llenos de descubrimientos auténticos que merecen ser compartidos
             </p>
           </div>
         </div>
+
+        {/* Añade una sección visualmente atractiva con decoración */}
+        <div className="relative py-8 md:py-12 px-4 md:px-8 my-12 rounded-xl bg-white/70 backdrop-blur-sm shadow-md">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-[#C68B59]/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#8A8B6C]/10 rounded-full translate-y-1/3 -translate-x-1/3"></div>
+          
+          <h2 className="text-2xl md:text-3xl font-bold text-[#1B3A4B] mb-6 font-playfair relative">
+            <span className="relative">
+              Nuestra Misión
+              <span className="absolute -bottom-2 left-0 w-16 h-1 bg-[#C68B59]"></span>
+            </span>
+          </h2>
+          
+          <p className="font-montserrat text-[#8A8B6C] leading-relaxed mb-4">
+            Conectamos viajeros con los lugares más auténticos que merecen ser revisitados, creando una comunidad
+            que celebra y preserva las joyas ocultas de cada destino.
+          </p>
+          
+          <p className="font-montserrat text-[#8A8B6C] leading-relaxed">
+            Nuestro objetivo es asegurar que cada experiencia de viaje esté llena de autenticidad, 
+            descubrimientos memorables y momentos que inviten a volver.
+          </p>
+        </div>
       </section>
 
-      {/* Nuestro Equipo */}
-      <section className="bg-[#E3D5C7] py-16">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-[#1B3A4B] text-center mb-12">
-            Conoce a Nuestro Equipo
+      {/* Nuestro Equipo con diseño mejorado y responsive */}
+      <section className="bg-gradient-to-b from-[#E3D5C7]/50 to-[#E3D5C7]/80 py-12 md:py-16">
+        <div className="container mx-auto px-4 md:px-8">
+          <h2 className="text-2xl md:text-3xl font-bold text-[#1B3A4B] text-center mb-8 md:mb-12 font-playfair">
+            <span className="relative inline-block">
+              Conoce a Nuestro Equipo
+              <span className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-[#C68B59]"></span>
+            </span>
           </h2>
-          <div className="flex justify-center">  {/* Cambiado de grid a flex con justify-center */}
+
+          {/* Grid modificado para centrar a Juan en todas las pantallas */}
+          <div className="flex justify-center items-center max-w-5xl mx-auto">
             {/* Juan - Product Owner */}
-            <div className="w-64 flex flex-col items-center bg-gradient-to-br from-green-100 via-orange-50 to-green-100 shadow-lg rounded-lg overflow-hidden transform hover:scale-105 hover:shadow-2xl transition duration-500 ease-in-out">
-              <div className="w-full flex justify-center">
+            <div className="w-full max-w-xs flex flex-col items-center bg-gradient-to-br from-green-50 via-white to-green-50 shadow-lg rounded-xl overflow-hidden transform hover:-translate-y-1 hover:shadow-xl transition duration-300 ease-in-out">
+              <div className="relative w-full pt-[100%] overflow-hidden bg-gradient-to-b from-[#1B3A4B]/5 to-[#1B3A4B]/10">
                 <img
                   src="/src/assets/about-img/provisional.png"
                   alt="Juan"
-                  className="w-32 h-32 object-cover transition duration-500 grayscale hover:grayscale-0 my-4"
+                  className="absolute inset-0 w-full h-full object-cover object-center transition duration-500 grayscale hover:grayscale-0"
                 />
               </div>
-              <div className="p-4 text-center">
-                <h3 className="text-xl font-semibold text-green-700">Juan</h3>
-                <p className="text-gray-500 mt-2 text-sm">Product Owner y Full Stak Developer</p>
-                <p className="mt-2 text-xs text-gray-600">Desarrolla, define la visión del producto y prioriza las funcionalidades.</p>
+              <div className="p-6 text-center">
+                <h3 className="text-xl font-semibold text-[#1B3A4B] font-playfair">Juan</h3>
+                <p className="text-[#8A8B6C] mt-1 text-sm font-medium">Product Owner & Full Stack Developer</p>
+                <div className="w-12 h-1 bg-green-500 mx-auto my-3 rounded-full"></div>
+                <p className="mt-2 text-sm text-[#8A8B6C] font-montserrat">Desarrolla, define la visión del producto y prioriza las funcionalidades.</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-
-
-      {/* CTA */}
-      <section className="bg-[#1B3A4B] py-12">
-        <div className="container mx-auto text-center">
-          <h2 className="text-3xl font-bold text-white animate-pulse">Únete a Nosotros</h2>
-          <p className="text-green-200 mt-4 text-lg">Comparte esos lugares a los que merece la pena volver</p>
-          <a href="/contacto" className="mt-6 inline-block bg-white text-green-700 font-semibold py-2 px-6 rounded-lg shadow-lg transition duration-300 hover:bg-gray-200">
+      {/* CTA Mejorado con elementos decorativos */}
+      <section className="relative bg-gradient-to-r from-[#1B3A4B] to-[#2D4C5E] py-12 md:py-16 overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+        
+        <div className="container mx-auto px-4 md:px-8 text-center relative z-10">
+          <h2 className="text-2xl md:text-3xl font-bold text-white font-playfair mb-4">
+            Únete a Nosotros
+          </h2>
+          <p className="text-[#E3D5C7] mt-2 text-base md:text-lg font-montserrat max-w-xl mx-auto">
+            Comparte esos lugares a los que merece la pena volver y ayuda a otros viajeros a descubrir experiencias auténticas
+          </p>
+          <a 
+            href="/contacto" 
+            className="mt-8 inline-block bg-white text-[#1B3A4B] font-semibold py-3 px-8 rounded-lg shadow-lg transition duration-300 hover:bg-[#E3D5C7] hover:text-[#1B3A4B] transform hover:-translate-y-1"
+          >
             Contáctanos
           </a>
         </div>
       </section>
 
+      {/* Testimonios o estadísticas - Nueva sección con datos reales */}
+      <section className="bg-white py-12 md:py-16">
+        <div className="container mx-auto px-4 md:px-8">
+          <h2 className="text-2xl md:text-3xl font-bold text-[#1B3A4B] text-center mb-8 font-playfair">
+            <span className="relative inline-block">
+              Lo Que Logramos
+              <span className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-[#C68B59]"></span>
+            </span>
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            <div className="text-center p-6 bg-[#F5F2ED] rounded-lg shadow-sm">
+              {stats.loading ? (
+                <div className="animate-pulse">
+                  <div className="h-10 bg-gray-200 rounded w-16 mx-auto mb-2"></div>
+                  <p className="text-[#8A8B6C] font-montserrat">Lugares compartidos</p>
+                </div>
+              ) : (
+                <>
+                  <span className="block text-3xl md:text-4xl font-bold text-[#C68B59] mb-2">
+                    <Counter end={stats.placesCount} />
+                  </span>
+                  <p className="text-[#8A8B6C] font-montserrat">Lugares compartidos</p>
+                </>
+              )}
+            </div>
+            
+            <div className="text-center p-6 bg-[#F5F2ED] rounded-lg shadow-sm">
+              {stats.loading ? (
+                <div className="animate-pulse">
+                  <div className="h-10 bg-gray-200 rounded w-16 mx-auto mb-2"></div>
+                  <p className="text-[#8A8B6C] font-montserrat">Usuarios activos</p>
+                </div>
+              ) : (
+                <>
+                  <span className="block text-3xl md:text-4xl font-bold text-[#C68B59] mb-2">
+                    <Counter end={stats.usersCount} />
+                  </span>
+                  <p className="text-[#8A8B6C] font-montserrat">Usuarios activos</p>
+                </>
+              )}
+            </div>
+            
+            <div className="text-center p-6 bg-[#F5F2ED] rounded-lg shadow-sm">
+              {stats.loading ? (
+                <div className="animate-pulse">
+                  <div className="h-10 bg-gray-200 rounded w-16 mx-auto mb-2"></div>
+                  <p className="text-[#8A8B6C] font-montserrat">Ciudades exploradas</p>
+                </div>
+              ) : (
+                <>
+                  <span className="block text-3xl md:text-4xl font-bold text-[#C68B59] mb-2">
+                    <Counter end={stats.countriesCount} />
+                  </span>
+                  <p className="text-[#8A8B6C] font-montserrat">Ciudades exploradas</p>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

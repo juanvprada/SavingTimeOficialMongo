@@ -9,6 +9,7 @@ import postRoutes from './routes/postRoutes';
 import roleRoutes from './routes/roleRoutes';
 import likeRoutes from './routes/likeRoutes';
 import commentRoutes from './routes/commentRoutes';
+import statisticsRoutes from './routes/statisticsRoutes';
 
 dotenv.config();
 
@@ -49,6 +50,7 @@ apiRouter.use('/roles', roleRoutes);
 apiRouter.use('/likes', likeRoutes);
 apiRouter.use('/comments', commentRoutes);
 app.use('/api', apiRouter);
+app.use('/statistics', statisticsRoutes);
 
 if (process.env.NODE_ENV === 'production') {
   const path = require('path');
