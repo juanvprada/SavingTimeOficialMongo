@@ -151,12 +151,16 @@ const AboutUs = () => {
           <div className="flex justify-center items-center max-w-5xl mx-auto">
             {/* Juan - Product Owner */}
             <div className="w-full max-w-xs flex flex-col items-center bg-gradient-to-br from-green-50 via-white to-green-50 shadow-lg rounded-xl overflow-hidden transform hover:-translate-y-1 hover:shadow-xl transition duration-300 ease-in-out">
-              <div className="relative w-full pt-[100%] overflow-hidden bg-gradient-to-b from-[#1B3A4B]/5 to-[#1B3A4B]/10">
-                <img
-                  src="/src/assets/about-img/provisional.png"
-                  alt="Juan"
-                  className="absolute inset-0 w-full h-full object-cover object-center transition duration-500 grayscale hover:grayscale-0"
-                />
+              <div className="relative w-full pt-[100%] overflow-hidden bg-gradient-to-b from-[#1B3A4B]/20 to-[#2D4C5E]/30">
+                {/* Reemplazar la imagen con un avatar con iniciales */}
+                <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-gradient-to-br from-[#1B3A4B]/10 to-[#C68B59]/10">
+                  <div className="w-24 h-24 rounded-full bg-[#1B3A4B] flex items-center justify-center text-white text-4xl font-playfair">
+                    J
+                  </div>
+                </div>
+                {/* Elementos decorativos */}
+                <div className="absolute top-1/3 left-1/4 w-8 h-8 rounded-full bg-[#C68B59]/20"></div>
+                <div className="absolute bottom-1/3 right-1/4 w-12 h-12 rounded-full bg-[#8A8B6C]/20"></div>
               </div>
               <div className="p-6 text-center">
                 <h3 className="text-xl font-semibold text-[#1B3A4B] font-playfair">Juan</h3>
