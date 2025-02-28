@@ -51,6 +51,9 @@ export default {
       },
       fontFamily: {
         poppins: ["Poppins", "sans-serif"],
+        playfair: ["Playfair Display", "serif"],
+        montserrat: ["Montserrat", "sans-serif"],
+        roboto: ["Roboto Slab", "serif"],
       },
     },
     screens: {

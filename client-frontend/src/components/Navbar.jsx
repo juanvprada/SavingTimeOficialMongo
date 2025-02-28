@@ -12,6 +12,8 @@ const Navbar = ({ onSearch }) => {
   const username = useStore((state) => state.username);
   const role = useStore((state) => state.role);
 
+  const isBlogPage = location.pathname === "/blog";
+
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
@@ -35,7 +37,7 @@ const Navbar = ({ onSearch }) => {
   };
 
   return (
-    <nav className="bg-gray-900 shadow-md">
+    <nav className={`bg-gray-900 shadow-md ${isBlogPage ? 'hidden md:block' : ''}`}>
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo and Title */}
         <div className="flex items-center">

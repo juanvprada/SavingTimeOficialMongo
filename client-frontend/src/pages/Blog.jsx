@@ -11,6 +11,7 @@ import Search from '../components/Search';
 import { PostType } from '../components/PostForm';
 import LocationsMap from '../components/LocationsMap';
 import { Map, ThumbsDown, ThumbsUp, Filter } from 'lucide-react';
+import { FaSignOutAlt } from 'react-icons/fa';
 
 const Blog = () => {
   const [filters, setFilters] = useState({});
@@ -23,6 +24,11 @@ const Blog = () => {
   const navigate = useNavigate();
   const role = localStorage.getItem('role');
   const token = localStorage.getItem('token');
+
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const toggleMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
 
   const filterArticles = (articles, filters, recommendationFilter) => {
     if (!Array.isArray(articles)) return [];
@@ -114,7 +120,7 @@ const Blog = () => {
       setLoading(false);
     }
   };
-  
+
   useEffect(() => {
     fetchPosts();
   }, []);
@@ -132,7 +138,7 @@ const Blog = () => {
       }
     }
   };
-  
+
   const handleNewPost = async (newPost) => {
     try {
       await fetchPosts(); // Recargar la lista completa
@@ -188,20 +194,44 @@ const Blog = () => {
   };
 
   const filteredArticles = filterArticles(articles, filters, recommendationFilter);
-  
+
   // Determinar si algún filtro está activo
   const isAnyFilterActive = Object.keys(filters).length > 0 || recommendationFilter !== null;
 
   return (
     <div className="min-h-screen bg-[#F5F2ED]">
-      <header className="bg-[#1B3A4B] text-[#F5F2ED] py-8">
-        <div className="container mx-auto text-center">
-          {/* Ajustamos solo los tamaños en móvil */}
-          <h1 className="text-3xl md:text-4xl font-bold md:hidden">Saving Time</h1>
-          <h1 className="text-4xl font-bold hidden md:block">Bienvenidos a Saving Time</h1>
-          <p className="mt-2 md:mt-4 text-base md:text-xl text-[#E3D5C7]">
+      <header className="bg-[#1B3A4B] text-[#F5F2ED] py-5">
+        <div className="container mx-auto px-4">
+          {/* Versión móvil con menú hamburguesa integrado */}
+          <div className="flex items-center justify-between md:hidden">
+            <button
+              onClick={toggleMenu}
+              className="text-white p-1 focus:outline-none order-1 z-50"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <h1 className="text-2xl font-bold font-playfair tracking-wide text-center flex-grow order-2">
+              Saving Time
+            </h1>
+            <div className="order-3 w-6"></div> {/* Espacio para equilibrar el layout */}
+          </div>
+
+          {/* Subtítulo en móvil */}
+          <p className="font-montserrat text-[#E3D5C7] text-sm mt-1 md:hidden text-center italic">
             Saber a dónde volver
           </p>
+
+          {/* Versión desktop sin cambios pero con fuentes actualizadas */}
+          <div className="text-center hidden md:block">
+            <h1 className="text-4xl font-bold font-playfair tracking-wide">
+              Bienvenidos a Saving Time
+            </h1>
+            <p className="mt-4 text-xl text-[#E3D5C7] font-montserrat italic">
+              Saber a dónde volver
+            </p>
+          </div>
         </div>
       </header>
 
@@ -218,49 +248,93 @@ const Blog = () => {
 
         {/* Botones de filtro rápido */}
         <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-          <div className="flex flex-wrap gap-2">
+          {/* Versión móvil optimizada */}
+          <div className="w-full md:hidden grid grid-cols-2 gap-2">
             <button
               onClick={() => handleRecommendationFilter(RecommendationStatus.RECOMMENDED)}
-              className={`flex items-center gap-1 px-3 py-2 rounded-lg border transition-colors ${
-                recommendationFilter === RecommendationStatus.RECOMMENDED
-                  ? 'bg-green-500 text-white border-green-600'
-                  : 'bg-white text-gray-700 border-gray-300 hover:bg-green-50'
-              }`}
+              className={`flex items-center justify-center gap-1 px-2 py-2 rounded-lg border transition-colors ${recommendationFilter === RecommendationStatus.RECOMMENDED
+                ? 'bg-green-500 text-white border-green-600'
+                : 'bg-white text-gray-700 border-gray-300'
+                }`}
             >
-              <ThumbsUp size={16} />
-              <span>Recomendados</span>
+              <ThumbsUp size={14} />
+              <span className="text-sm">Recomendados</span>
             </button>
-            
+
             <button
               onClick={() => handleRecommendationFilter(RecommendationStatus.DO_NOT_RETURN)}
-              className={`flex items-center gap-1 px-3 py-2 rounded-lg border transition-colors ${
-                recommendationFilter === RecommendationStatus.DO_NOT_RETURN
-                  ? 'bg-red-500 text-white border-red-600'
-                  : 'bg-white text-gray-700 border-gray-300 hover:bg-red-50'
-              }`}
+              className={`flex items-center justify-center gap-1 px-2 py-2 rounded-lg border transition-colors ${recommendationFilter === RecommendationStatus.DO_NOT_RETURN
+                ? 'bg-red-500 text-white border-red-600'
+                : 'bg-white text-gray-700 border-gray-300'
+                }`}
             >
-              <ThumbsDown size={16} />
-              <span>No volver</span>
+              <ThumbsDown size={14} />
+              <span className="text-sm">No volver</span>
+            </button>
+
+            <button
+              onClick={() => setShowMap(!showMap)}
+              className="col-span-2 flex items-center justify-center gap-1 px-2 py-2 bg-[#1B3A4B] text-white rounded-lg text-sm"
+            >
+              <Map size={14} />
+              {showMap ? 'Ver lista' : 'Ver mapa'}
             </button>
 
             {isAnyFilterActive && (
               <button
                 onClick={clearAllFilters}
-                className="flex items-center gap-1 px-3 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
+                className="col-span-2 flex items-center justify-center gap-1 px-2 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm mt-1"
               >
-                <Filter size={16} />
+                <Filter size={14} />
                 <span>Limpiar filtros</span>
               </button>
             )}
           </div>
 
-          <button
-            onClick={() => setShowMap(!showMap)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#1B3A4B] text-white rounded-lg hover:bg-[#8A8B6C] transition-colors"
-          >
-            <Map size={20} />
-            {showMap ? 'Ver lista' : 'Ver mapa'}
-          </button>
+          {/* Versión desktop sin cambios */}
+          <div className="hidden md:flex md:flex-wrap md:items-center md:justify-between md:w-full">
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => handleRecommendationFilter(RecommendationStatus.RECOMMENDED)}
+                className={`flex items-center gap-1 px-3 py-2 rounded-lg border transition-colors ${recommendationFilter === RecommendationStatus.RECOMMENDED
+                  ? 'bg-green-500 text-white border-green-600'
+                  : 'bg-white text-gray-700 border-gray-300 hover:bg-green-50'
+                  }`}
+              >
+                <ThumbsUp size={16} />
+                <span>Recomendados</span>
+              </button>
+
+              <button
+                onClick={() => handleRecommendationFilter(RecommendationStatus.DO_NOT_RETURN)}
+                className={`flex items-center gap-1 px-3 py-2 rounded-lg border transition-colors ${recommendationFilter === RecommendationStatus.DO_NOT_RETURN
+                  ? 'bg-red-500 text-white border-red-600'
+                  : 'bg-white text-gray-700 border-gray-300 hover:bg-red-50'
+                  }`}
+              >
+                <ThumbsDown size={16} />
+                <span>No volver</span>
+              </button>
+
+              {isAnyFilterActive && (
+                <button
+                  onClick={clearAllFilters}
+                  className="flex items-center gap-1 px-3 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
+                >
+                  <Filter size={16} />
+                  <span>Limpiar filtros</span>
+                </button>
+              )}
+            </div>
+
+            <button
+              onClick={() => setShowMap(!showMap)}
+              className="flex items-center gap-2 px-4 py-2 bg-[#1B3A4B] text-white rounded-lg hover:bg-[#8A8B6C] transition-colors"
+            >
+              <Map size={20} />
+              {showMap ? 'Ver lista' : 'Ver mapa'}
+            </button>
+          </div>
         </div>
 
         {loading ? (
@@ -294,7 +368,7 @@ const Blog = () => {
                           {article.images.length}
                         </div>
                       )}
-                      
+
                       {/* Indicador de estado de recomendación */}
                       {article.recommendationStatus === RecommendationStatus.RECOMMENDED && (
                         <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded-lg text-sm flex items-center gap-1">
@@ -302,7 +376,7 @@ const Blog = () => {
                           <span>Recomendado</span>
                         </div>
                       )}
-                      
+
                       {article.recommendationStatus === RecommendationStatus.DO_NOT_RETURN && (
                         <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-lg text-sm flex items-center gap-1">
                           <ThumbsDown size={14} />
@@ -373,7 +447,7 @@ const Blog = () => {
 
         {role === 'admin' && token && (
           <div className="fixed bottom-4 right-4 inline-flex gap-3">
-            <button 
+            <button
               onClick={() => {
                 setShowCreate(true);
                 // Podríamos configurar aquí un estado para preseleccionar "No volver" en el formulario
@@ -388,36 +462,98 @@ const Blog = () => {
           </div>
         )}
       </section>
+      {/* Menú lateral móvil */}
+      {mobileMenuOpen && (
+        <>
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            onClick={() => setMobileMenuOpen(false)}
+          ></div>
+
+          <div
+            className="fixed top-0 left-0 h-auto w-64 bg-[#1B3A4B] shadow-lg transform transition-transform z-50 rounded-br-lg"
+          >
+            <div className="flex justify-between items-center p-4 border-b border-gray-700">
+              <span className="text-white font-semibold">Menú</span>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-white"
+              >
+                ✕
+              </button>
+            </div>
+
+            <ul className="py-4 px-6 space-y-4">
+              {/* <li>
+                <Link
+                  className="text-white hover:text-[#C68B59] block py-2"
+                  to="/"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Inicio
+                </Link>
+              </li> */}
+              <li>
+                <Link
+                  className="text-white hover:text-[#C68B59] block py-2"
+                  to="/blog"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Blog
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className="text-white hover:text-[#C68B59] block py-2"
+                  to="/nosotros"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Nosotros
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className="text-white hover:text-[#C68B59] block py-2"
+                  to="/contacto"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Contacto
+                </Link>
+              </li>
+              {role === 'admin' && (
+                <li>
+                  <Link
+                    className="text-white hover:text-[#C68B59] block py-2"
+                    to="/admin"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Admin
+                  </Link>
+                </li>
+              )}
+              {token && (
+                <li className="pt-4 border-t border-gray-700">
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem('token');
+                      localStorage.removeItem('role');
+                      localStorage.removeItem('name');
+                      navigate('/');
+                      setMobileMenuOpen(false);
+                    }}
+                    className="text-white hover:text-[#C68B59] flex items-center gap-2 py-2"
+                  >
+                    <FaSignOutAlt size={18} />
+                    <span>Cerrar Sesión</span>
+                  </button>
+                </li>
+              )}
+            </ul>
+          </div>
+        </>
+      )}
     </div>
   );
 };
 
 export default Blog;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
