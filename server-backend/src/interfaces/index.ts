@@ -51,8 +51,13 @@ export enum UserRole {
 export enum PostType {
   Bar = 'Bar',
   Restaurante = 'Restaurante',
+  Cafetería = 'Cafetería',
+  Tetería = 'Tetería',
   Alojamiento = 'Alojamiento',
   Musical = 'Musical',
+  Concierto = 'Concierto',
+  Museo = 'Museo',
+  Pueblo = 'Pueblo',
   Teatro = 'Teatro',
   Lugar = 'Lugar',
   Evento = 'Evento',

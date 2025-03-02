@@ -10,9 +10,14 @@ import { normalizeImageUrl } from '../utils/imageUtils';
 export const PostType = {
   BAR: 'Bar',
   RESTAURANTE: 'Restaurante',
+  CAFETERÍA: 'Cafetería',
+  TETERÍA: 'Tetería',
   ALOJAMIENTO: 'Alojamiento',
   MUSICAL: 'Musical',
   TEATRO: 'Teatro',
+  CONCIERTO: 'Concierto',
+  MUSEO: 'Museo',
+  PUEBLO: 'Pueblo',
   LUGAR: 'Lugar',
   EVENTO: 'Evento',
 };
