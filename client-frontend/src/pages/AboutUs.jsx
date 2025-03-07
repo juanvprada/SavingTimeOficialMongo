@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Carousel from '../components/Carousel';
 import { logoImg } from '../utils';
-import axios from 'axios'; // Asegúrate de que tienes axios instalado
+import axios from 'axios';
+import { API_CONFIG } from '../api.config'; // Importar la configuración API
 
 const AboutUs = () => {
   // Estado para almacenar las estadísticas
@@ -16,29 +17,79 @@ const AboutUs = () => {
   useEffect(() => {
     const fetchStatistics = async () => {
       try {
-        // Muestra la URL completa para depuración
-        console.log('Fetching statistics from:', '/api/statistics');
-        
-        const response = await axios.get('/api/statistics');
+        // Usar la baseUrl de la configuración
+        const baseUrl = API_CONFIG.getBaseUrl();
+        const apiUrl = `${baseUrl}/api/statistics`;
+
+        console.log('Fetching statistics from:', apiUrl);
+
+        const response = await axios.get(apiUrl);
         console.log('Statistics response:', response.data);
-        
-        setStats({
-          placesCount: response.data.placesCount || 0,
-          usersCount: response.data.usersCount || 0,
-          countriesCount: response.data.countriesCount || 0,
-          loading: false
-        });
+
+        if (response.data) {
+          setStats({
+            placesCount: response.data.placesCount || 0,
+            usersCount: response.data.usersCount || 0,
+            countriesCount: response.data.countriesCount || 0,
+            loading: false
+          });
+        } else {
+          throw new Error('No se recibieron datos de estadísticas');
+        }
       } catch (error) {
         console.error('Error al obtener estadísticas:', error);
-        // Muestra más detalles del error para depuración
+
+        // Depuración detallada del error
         if (error.response) {
           console.error('Error response:', error.response.data);
           console.error('Status:', error.response.status);
         } else if (error.request) {
           console.error('No response received:', error.request);
         }
-        
-        setStats(prev => ({ ...prev, loading: false }));
+
+        // Intentar obtener estadísticas alternativas desde la API de posts
+        try {
+          const baseUrl = API_CONFIG.getBaseUrl();
+          const postsResponse = await axios.get(`${baseUrl}/api/posts`);
+
+          if (postsResponse.data && postsResponse.data.data && Array.isArray(postsResponse.data.data)) {
+            const posts = postsResponse.data.data;
+
+            // Usar Set para obtener valores únicos
+            const uniqueCities = new Set(posts.map(post => post.city).filter(Boolean));
+            const uniqueUsers = new Set(posts.map(post => {
+              if (typeof post.userId === 'object') {
+                return post.userId._id || post.userId.id;
+              }
+              return post.userId;
+            }).filter(Boolean));
+
+            setStats({
+              placesCount: posts.length,
+              usersCount: uniqueUsers.size,
+              countriesCount: uniqueCities.size,
+              loading: false
+            });
+          } else {
+            // Valores de respaldo
+            setStats({
+              placesCount: 25,
+              usersCount: 10,
+              countriesCount: 5,
+              loading: false
+            });
+          }
+        } catch (postsError) {
+          console.error('Error al obtener datos alternativos:', postsError);
+
+          // Valores de respaldo
+          setStats({
+            placesCount: 25,
+            usersCount: 10,
+            countriesCount: 5,
+            loading: false
+          });
+        }
       }
     };
 
@@ -48,37 +99,37 @@ const AboutUs = () => {
   // Componente de contador animado
   const Counter = ({ end, duration = 2000 }) => {
     const [count, setCount] = useState(0);
-    
+
     useEffect(() => {
       if (end === 0) return; // No animar si el valor es 0
-      
+
       let startTime = null;
       let requestId = null;
-      
+
       const animate = (timestamp) => {
         if (!startTime) startTime = timestamp;
         const runtime = timestamp - startTime;
         const progress = Math.min(runtime / duration, 1);
-        
+
         // Función ease-out para movimiento más natural
         const easeOut = (t) => 1 - Math.pow(1 - t, 3);
-        
+
         setCount(Math.floor(easeOut(progress) * end));
-        
+
         if (runtime < duration) {
           requestId = requestAnimationFrame(animate);
         }
       };
-      
+
       requestId = requestAnimationFrame(animate);
-      
+
       return () => {
         if (requestId) {
           cancelAnimationFrame(requestId);
         }
       };
     }, [end]);
-    
+
     return <>{count}+</>;
   };
 
@@ -117,21 +168,21 @@ const AboutUs = () => {
         <div className="relative py-8 md:py-12 px-4 md:px-8 my-12 rounded-xl bg-white/70 backdrop-blur-sm shadow-md">
           <div className="absolute top-0 right-0 w-24 h-24 bg-[#C68B59]/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#8A8B6C]/10 rounded-full translate-y-1/3 -translate-x-1/3"></div>
-          
+
           <h2 className="text-2xl md:text-3xl font-bold text-[#1B3A4B] mb-6 font-playfair relative">
             <span className="relative">
               Nuestra Misión
               <span className="absolute -bottom-2 left-0 w-16 h-1 bg-[#C68B59]"></span>
             </span>
           </h2>
-          
+
           <p className="font-montserrat text-[#8A8B6C] leading-relaxed mb-4">
             Conectamos viajeros con los lugares más auténticos que merecen ser revisitados, creando una comunidad
             que celebra y preserva las joyas ocultas de cada destino.
           </p>
-          
+
           <p className="font-montserrat text-[#8A8B6C] leading-relaxed">
-            Nuestro objetivo es asegurar que cada experiencia de viaje esté llena de autenticidad, 
+            Nuestro objetivo es asegurar que cada experiencia de viaje esté llena de autenticidad,
             descubrimientos memorables y momentos que inviten a volver.
           </p>
         </div>
@@ -177,7 +228,7 @@ const AboutUs = () => {
       <section className="relative bg-gradient-to-r from-[#1B3A4B] to-[#2D4C5E] py-12 md:py-16 overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
-        
+
         <div className="container mx-auto px-4 md:px-8 text-center relative z-10">
           <h2 className="text-2xl md:text-3xl font-bold text-white font-playfair mb-4">
             Únete a Nosotros
@@ -185,8 +236,8 @@ const AboutUs = () => {
           <p className="text-[#E3D5C7] mt-2 text-base md:text-lg font-montserrat max-w-xl mx-auto">
             Comparte esos lugares a los que merece la pena volver y ayuda a otros viajeros a descubrir experiencias auténticas
           </p>
-          <a 
-            href="/contacto" 
+          <a
+            href="/contacto"
             className="mt-8 inline-block bg-white text-[#1B3A4B] font-semibold py-3 px-8 rounded-lg shadow-lg transition duration-300 hover:bg-[#E3D5C7] hover:text-[#1B3A4B] transform hover:-translate-y-1"
           >
             Contáctanos
@@ -203,9 +254,9 @@ const AboutUs = () => {
               <span className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-[#C68B59]"></span>
             </span>
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <div className="text-center p-6 bg-[#F5F2ED] rounded-lg shadow-sm">
+            <div className="text-center p-6 bg-[#F5F2ED] rounded-lg shadow-sm hover:shadow-md transition-shadow">
               {stats.loading ? (
                 <div className="animate-pulse">
                   <div className="h-10 bg-gray-200 rounded w-16 mx-auto mb-2"></div>
@@ -220,8 +271,8 @@ const AboutUs = () => {
                 </>
               )}
             </div>
-            
-            <div className="text-center p-6 bg-[#F5F2ED] rounded-lg shadow-sm">
+
+            <div className="text-center p-6 bg-[#F5F2ED] rounded-lg shadow-sm hover:shadow-md transition-shadow">
               {stats.loading ? (
                 <div className="animate-pulse">
                   <div className="h-10 bg-gray-200 rounded w-16 mx-auto mb-2"></div>
@@ -236,8 +287,8 @@ const AboutUs = () => {
                 </>
               )}
             </div>
-            
-            <div className="text-center p-6 bg-[#F5F2ED] rounded-lg shadow-sm">
+
+            <div className="text-center p-6 bg-[#F5F2ED] rounded-lg shadow-sm hover:shadow-md transition-shadow">
               {stats.loading ? (
                 <div className="animate-pulse">
                   <div className="h-10 bg-gray-200 rounded w-16 mx-auto mb-2"></div>

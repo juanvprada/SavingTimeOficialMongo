@@ -49,8 +49,9 @@ apiRouter.use('/posts', postRoutes);
 apiRouter.use('/roles', roleRoutes);
 apiRouter.use('/likes', likeRoutes);
 apiRouter.use('/comments', commentRoutes);
+apiRouter.use('/statistics', statisticsRoutes);
 app.use('/api', apiRouter);
-app.use('/statistics', statisticsRoutes);
+
 
 if (process.env.NODE_ENV === 'production') {
   const path = require('path');
