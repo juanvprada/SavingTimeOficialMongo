@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Carousel from '../components/Carousel';
 import { logoImg } from '../utils';
 import axios from 'axios';
-import { API_CONFIG } from '../api.config'; // Importar la configuración API
+import { API_CONFIG } from '../config/api.config';
 
 const AboutUs = () => {
   // Estado para almacenar las estadísticas
