@@ -5,7 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import useStore from '../store/store';
 import { normalizeImageUrl } from '../utils/imageUtils';
-import StarRating from './StarRating'; // Importa el nuevo componente
+import StarRating from './StarRating';
+import RecommendationButtons from './RecomendationButtons'; 
 
 // Define PostType enum
 export const PostType = {
@@ -80,11 +81,19 @@ export const Create = ({ post, onSubmit, onCancel }) => {
     }));
   };
 
-  // Nuevo manejador para el cambio de calificación por estrellas
+  // Manejador para el cambio de calificación por estrellas
   const handleRatingChange = (value) => {
     setFormData(prev => ({
       ...prev,
       rating: value
+    }));
+  };
+
+  // Manejador para el cambio de estado de recomendación
+  const handleRecommendationChange = (value) => {
+    setFormData(prev => ({
+      ...prev,
+      recommendationStatus: value
     }));
   };
 
@@ -305,18 +314,11 @@ export const Create = ({ post, onSubmit, onCancel }) => {
             />
           </div>
 
-          {/* Selector para estado de recomendación */}
-          <select
-            name="recommendationStatus"
+          {/* Botones para estado de recomendación */}
+          <RecommendationButtons
             value={formData.recommendationStatus}
-            onChange={handleInputChange}
-            className="w-full p-2 border rounded focus:ring-2"
-            required
-          >
-            {Object.values(RecommendationStatus).map(status => (
-              <option key={status} value={status}>{status}</option>
-            ))}
-          </select>
+            onChange={handleRecommendationChange}
+          />
 
           <div className="space-y-2">
             <input
