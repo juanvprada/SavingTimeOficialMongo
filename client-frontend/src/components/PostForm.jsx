@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import useStore from '../store/store';
 import { normalizeImageUrl } from '../utils/imageUtils';
+import StarRating from './StarRating'; // Importa el nuevo componente
 
 // Define PostType enum
 export const PostType = {
@@ -38,7 +39,7 @@ export const Create = ({ post, onSubmit, onCancel }) => {
     city: '',
     price: '',
     rating: "",
-    recommendationStatus: RecommendationStatus.NONE, // Nuevo campo
+    recommendationStatus: RecommendationStatus.NONE,
   });
   const [imagePreviews, setImagePreviews] = useState([]);
   const [error, setError] = useState('');
@@ -57,7 +58,7 @@ export const Create = ({ post, onSubmit, onCancel }) => {
         images: [], // Para nuevas imágenes
         city: post.data.city || '',
         price: post.data.price?.toString() || '',
-        rating: post.data.rating?.toString() || '',
+        rating: post.data.rating ? Number(post.data.rating) : "", // Asegúrate de convertir a número
         recommendationStatus: post.data.recommendationStatus || RecommendationStatus.NONE,
       });
 
@@ -71,12 +72,19 @@ export const Create = ({ post, onSubmit, onCancel }) => {
     }
   }, [post]);
 
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
+    }));
+  };
+
+  // Nuevo manejador para el cambio de calificación por estrellas
+  const handleRatingChange = (value) => {
+    setFormData(prev => ({
+      ...prev,
+      rating: value
     }));
   };
 
@@ -123,7 +131,6 @@ export const Create = ({ post, onSubmit, onCancel }) => {
 
     console.log("✅ Imágenes seleccionadas:", validFiles);
   };
-
 
   const removeImage = (index) => {
     // Revoke the URL to prevent memory leaks
@@ -216,6 +223,7 @@ export const Create = ({ post, onSubmit, onCancel }) => {
       setIsSubmitting(false);
     }
   };
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-[#1B3A4B] bg-opacity-75 z-50">
       <div className="bg-[#F5F2ED] p-4 sm:p-6 rounded-lg shadow-lg w-full max-w-sm sm:max-w-md m-3 sm:m-5 relative z-10 overflow-y-auto max-h-[90vh]">
@@ -288,19 +296,16 @@ export const Create = ({ post, onSubmit, onCancel }) => {
             required
           />
 
-          <input
-            type="number"
-            name="rating"
-            value={formData.rating}
-            onChange={handleInputChange}
-            placeholder="Puntuación (1-5)"
-            min="1"
-            max="5"
-            className="w-full p-2 border rounded focus:ring-2"
-            required
-          />
+          {/* Reemplazar el input de puntuación por el componente de estrellas */}
+          <div className="space-y-1">
+            <label className="block text-sm text-gray-600">Puntuación</label>
+            <StarRating
+              rating={Number(formData.rating) || 0}
+              onChange={handleRatingChange}
+            />
+          </div>
 
-          {/* Nuevo select para estado de recomendación */}
+          {/* Selector para estado de recomendación */}
           <select
             name="recommendationStatus"
             value={formData.recommendationStatus}
@@ -392,8 +397,3 @@ export const Create = ({ post, onSubmit, onCancel }) => {
     </div>
   );
 };
-
-
-
-
-
