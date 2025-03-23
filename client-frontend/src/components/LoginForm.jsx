@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaEnvelope, FaLock } from 'react-icons/fa';
+import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import useStore from '../store/store';
 import axios from 'axios';
 import { API_CONFIG } from '../config/api.config';
-
-
-
 
 const LoginForm = ({ inputTextColor, formBackground }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   // Obtener las funciones del store al inicio del componente
   const setToken = useStore((state) => state.setToken);
@@ -21,6 +19,10 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
 
   const navigate = useNavigate();
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) {
@@ -28,7 +30,6 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
       return;
     }
     try {
-
       console.log("Actualizando bien");
 
       const response = await axios.post(`${API_CONFIG.getBaseUrl()}/api/auth/login`, {
@@ -86,13 +87,21 @@ const LoginForm = ({ inputTextColor, formBackground }) => {
         <div className="relative">
           <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8A8B6C]" />
           <input
-            className="w-full pl-10 pr-4 py-2 border border-[#8A8B6C] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#C68B59] transition bg-transparent text-[#E3D5C7]"
-            type="password"
+            className="w-full pl-10 pr-12 py-2 border border-[#8A8B6C] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#C68B59] transition bg-transparent text-[#E3D5C7]"
+            type={showPassword ? "text" : "password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Contraseña"
             required
           />
+          <button
+            type="button"
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#8A8B6C] hover:text-[#C68B59] focus:outline-none"
+            onClick={togglePasswordVisibility}
+            tabIndex="-1"
+          >
+            {showPassword ? <FaEyeSlash /> : <FaEye />}
+          </button>
         </div>
         {error && <p className="text-[#C68B59] text-sm text-center">{error}</p>}
         <button

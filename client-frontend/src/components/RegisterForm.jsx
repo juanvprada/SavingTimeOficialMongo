@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import useStore from '../store/store';
-import { FaUser, FaEnvelope, FaLock } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { API_CONFIG } from '../config/api.config';
 
 const RegisterForm = ({ inputTextColor = 'text-gray-700', formBackground = 'bg-white' }) => {
@@ -11,9 +11,14 @@ const RegisterForm = ({ inputTextColor = 'text-gray-700', formBackground = 'bg-w
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
   const { setUserData } = useStore();
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,7 +52,7 @@ const RegisterForm = ({ inputTextColor = 'text-gray-700', formBackground = 'bg-w
       });
 
       setMessage('¡Registro exitoso!');
-      
+
       // Dar tiempo para que se muestre el mensaje de éxito
       setTimeout(() => {
         navigate('/blog');
@@ -55,11 +60,11 @@ const RegisterForm = ({ inputTextColor = 'text-gray-700', formBackground = 'bg-w
 
     } catch (error) {
       console.error('Error detallado:', error.response?.data);
-      
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.errors?.[0]?.message || 
-                          'Error en el registro. Por favor, intente nuevamente.';
-      
+
+      const errorMessage = error.response?.data?.message ||
+        error.response?.data?.errors?.[0]?.message ||
+        'Error en el registro. Por favor, intente nuevamente.';
+
       setMessage(errorMessage);
     } finally {
       setIsLoading(false);
@@ -83,7 +88,7 @@ const RegisterForm = ({ inputTextColor = 'text-gray-700', formBackground = 'bg-w
             maxLength={100}
           />
         </div>
-        
+
         <div className="relative">
           <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
@@ -96,27 +101,35 @@ const RegisterForm = ({ inputTextColor = 'text-gray-700', formBackground = 'bg-w
             disabled={isLoading}
           />
         </div>
-        
+
         <div className="relative">
           <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Contraseña"
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-transparent text-white placeholder-gray-400"
+            className="w-full pl-10 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-transparent text-white placeholder-gray-400"
             required
             disabled={isLoading}
             minLength={6}
           />
+          <button
+            type="button"
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+            onClick={togglePasswordVisibility}
+            tabIndex="-1"
+          >
+            {showPassword ? <FaEyeSlash /> : <FaEye />}
+          </button>
         </div>
 
         <button
           type="submit"
           disabled={isLoading}
           className={`w-full bg-blue-600 text-white font-medium py-3 rounded-lg transition
-            ${isLoading 
-              ? 'opacity-50 cursor-not-allowed' 
+            ${isLoading
+              ? 'opacity-50 cursor-not-allowed'
               : 'hover:bg-blue-700 active:bg-blue-800 shadow-md hover:shadow-lg'
             }`}
         >
@@ -125,10 +138,9 @@ const RegisterForm = ({ inputTextColor = 'text-gray-700', formBackground = 'bg-w
       </form>
 
       {message && (
-        <p 
-          className={`text-sm text-center mt-4 ${
-            message.includes('exitoso') ? 'text-green-600' : 'text-red-600'
-          }`}
+        <p
+          className={`text-sm text-center mt-4 ${message.includes('exitoso') ? 'text-green-600' : 'text-red-600'
+            }`}
         >
           {message}
         </p>
